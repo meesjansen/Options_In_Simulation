@@ -1,0 +1,158 @@
+from math import sqrt
+
+import numpy as np
+from numpy.random import choice
+from omni.isaac.core.prims import XFormPrim
+from pxr import Gf, PhysxSchema, Sdf, UsdPhysics
+from scipy import interpolate
+
+
+def rooms_terrain(terrain, wall_height=400, wall_thickness=5, passage_width=20):
+    """
+    Generate a terrain with two fully enclosed rooms connected by a passage, based on the grid setup provided.
+
+    Parameters:
+        terrain (SubTerrain): the terrain object
+        wall_height (int): height of the walls enclosing the rooms (default: 200 units)
+        wall_thickness (int): thickness of the walls (default: 1 unit)
+        passage_width (int): width of the passage connecting the rooms (default: 2 units)
+    Returns:
+        terrain (SubTerrain): updated terrain
+    """
+    # Get the terrain dimensions
+    terrain_width = terrain.width
+    terrain_length = terrain.length
+    wall_thickness = int(wall_thickness)
+    passage_width = int(passage_width)
+
+    # Determine center points for room division and passage
+    center_x = int(terrain_width // 2)
+    center_y = int(terrain_length // 2)
+
+    # Fill the entire height_field_raw with zeros (representing the floor)
+    terrain.height_field_raw[:, :] = 0
+
+    # Create walls around the perimeter of the terrain
+    terrain.height_field_raw[:, 0:wall_thickness] = wall_height  # Left wall
+    terrain.height_field_raw[:, -wall_thickness:] = wall_height  # Right wall
+    terrain.height_field_raw[0:wall_thickness, :] = wall_height  # Top wall
+    terrain.height_field_raw[-wall_thickness:, :] = wall_height  # Bottom wall
+
+    # Create the internal wall separating the two rooms (leaving a passage in the middle)
+    wall_start = center_y - wall_thickness // 2
+    wall_end = center_y + wall_thickness // 2
+    passage_start = center_x - passage_width // 2
+    passage_end = center_x + passage_width // 2
+
+    # Internal wall for the left and right rooms, except for the passage
+    terrain.height_field_raw[wall_start:wall_end, :passage_start] = wall_height  # Left room internal wall
+    terrain.height_field_raw[wall_start:wall_end, passage_end:] = wall_height  # Right room internal wall
+
+    # Return updated terrain
+    return terrain
+
+
+# TESTS:
+# terrain = SubTerrain(width=256, length=256, vertical_scale=0.005, horizontal_scale=0.1)
+# terrain = rooms_terrain(terrain, wall_height=400, wall_thickness=5, passage_width=20)
+# print(terrain.height_field_raw.shape)
+# print(terrain.height_field_raw)
+# np.savetxt('terrain_height_field.txt', terrain.height_field_raw, fmt='%d')
+
+
+
+def convert_heightfield_to_trimesh(height_field_raw, horizontal_scale, vertical_scale, slope_threshold=None):
+    """
+    Convert a heightfield array to a triangle mesh represented by vertices and triangles.
+    Optionally, corrects vertical surfaces above the provide slope threshold:
+
+        If (y2-y1)/(x2-x1) > slope_threshold -> Move A to A' (set x1 = x2). Do this for all directions.
+                   B(x2,y2)
+                  /|
+                 / |
+                /  |
+        (x1,y1)A---A'(x2',y1)
+
+    Parameters:
+        height_field_raw (np.array): input heightfield
+        horizontal_scale (float): horizontal scale of the heightfield [meters]
+        vertical_scale (float): vertical scale of the heightfield [meters]
+        slope_threshold (float): the slope threshold above which surfaces are made vertical. If None no correction is applied (default: None)
+    Returns:
+        vertices (np.array(float)): array of shape (num_vertices, 3). Each row represents the location of each vertex [meters]
+        triangles (np.array(int)): array of shape (num_triangles, 3). Each row represents the indices of the 3 vertices connected by this triangle.
+    """
+    hf = height_field_raw
+    num_rows = hf.shape[0]
+    num_cols = hf.shape[1]
+
+    y = np.linspace(0, (num_cols - 1) * horizontal_scale, num_cols)
+    x = np.linspace(0, (num_rows - 1) * horizontal_scale, num_rows)
+    yy, xx = np.meshgrid(y, x)
+
+    if slope_threshold is not None:
+
+        slope_threshold *= horizontal_scale / vertical_scale
+        move_x = np.zeros((num_rows, num_cols))
+        move_y = np.zeros((num_rows, num_cols))
+        move_corners = np.zeros((num_rows, num_cols))
+        move_x[: num_rows - 1, :] += hf[1:num_rows, :] - hf[: num_rows - 1, :] > slope_threshold
+        move_x[1:num_rows, :] -= hf[: num_rows - 1, :] - hf[1:num_rows, :] > slope_threshold
+        move_y[:, : num_cols - 1] += hf[:, 1:num_cols] - hf[:, : num_cols - 1] > slope_threshold
+        move_y[:, 1:num_cols] -= hf[:, : num_cols - 1] - hf[:, 1:num_cols] > slope_threshold
+        move_corners[: num_rows - 1, : num_cols - 1] += (
+            hf[1:num_rows, 1:num_cols] - hf[: num_rows - 1, : num_cols - 1] > slope_threshold
+        )
+        move_corners[1:num_rows, 1:num_cols] -= (
+            hf[: num_rows - 1, : num_cols - 1] - hf[1:num_rows, 1:num_cols] > slope_threshold
+        )
+        xx += (move_x + move_corners * (move_x == 0)) * horizontal_scale
+        yy += (move_y + move_corners * (move_y == 0)) * horizontal_scale
+
+    # create triangle mesh vertices and triangles from the heightfield grid
+    vertices = np.zeros((num_rows * num_cols, 3), dtype=np.float32)
+    vertices[:, 0] = xx.flatten()
+    vertices[:, 1] = yy.flatten()
+    vertices[:, 2] = hf.flatten() * vertical_scale
+    triangles = -np.ones((2 * (num_rows - 1) * (num_cols - 1), 3), dtype=np.uint32)
+    for i in range(num_rows - 1):
+        ind0 = np.arange(0, num_cols - 1) + i * num_cols
+        ind1 = ind0 + 1
+        ind2 = ind0 + num_cols
+        ind3 = ind2 + 1
+        start = 2 * i * (num_cols - 1)
+        stop = start + 2 * (num_cols - 1)
+        triangles[start:stop:2, 0] = ind0
+        triangles[start:stop:2, 1] = ind3
+        triangles[start:stop:2, 2] = ind1
+        triangles[start + 1 : stop : 2, 0] = ind0
+        triangles[start + 1 : stop : 2, 1] = ind2
+        triangles[start + 1 : stop : 2, 2] = ind3
+
+    return vertices, triangles
+
+
+def add_terrain_to_stage(stage, vertices, triangles, position=None, orientation=None):
+    num_faces = triangles.shape[0]
+    terrain_mesh = stage.DefinePrim("/World/terrain", "Mesh")
+    terrain_mesh.GetAttribute("points").Set(vertices)
+    terrain_mesh.GetAttribute("faceVertexIndices").Set(triangles.flatten())
+    terrain_mesh.GetAttribute("faceVertexCounts").Set(np.asarray([3] * num_faces))
+
+    terrain = XFormPrim(prim_path="/World/terrain", name="terrain", position=position, orientation=orientation)
+
+    UsdPhysics.CollisionAPI.Apply(terrain.prim)
+    # collision_api = UsdPhysics.MeshCollisionAPI.Apply(terrain.prim)
+    # collision_api.CreateApproximationAttr().Set("meshSimplification")
+    physx_collision_api = PhysxSchema.PhysxCollisionAPI.Apply(terrain.prim)
+    physx_collision_api.GetContactOffsetAttr().Set(0.02)
+    physx_collision_api.GetRestOffsetAttr().Set(0.00)
+
+class SubTerrain:
+    def __init__(self, terrain_name="terrain", width=256, length=256, vertical_scale=1.0, horizontal_scale=1.0):
+        self.terrain_name = terrain_name
+        self.vertical_scale = vertical_scale
+        self.horizontal_scale = horizontal_scale
+        self.width = width
+        self.length = length
+        self.height_field_raw = np.zeros((self.width, self.length), dtype=np.int16)
