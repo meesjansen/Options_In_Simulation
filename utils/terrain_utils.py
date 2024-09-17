@@ -1,4 +1,5 @@
 from math import sqrt
+import torch 
 
 import numpy as np
 from numpy.random import choice
@@ -142,8 +143,8 @@ def add_terrain_to_stage(stage, vertices, triangles, position=None, orientation=
     terrain = XFormPrim(prim_path="/World/terrain", name="terrain", position=position, orientation=orientation)
 
     UsdPhysics.CollisionAPI.Apply(terrain.prim)
-    # collision_api = UsdPhysics.MeshCollisionAPI.Apply(terrain.prim)
-    # collision_api.CreateApproximationAttr().Set("meshSimplification")
+    collision_api = UsdPhysics.MeshCollisionAPI.Apply(terrain.prim)
+    collision_api.CreateApproximationAttr().Set("meshSimplification")
     physx_collision_api = PhysxSchema.PhysxCollisionAPI.Apply(terrain.prim)
     physx_collision_api.GetContactOffsetAttr().Set(0.02)
     physx_collision_api.GetRestOffsetAttr().Set(0.00)
@@ -156,3 +157,26 @@ class SubTerrain:
         self.width = width
         self.length = length
         self.height_field_raw = np.zeros((self.width, self.length), dtype=np.int16)
+
+
+def get_axis_params(value, axis_idx, x_value=0., dtype=float, n_dims=3):
+    """construct arguments to `Vec` according to axis index.
+    """
+    zs = np.zeros((n_dims,))
+    assert axis_idx < n_dims, "the axis dim should be within the vector dimensions"
+    zs[axis_idx] = 1.0
+    params = np.where(zs == 1.0, value, zs)
+    params[0] = x_value
+    return list(params.astype(dtype))
+
+@torch.jit.script
+def quat_rotate_inverse(q, v):
+    shape = q.shape
+    q_w = q[:, -1]
+    q_vec = q[:, :3]
+    a = v * (2.0 * q_w ** 2 - 1.0).unsqueeze(-1)
+    b = torch.cross(q_vec, v, dim=-1) * q_w.unsqueeze(-1) * 2.0
+    c = q_vec * \
+        torch.bmm(q_vec.view(shape[0], 1, 3), v.view(
+            shape[0], 3, 1)).squeeze(-1) * 2.0
+    return a - b + c

@@ -8,8 +8,10 @@ from skrl.agents.torch.q_learning import Q_LEARNING, Q_LEARNING_DEFAULT_CONFIG
 
 from skrl.trainers.torch import SequentialTrainer
 from skrl.utils.omniverse_isaacgym_utils import get_env_instance
-from skrl.envs.torch import wrap_env
+from skrl.envs.wrappers.torch import wrap_env
 from skrl.utils import set_seed
+
+from omni.isaac.gym.vec_env import VecEnvBase
 
 
 # Seed for reproducibility
@@ -40,27 +42,19 @@ class EpilonGreedyPolicy(TabularMixin, Model):
 
 # instance VecEnvBase and setup task
 headless = True  # set headless to False for rendering
-env = get_env_instance(headless=headless)
+env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
 from Rooms_Env import ReachingFoodTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 1024
-
-
-
-
+TASK_CFG["task"]["env"]["numEnvs"] = 1
 
 
 sim_config = SimConfig(TASK_CFG)
 task = ReachingFoodTask(name="ReachingIiwa", sim_config=sim_config, env=env)
-env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="torch", init_sim=True)
-
-
-
-
+# env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="torch", init_sim=True)
 
 
 # wrap the environment

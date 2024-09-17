@@ -46,8 +46,8 @@ class LimoAckermann(Robot):
 
         # Define the wheels and their corresponding DOF paths
         self.wheel_dof_paths = [
-            "left_steering_hinge/front_left_wheel",
-            "right_steering_hinge/front_right_wheel",
+            "front_left_wheel_link/front_left_wheel",
+            "front_right_wheel_link/front_right_wheel",
             "rear_left_wheel_link/rear_left_wheel",
             "rear_right_wheel_link/rear_right_wheel"
         ]
