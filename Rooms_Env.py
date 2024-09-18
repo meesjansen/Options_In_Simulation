@@ -13,7 +13,7 @@ from omni.isaac.core.utils.torch.maths import torch_rand_float
 from omni.isaac.core.simulation_context import SimulationContext
 
 
-from robots.Four_Wheels import LimoAckermann as Robot
+from robots.Four_Wheels_v2 import LimoAckermann as Robot
 
 from utils.terrain_utils import get_axis_params 
 
