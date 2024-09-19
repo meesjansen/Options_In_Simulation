@@ -2,7 +2,7 @@ import math
 
 import numpy as np
 import torch
-from terrain_utils import *
+from my_utils.terrain_utils import *
 
 class Terrain:
     def __init__(self, num_robots) -> None:
