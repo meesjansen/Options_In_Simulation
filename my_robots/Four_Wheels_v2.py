@@ -33,7 +33,7 @@ class LimoAckermann(WheeledRobot):
         self._orientation = torch.tensor([1.0, 0.0, 0.0, 0.0]) if orientation is None else orientation
 
         if self._usd_path is None:
-            self._usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets", "limo_ackermann.usd"))
+            self._usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_assets", "limo_ackermann.usd"))
 
         add_reference_to_stage(self._usd_path, prim_path)
 

@@ -10,35 +10,27 @@ from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.objects import DynamicSphere
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.torch.maths import torch_rand_float
-from omni.isaac.core.simulation_context import SimulationContext
+from omni.isaac.core.simulation_context import SimulationContext #used to force step
 
-
-from robots.Four_Wheels_v2 import LimoAckermann as Robot
-
-from utils.terrain_utils import get_axis_params 
-
-from skrl.utils import omniverse_isaacgym_utils
-from utils.terrain_generator import Terrain
-from utils.terrain_utils import *
+from my_robots.Four_Wheels_v2 import LimoAckermann as Robot
+from my_utils.terrain_generator import Terrain
+from my_utils.terrain_utils import *
 
 TASK_CFG = {"test": False,
             "device_id": 0,
             "headless": True,
             "sim_device": "gpu",
             "enable_livestream": True,
-            # "warp": False,
+            "warp": False,
             "seed": 42,
             "task": {"name": "ReachingFood",
                      "physics_engine": "physx",
                      "env": {"numEnvs": 1,
                              "envSpacing": 1.5,
                              "episodeLength": 1000,
-                            #  "enableDebugVis": False,
-                            #  "clipObservations": 1000.0,
-                            #  "clipActions": 1.0,
-                            #  "controlFrequencyInv": 4,
-                            #  "actionScale": 2.5,
-                            #  "dofVelocityScale": 0.1,
+                             "enableDebugVis": False,
+                             "clipObservations": 1000.0,
+                             "controlFrequencyInv": 4,
                              "pos": [0.0, 0.0, 0.62], # x,y,z [m]
                              "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
                              "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
@@ -49,7 +41,7 @@ TASK_CFG = {"test": False,
                              "use_gpu_pipeline": True,
                              "gravity": [0.0, 0.0, -9.81],
                              "add_ground_plane": False,
-                            #  "use_flatcache": True,
+                             "use_flatcache": True,
                              "enable_scene_query_support": False,
                              "enable_cameras": False,
                              "default_physics_material": {"static_friction": 1.0,
