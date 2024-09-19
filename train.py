@@ -54,7 +54,7 @@ TASK_CFG["task"]["env"]["numEnvs"] = 1
 
 sim_config = SimConfig(TASK_CFG)
 task = ReachingFoodTask(name="ReachingFood", sim_config=sim_config, env=env)
-# env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="torch", init_sim=True)
+env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="torch", init_sim=True)
 
 
 # wrap the environment
