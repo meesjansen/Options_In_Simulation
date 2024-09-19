@@ -13,7 +13,7 @@ from omni.isaac.core.utils.torch.maths import torch_rand_float
 from omni.isaac.core.simulation_context import SimulationContext #used to force step
 
 from my_robots.Four_Wheels_v2 import LimoAckermann as Robot
-from my_utils.terrain_generator import Terrain
+from my_utils.terrain_generator import *
 from my_utils.terrain_utils import *
 
 TASK_CFG = {"test": False,
@@ -117,7 +117,6 @@ class ReachingFoodTask(RLTask):
 
         self._num_envs = self._task_cfg["env"]["numEnvs"]
         self._env_spacing = self._task_cfg["env"]["envSpacing"]
-        self._action_scale = self._task_cfg["env"]["actionScale"]
         self._max_episode_length = self._task_cfg["env"]["episodeLength"]
         
 
