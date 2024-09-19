@@ -31,11 +31,12 @@ TASK_CFG = {"test": False,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
                              "controlFrequencyInv": 4,
-                             "pos": [0.0, 0.0, 0.62], # x,y,z [m]
-                             "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
-                             "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
-                             "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
-                             "Torques": [0.0, 0.0, 0.0, 0.0]
+                             "basiInitState": {"pos": [0.0, 0.0, 0.62], # x,y,z [m]
+                                              "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
+                                              "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
+                                              "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
+                                              "Torques": [0.0, 0.0, 0.0, 0.0]
+                            }
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
                              "use_gpu_pipeline": True,
