@@ -257,9 +257,10 @@ class ReachingFoodTask(RLTask):
         self.base_velocities[env_ids] = self.base_init_state[7:13]
         self.wheel_torques[env_ids] = self.base_init_state[13:]
         
-        
+        joint_indices_temp = torch.tensor([2, 3, 4, 5], device=self.device, dtype=torch.long)
+
         self._robots.set_world_poses(positions=self.base_pos[env_ids].clone(), orientations=self.base_quat[env_ids].clone(), indices=indices)
-        self._robots.set_joint_efforts(efforts=self.wheel_torques[env_ids].clone(), joint_indices=np.array([2, 3, 4, 5]), indices=indices)
+        self._robots.set_joint_efforts(efforts=self.wheel_torques[env_ids].clone(), joint_indices=joint_indices_temp, indices=indices)
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
 
 
