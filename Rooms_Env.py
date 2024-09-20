@@ -125,6 +125,8 @@ class ReachingFoodTask(RLTask):
         self._num_observations = 89 + 6 + 4 + 3 + 3  # hiehgtpoints + IMU vel + torque per wheel + target + grav vector
         self._num_actions = 12  # Assuming 3 discrete actions per wheel
 
+        self.update_config(sim_config)
+
         RLTask.__init__(self, name, env)
 
 
