@@ -297,7 +297,7 @@ class ReachingFoodTask(RLTask):
             get_axis_params(-1.0, self.up_axis_idx), dtype=torch.float, device=self.device
         ).repeat((self.num_envs, 1))
         
-        self.torques = torch.zeros(
+        self.wheel_torques = torch.zeros(
             self.num_envs, 4, dtype=torch.float, device=self.device, requires_grad=False
         )
         self.actions = torch.zeros(
