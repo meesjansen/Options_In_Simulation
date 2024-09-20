@@ -273,7 +273,7 @@ class ReachingFoodTask(RLTask):
 
         self.last_actions[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
-        self.reset_buf[env_ids] = 1
+        self.reset_buf[env_ids] = 0
 
         # fill extras for reward shaping
         # self.extras["episode"] = {}
@@ -321,6 +321,10 @@ class ReachingFoodTask(RLTask):
     def pre_physics_step(self, actions):
         if not self.world.is_playing():
             return
+        
+        reset_env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
+        if len(reset_env_ids) > 0:
+            self.reset_idx(reset_env_ids)
 
         # Step 1: Clone the actions to the device and get indices for the relevant robots
         self.actions = actions.clone().to(self.device)
@@ -360,7 +364,7 @@ class ReachingFoodTask(RLTask):
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
         # Step 7: Apply the updated torques to all environments
-        self._robots.set_joint_efforts(efforts=updated_efforts, joint_indices=np.array([2, 3, 4, 5]), indices=[2,3,4,5])
+        self._robots.set_joint_efforts(efforts=updated_efforts, joint_indices=self._robots._dof_indices, indices=env_ids_int32)
 
         # Continue to step the simulation, not needed for skrl?
         # SimulationContext.step(self.world, render=False)
