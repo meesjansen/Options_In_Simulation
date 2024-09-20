@@ -358,8 +358,11 @@ class ReachingFoodTask(RLTask):
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
+        test_torque_vector = torch.tensor([0.0, 0.0, 1.0, 1.0, 1.0, 1.0],
+            device=self.device)
+
         # Step 7: Apply the updated torques to all environments
-        self._robots.set_joint_efforts(efforts=updated_efforts, indices=[2,3,4,5])
+        self._robots.set_joint_efforts(efforts=test_torque_vector, indices=[2,3,4,5])
 
         # Continue to step the simulation, not needed for skrl?
         # SimulationContext.step(self.world, render=False)
