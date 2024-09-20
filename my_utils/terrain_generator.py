@@ -42,10 +42,10 @@ class Terrain:
             (i, j) = np.unravel_index(k, (self.env_rows, self.env_cols))
 
             # Heightfield coordinate system from now on
-            start_x = self.border + i * self.length_per_env_pixels
-            end_x = self.border + (i + 1) * self.length_per_env_pixels
-            start_y = self.border + j * self.width_per_env_pixels
-            end_y = self.border + (j + 1) * self.width_per_env_pixels
+            start_x = self.border + i * self.width_per_env_pixels
+            end_x = self.border + (i + 1) * self.width_per_env_pixels
+            start_y = self.border + j * self.length_per_env_pixels
+            end_y = self.border + (j + 1) * self.length_per_env_pixels
 
             terrain = SubTerrain(
                 "terrain",
