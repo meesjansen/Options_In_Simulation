@@ -61,7 +61,9 @@ class LimoAckermann(WheeledRobot):
             orientation=self._orientation
         )
         
-        self._dof_indices = [self.get_dof_index(dof) for dof in self._dof_names]
+        # Convert the list of indices to a PyTorch tensor
+        self._dof_indices = torch.tensor([self.get_dof_index(dof) for dof in self._dof_names], dtype=torch.int64, device=self.device)
+
 
 
     @property
