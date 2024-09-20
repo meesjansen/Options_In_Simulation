@@ -51,6 +51,8 @@ class LimoAckermann(WheeledRobot):
             "rear_left_wheel",
             "rear_right_wheel"
         ]
+
+        self._dof_indices = [self.get_dof_index(dof) for dof in self._dof_names]
         
         super().__init__(
             prim_path=prim_path,
