@@ -52,7 +52,6 @@ class LimoAckermann(WheeledRobot):
             "rear_right_wheel"
         ]
 
-        self._dof_indices = [self.get_dof_index(dof) for dof in self._dof_names]
         
         super().__init__(
             prim_path=prim_path,
@@ -62,6 +61,8 @@ class LimoAckermann(WheeledRobot):
             orientation=self._orientation
         )
         
+        self._dof_indices = [self.get_dof_index(dof) for dof in self._dof_names]
+
 
     @property
     def dof_names(self):
