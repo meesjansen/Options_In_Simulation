@@ -29,6 +29,12 @@ class Terrain:
 
         self.height_field_raw = np.zeros((self.tot_rows, self.tot_cols), dtype=np.int16)
 
+        self.cr_rooms_env()
+
+        self.heightsamples = self.height_field_raw
+        self.vertices, self.triangles = convert_heightfield_to_trimesh(
+                    self.height_field_raw, self.horizontal_scale, self.vertical_scale, slope_threshold=0.5)
+
 
         def cr_rooms_env():
             for k in range(self.num_maps):
@@ -62,7 +68,4 @@ class Terrain:
                 env_origin_z = np.max(terrain.height_field_raw[x1:x2, y1:y2]) * self.vertical_scale
                 self.env_origins[i, j] = [env_origin_x, env_origin_y, env_origin_z]
 
-                self.heightsamples = self.height_field_raw
-                self.vertices, self.triangles = convert_heightfield_to_trimesh(
-                    self.height_field_raw, self.horizontal_scale, self.vertical_scale, slope_threshold=0.5
-                )
+                
