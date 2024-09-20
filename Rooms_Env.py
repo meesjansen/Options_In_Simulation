@@ -165,7 +165,8 @@ class ReachingFoodTask(RLTask):
             prim_path=self.default_zero_env_path + "/robot",
             position=torch.tensor([0.0, 0.0, 0.0]),
             orientation=torch.tensor([1.0, 0.0, 0.0, 0.0]),
-            name="robot"
+            name="robot",
+            device=self.device
         )
         self._sim_config.apply_articulation_settings(
             "robot", get_prim_at_path(robot.prim_path), self._sim_config.parse_actor_config("robot")
