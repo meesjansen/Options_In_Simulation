@@ -259,7 +259,7 @@ class ReachingFoodTask(RLTask):
         
         
         self._robots.set_world_poses(positions=self.base_pos[env_ids].clone(), orientations=self.base_quat[env_ids].clone(), indices=indices)
-        self._robots.set_joint_efforts(efforts=self.wheel_torques[env_ids].clone(), indices=indices)
+        self._robots.set_joint_efforts(efforts=self.wheel_torques[env_ids].clone(), joint_indices=np.array([2, 3, 4, 5]), indices=indices)
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
 
 
@@ -358,11 +358,8 @@ class ReachingFoodTask(RLTask):
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
-        test_torque_vector = torch.tensor([1.0, 1.0, 1.0, 1.0],
-            device=self.device)
-
         # Step 7: Apply the updated torques to all environments
-        self._robots.set_joint_efforts(efforts=test_torque_vector, indices=[2,3,4,5])
+        self._robots.set_joint_efforts(efforts=updated_efforts, joint_indices=np.array([2, 3, 4, 5]), indices=[2,3,4,5])
 
         # Continue to step the simulation, not needed for skrl?
         # SimulationContext.step(self.world, render=False)
