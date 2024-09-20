@@ -10,6 +10,7 @@ from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.objects import DynamicSphere
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.torch.maths import torch_rand_float
+from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.simulation_context import SimulationContext #used to force step
 
 from my_robots.Four_Wheels_v2 import LimoAckermann as Robot
@@ -140,6 +141,8 @@ class ReachingFoodTask(RLTask):
         self.base_init_state = pos + rot + v_lin + v_ang + torque
 
     def set_up_scene(self, scene) -> None:
+        self._stage = get_current_stage()
+        self.get_terrain()
         self.get_robot()
         self.get_target()
 
