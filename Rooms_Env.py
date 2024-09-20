@@ -358,7 +358,7 @@ class ReachingFoodTask(RLTask):
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
-        test_torque_vector = torch.tensor([0.0, 0.0, 1.0, 1.0, 1.0, 1.0],
+        test_torque_vector = torch.tensor([1.0, 1.0, 1.0, 1.0],
             device=self.device)
 
         # Step 7: Apply the updated torques to all environments
