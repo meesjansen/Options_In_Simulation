@@ -50,7 +50,7 @@ class Terrain:
             terrain = SubTerrain(
                 "terrain",
                 width=self.width_per_env_pixels,
-                length=self.width_per_env_pixels,
+                length=self.length_per_env_pixels,
                 vertical_scale=self.vertical_scale,
                 horizontal_scale=self.horizontal_scale,
             )
