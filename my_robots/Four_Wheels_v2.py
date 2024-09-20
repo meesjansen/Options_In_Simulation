@@ -23,7 +23,7 @@ class LimoAckermann(WheeledRobot):
         wheel_dof_names: Optional[str] = None,
         position: Optional[torch.tensor] = None,
         orientation: Optional[torch.tensor] = None,
-        device: torch.device = torch.device('gpu')
+        device: torch.device = torch.device('cpu')
     ) -> None:
         """Initialize the LimoAckermann robot with the appropriate drives and DoFs."""
         
