@@ -359,7 +359,7 @@ class ReachingFoodTask(RLTask):
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
         # Step 7: Apply the updated torques to all environments
-        self._robots.set_joint_efforts(efforts=updated_efforts, indices=self._robots._dof_indices)
+        self._robots.set_joint_efforts(efforts=updated_efforts, indices=[2,3,4,5])
 
         # Continue to step the simulation, not needed for skrl?
         # SimulationContext.step(self.world, render=False)
