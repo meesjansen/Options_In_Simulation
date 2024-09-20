@@ -29,6 +29,7 @@ class LimoAckermann(WheeledRobot):
         
         self._usd_path = usd_path
         self._name = name
+        self.device = device
 
         self._position = torch.tensor([0.0, 0.0, 0.0]) if position is None else position
         self._orientation = torch.tensor([1.0, 0.0, 0.0, 0.0]) if orientation is None else orientation
