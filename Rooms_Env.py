@@ -254,8 +254,8 @@ class ReachingFoodTask(RLTask):
         self.base_pos[env_ids, 0:3] += self.env_origins[env_ids]
         self.base_pos[env_ids, 0:2] += torch_rand_float(-0.5, 0.5, (len(env_ids), 2), device=self.device)
         self.base_quat[env_ids] = self.base_init_state[3:7]
-        self.base_velocities[env_ids] = self.base_init_state[7:10]
-        self.wheel_torques[env_ids] = self.base_init_state[10:]
+        self.base_velocities[env_ids] = self.base_init_state[7:13]
+        self.wheel_torques[env_ids] = self.base_init_state[13:]
         
         
         self._robots.set_world_poses(positions=self.base_pos[env_ids].clone(), orientations=self.base_quat[env_ids].clone(), indices=indices)
