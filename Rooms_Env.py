@@ -378,25 +378,29 @@ class ReachingFoodTask(RLTask):
 
         if self.world.is_playing():
 
+            self.get_observations()
+            # if self.add_noise:
+            #     self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
+
+
             self.refresh_body_state_tensors()
+
+            self.get_states()
+
 
             # prepare quantities
             self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 0:3])
             self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 3:6])
             self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
 
-            self.is_done()
-            self.get_states()
             self.calculate_metrics()
+            self.is_done()
 
             env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
             if len(env_ids) > 0:
                 self.reset_idx(env_ids)
 
-            self.get_observations()
-            # if self.add_noise:
-            #     self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
-
+            
             self.last_actions[:] = self.actions[:]
 
         return self.obs_buf, self.rew_buf, self.reset_buf, self.extras
