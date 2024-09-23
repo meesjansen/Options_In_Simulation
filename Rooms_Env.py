@@ -210,8 +210,8 @@ class ReachingFoodTask(RLTask):
 
         self.obs_buf = torch.cat(
             (
-                self.base_lin_vel * self.lin_vel_scale,
-                self.base_ang_vel * self.ang_vel_scale,
+                self.base_lin_vel,
+                self.base_ang_vel,
                 self.projected_gravity,
                 target_pos - self.env_origins,
                 heights,
@@ -367,7 +367,7 @@ class ReachingFoodTask(RLTask):
         # Step 7: Apply the updated torques to all environments
         joint_indices_temp = torch.tensor([2, 3, 4, 5], device=self.device, dtype=torch.long)
 
-        self._robots.set_joint_efforts(efforts=updated_efforts[:,2:], joint_indices=joint_indices_temp)
+        self._robots.set_joint_efforts(efforts=updated_efforts[:,2:], joint_indices=self._robots._dof_indices) #self._robots._dof_indices or oint_indices_temp
 
         # Continue to step the simulation, not needed for skrl?
         # SimulationContext.step(self.world, render=False)
@@ -378,21 +378,18 @@ class ReachingFoodTask(RLTask):
 
         if self.world.is_playing():
 
-            self.get_observations()
-            # if self.add_noise:
-            #     self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
-
-
             self.refresh_body_state_tensors()
-
-            self.get_states()
-
 
             # prepare quantities
             self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 0:3])
             self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 3:6])
             self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
+            
+            self.get_observations()
+            # if self.add_noise:
+            #     self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
 
+            self.get_states()
             self.calculate_metrics()
             self.is_done()
 

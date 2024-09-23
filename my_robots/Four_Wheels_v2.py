@@ -48,10 +48,10 @@ class LimoAckermann(WheeledRobot):
         ]
 
         self._dof_names = [
-            "limo_ackerman/front_left_wheel_link/front_left_wheel",
-            "limo_ackerman/front_right_wheel_link/front_right_wheel",
-            "limo_ackerman/rear_left_wheel_link/rear_left_wheel",
-            "limo_ackerman/rear_right_wheel_link/rear_right_wheel"
+            "front_left_wheel_link/front_left_wheel",
+            "front_right_wheel_link/front_right_wheel",
+            "rear_left_wheel_link/rear_left_wheel",
+            "rear_right_wheel_link/rear_right_wheel"
         ]
 
         
@@ -64,7 +64,7 @@ class LimoAckermann(WheeledRobot):
         )
         
         # Convert the list of indices to a PyTorch tensor
-        # self._dof_indices = torch.tensor([self.get_dof_index(dof) for dof in self._dof_names], dtype=torch.int64, device=self.device)
+        self._dof_indices = torch.tensor([self.get_dof_index(dof) for dof in self._dof_names], dtype=torch.int64, device=self.device)
 
 
 
