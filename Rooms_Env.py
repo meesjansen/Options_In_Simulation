@@ -200,7 +200,7 @@ class ReachingFoodTask(RLTask):
 
 
     def get_observations(self):
-        heights = (self.get_heights)
+        heights = self.get_heights()
 
         base_pos, base_rot = self._robots._base.get_world_poses(clone=False)
         target_pos, target_rot = self._targets.get_world_poses(clone=False)
