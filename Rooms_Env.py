@@ -122,7 +122,7 @@ class ReachingFoodTask(RLTask):
         self._max_episode_length = self._task_cfg["env"]["episodeLength"]
         
         # observation and action space DQN
-        self._num_observations = 20026 # 89 + 6 + 4 + 3 + 3 = hiehgtpoints + IMU vel + torque per wheel + target + grav vector
+        self._num_observations = 1_000_000 # feuteres^bins 10^6
         self._num_actions = 12  # Assuming 3 discrete actions per wheel
 
 
@@ -266,7 +266,7 @@ class ReachingFoodTask(RLTask):
             dim=-1,
         )
 
-        self.obs_buf = self.calculate_index_from_obs_buf(self.temp_obs_buf, [10, 10, 10, 10, 10, 10])
+        self.obs_buf = self.calculate_index_from_obs_buf(self.temp_obs_buf, [10, 10, 10, 10, 10, 10]).to(torch.int64)
 
     def get_heights(self, env_ids=None):
         
