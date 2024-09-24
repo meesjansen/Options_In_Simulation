@@ -266,7 +266,7 @@ class ReachingFoodTask(RLTask):
             dim=-1,
         )
 
-        self.obs_buf = self.calculate_index_from_obs_buf(self.temp_obs_buf, 10)
+        self.obs_buf = self.calculate_index_from_obs_buf(self.temp_obs_buf, [10, 10, 10, 10, 10, 10])
 
     def get_heights(self, env_ids=None):
         
