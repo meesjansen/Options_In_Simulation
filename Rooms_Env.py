@@ -306,7 +306,7 @@ class ReachingFoodTask(RLTask):
         self.base_pos[env_ids, 0:2] += torch_rand_float(-0.5, 0.5, (len(env_ids), 2), device=self.device)
         self.base_quat[env_ids] = self.base_init_state[3:7]
         self.base_velocities[env_ids] = self.base_init_state[7:13]
-        self.wheel_torques[env_ids] = self.torques[2:]
+        self.wheel_torques[env_ids] = self.torques
         
         joint_indices_temp = torch.tensor([2, 3, 4, 5], device=self.device, dtype=torch.long)
 
