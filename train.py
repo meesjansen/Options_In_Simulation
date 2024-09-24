@@ -31,7 +31,7 @@ class EpilonGreedyPolicy(TabularMixin, Model):
 
     def compute(self, inputs, role):
         states = inputs["states"]
-        actions = torch.argmax(self.q_table[torch.arange(self.num_envs).view(-1, 1), states],
+        actions = torch.argmax(self.q_table[torch.arange(self.num_envs).view(-1, 1), states.long()],
                                dim=-1, keepdim=True).view(-1,1)
 
         indexes = (torch.rand(states.shape[0], device=self.device) < self.epsilon).nonzero().view(-1)
