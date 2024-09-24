@@ -210,7 +210,7 @@ class Q_LEARNING(Agent):
         env_ids = torch.arange(self._current_rewards.shape[0]).view(-1, 1)
 
         # compute next actions
-        next_actions = torch.argmax(q_table[env_ids, self._current_next_states], dim=-1, keepdim=True).view(-1,1)
+        next_actions = torch.argmax(q_table[env_ids, self._current_next_states.long()], dim=-1, keepdim=True).view(-1,1)
 
         # update Q-table
         q_table[env_ids, self._current_states, self._current_actions] += self._learning_rate \
