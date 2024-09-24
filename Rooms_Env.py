@@ -204,7 +204,7 @@ class ReachingFoodTask(RLTask):
 
     def discretize_state(self, continuous_state, num_bins=10, low=-1.0, high=1.0):
         # Discretize a continuous state into a discrete value
-        bins = torch.linspace(low, high, num_bins)
+        bins = torch.linspace(low, high, num_bins, device=self.device)
         discrete_state = torch.bucketize(continuous_state, bins) - 1  # Subtract 1 to match 0-indexing
         return discrete_state
     
