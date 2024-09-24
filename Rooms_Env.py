@@ -151,6 +151,9 @@ class ReachingFoodTask(RLTask):
         self.get_robot()
         self.get_target()
 
+        # Move torques to the correct device once
+        self.torques = self.torques.to(self.device)
+
         super().set_up_scene(scene)
 
         # robot view
@@ -162,7 +165,7 @@ class ReachingFoodTask(RLTask):
         self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
         scene.add(self._targets)
 
-    
+
 
     def get_robot(self):
         # Assuming LIMO or similar wheeled robot
