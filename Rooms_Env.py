@@ -183,7 +183,7 @@ class ReachingFoodTask(RLTask):
     def get_target(self):
         target = DynamicSphere(prim_path=self.default_zero_env_path + "/target",
                                name="target",
-                               radius=0.15,
+                               radius=0.05,
                                color=torch.tensor([1, 0, 0]))
         self._sim_config.apply_articulation_settings("target", get_prim_at_path(target.prim_path), self._sim_config.parse_actor_config("target"))
         target.set_collision_enabled(False)
@@ -394,8 +394,8 @@ class ReachingFoodTask(RLTask):
         # Step 4: Decode the action index (0-11) into a specific torque change vector for all four wheels.
         # There are 12 possible actions, which corresponds to all possible combinations of [1.0, 0.0, -1.0] for each of the four wheels.
         action_torque_vectors = torch.tensor([
-            [10.0, 10.0, 10.0, 10.0],
-            [20.0, 20.0, 20.0, 20.0],
+            [80.0, 80.0, 80.0, 80.0],
+            [-80.0, -80.0, -80.0, -80.0],
             # [10.0, 10.0, 10.0, -10.0],
             # [0.0, 0.0, 0.0, 10.0],
             # [0.0, 0.0, 0.0, 0.0],
