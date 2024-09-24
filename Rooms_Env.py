@@ -142,7 +142,7 @@ class ReachingFoodTask(RLTask):
         rot = self._task_cfg["env"]["baseInitState"]["rot"]
         v_lin = self._task_cfg["env"]["baseInitState"]["vLinear"]
         v_ang = self._task_cfg["env"]["baseInitState"]["vAngular"]
-        self.torques = torch.tensor(self._task_cfg["env"]["baseInitTorques"], dtype=torch.float32, device=self.device)
+        self.torques = torch.tensor(self._task_cfg["env"]["baseInitTorques"], dtype=torch.float32)
         self.base_init_state = pos + rot + v_lin + v_ang
 
     def set_up_scene(self, scene) -> None:
