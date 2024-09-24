@@ -183,7 +183,7 @@ class ReachingFoodTask(RLTask):
     def get_target(self):
         target = DynamicSphere(prim_path=self.default_zero_env_path + "/target",
                                name="target",
-                               radius=0.5,
+                               radius=0.15,
                                color=torch.tensor([1, 0, 0]))
         self._sim_config.apply_articulation_settings("target", get_prim_at_path(target.prim_path), self._sim_config.parse_actor_config("target"))
         target.set_collision_enabled(False)

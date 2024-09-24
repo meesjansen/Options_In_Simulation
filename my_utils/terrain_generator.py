@@ -33,7 +33,7 @@ class Terrain:
 
         self.heightsamples = self.height_field_raw
         self.vertices, self.triangles = convert_heightfield_to_trimesh(
-                    self.height_field_raw, self.horizontal_scale, self.vertical_scale, slope_threshold=0.5)
+                    self.height_field_raw, self.horizontal_scale, self.vertical_scale, slope_threshold=0.9)
 
 
     def cr_rooms_env(self):
@@ -55,7 +55,7 @@ class Terrain:
                 horizontal_scale=self.horizontal_scale,
             )
 
-            rooms_terrain(terrain, wall_height=100, wall_thickness=5, passage_width=20)
+            rooms_terrain(terrain, wall_height=50, wall_thickness=5, passage_width=20)
 
             self.height_field_raw[start_x:end_x, start_y:end_y] = terrain.height_field_raw
 
