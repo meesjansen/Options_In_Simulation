@@ -208,7 +208,7 @@ class ReachingFoodTask(RLTask):
         discrete_state = torch.bucketize(continuous_state, bins) - 1  # Subtract 1 to match 0-indexing
         return discrete_state
     
-    def calculate_index_from_obs_buf(obs_buf, num_bins_per_feature):
+    def calculate_index_from_obs_buf(self, obs_buf, num_bins_per_feature):
         """
         Convert discretized obs_buf (env_id, features) to a unique index for each environment.
 
@@ -220,17 +220,17 @@ class ReachingFoodTask(RLTask):
             indices (torch.Tensor): Tensor of shape (env_id, 1) with a unique index per environment.
         """
         # Initialize the index tensor with zeros
-        indices = torch.zeros(obs_buf.shape[0], dtype=torch.long, device=obs_buf.device)
+        Q_indices = torch.zeros(obs_buf.shape[0], dtype=torch.long, device=self.device)
         
         # Multiply by powers of the bin sizes to create a unique index
         multiplier = 1
         for i, num_bins in enumerate(reversed(num_bins_per_feature)):
             feature_idx = -(i+1)  # work backwards from the last feature
-            indices += obs_buf[:, feature_idx] * multiplier
+            Q_indices += obs_buf[:, feature_idx] * multiplier
             multiplier *= num_bins  # Increase the base for the next feature
 
         # Reshape to (env_id, 1) to match the expected shape
-        return indices.view(-1, 1)
+        return Q_indices.view(-1, 1)
 
     def get_observations(self):
         heights = self.get_heights()
@@ -314,9 +314,9 @@ class ReachingFoodTask(RLTask):
 
 
         # reset target
-        pos = (torch.rand((len(env_ids), 3), device=self._device) - 0.5) * 2 \
-            * torch.tensor([0.10, 0.20, 0.20], device=self._device) \
-            + torch.tensor([0.60, 0.00, 0.40], device=self._device)
+        pos = (torch.rand((len(env_ids), 3), device=self.device) - 0.5) * 2 \
+            * torch.tensor([0.10, 0.20, 0.20], device=self.device) \
+            + torch.tensor([0.60, 0.00, 0.40], device=self.device)
 
         self._targets.set_world_poses(pos + self._env_pos[env_ids], indices=indices)
 
@@ -362,7 +362,7 @@ class ReachingFoodTask(RLTask):
         self.base_quat = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device)
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
       
-        indices = torch.arange(self._num_envs, dtype=torch.int64, device=self._device)
+        indices = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.reset_idx(indices)
         self.init_done = True
 
@@ -377,7 +377,7 @@ class ReachingFoodTask(RLTask):
 
         # Step 1: Clone the actions to the device and get indices for the relevant robots
         self.actions = actions.clone().to(self.device)
-        env_ids_int32 = torch.arange(self._robots.count, dtype=torch.int32, device=self._device)
+        env_ids_int32 = torch.arange(self._robots.count, dtype=torch.int32, device=self.device)
 
 
         # Step 2: Fetch the current applied joint efforts (torques) for all wheels
