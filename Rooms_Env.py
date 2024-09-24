@@ -32,12 +32,12 @@ TASK_CFG = {"test": False,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
                              "controlFrequencyInv": 4,
-                             "baseInitState": {"pos": [2.0, 2.0, 0.62], # x,y,z [m]
+                             "baseInitState": {"pos": [-2.0, -2.0, 0.62], # x,y,z [m]
                                               "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
                                               "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
                                               "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
-                                              "Torques": [0.0, 0.0, 0.0, 0.0]
-                            }
+                                                },
+                            "baseInitTorques": [0.0, 0.0, 0.0, 0.0]                            
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
                              "use_gpu_pipeline": True,
@@ -142,8 +142,8 @@ class ReachingFoodTask(RLTask):
         rot = self._task_cfg["env"]["baseInitState"]["rot"]
         v_lin = self._task_cfg["env"]["baseInitState"]["vLinear"]
         v_ang = self._task_cfg["env"]["baseInitState"]["vAngular"]
-        torque = self._task_cfg["env"]["baseInitState"]["Torques"]
-        self.base_init_state = pos + rot + v_lin + v_ang + torque
+        self.torques = torch.tensor(self._task_cfg["env"]["baseInitTorques"], dtype=torch.float32, device=self.device)
+        self.base_init_state = pos + rot + v_lin + v_ang
 
     def set_up_scene(self, scene) -> None:
         self._stage = get_current_stage()
@@ -180,7 +180,7 @@ class ReachingFoodTask(RLTask):
     def get_target(self):
         target = DynamicSphere(prim_path=self.default_zero_env_path + "/target",
                                name="target",
-                               radius=0.025,
+                               radius=0.5,
                                color=torch.tensor([1, 0, 0]))
         self._sim_config.apply_articulation_settings("target", get_prim_at_path(target.prim_path), self._sim_config.parse_actor_config("target"))
         target.set_collision_enabled(False)
@@ -281,7 +281,7 @@ class ReachingFoodTask(RLTask):
     def refresh_body_state_tensors(self):
         self.base_pos, self.base_quat = self._robots.get_world_poses(clone=False)
         self.base_velocities = self._robots._base.get_velocities(clone=False)
-        self.wheel_torques = self._robots.get_applied_joint_efforts(clone=False)
+        self.wheel_torques = self._robots.get_applied_joint_efforts(clone=False)[:, 2:]
 
     
     def calculate_metrics(self) -> None:
@@ -306,7 +306,7 @@ class ReachingFoodTask(RLTask):
         self.base_pos[env_ids, 0:2] += torch_rand_float(-0.5, 0.5, (len(env_ids), 2), device=self.device)
         self.base_quat[env_ids] = self.base_init_state[3:7]
         self.base_velocities[env_ids] = self.base_init_state[7:13]
-        self.wheel_torques[env_ids] = self.base_init_state[13:]
+        self.wheel_torques[env_ids] = self.torques[2:]
         
         joint_indices_temp = torch.tensor([2, 3, 4, 5], device=self.device, dtype=torch.long)
 
