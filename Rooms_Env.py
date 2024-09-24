@@ -268,6 +268,7 @@ class ReachingFoodTask(RLTask):
         )
 
         self.obs_buf = self.calculate_index_from_obs_buf(self.temp_obs_buf, [10, 10, 10, 10, 10, 10]).to(torch.int64)
+        return {self._robots.name: {"obs_buf": self.obs_buf}}
 
     def get_heights(self, env_ids=None):
         
