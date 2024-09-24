@@ -118,6 +118,7 @@ class ReachingFoodTask(RLTask):
         self.dt = 1 / 120.0
 
         self._num_envs = self._task_cfg["env"]["numEnvs"]
+        self._num_envs = torch.tensor(self._num_envs, dtype=torch.int64)
         self._env_spacing = self._task_cfg["env"]["envSpacing"]
         self._max_episode_length = self._task_cfg["env"]["episodeLength"]
         
