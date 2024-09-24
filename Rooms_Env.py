@@ -121,10 +121,14 @@ class ReachingFoodTask(RLTask):
         self._env_spacing = self._task_cfg["env"]["envSpacing"]
         self._max_episode_length = self._task_cfg["env"]["episodeLength"]
         
-
-        # observation and action space
+        # observation and action space DQN
         self._num_observations = 20026 # 89 + 6 + 4 + 3 + 3 = hiehgtpoints + IMU vel + torque per wheel + target + grav vector
         self._num_actions = 12  # Assuming 3 discrete actions per wheel
+
+
+        # observation and action space DQN
+        # self._num_observations = 20026 # 89 + 6 + 4 + 3 + 3 = hiehgtpoints + IMU vel + torque per wheel + target + grav vector
+        # self._num_actions = 12  # Assuming 3 discrete actions per wheel
 
         self.update_config(sim_config)
 
@@ -203,6 +207,30 @@ class ReachingFoodTask(RLTask):
         bins = torch.linspace(low, high, num_bins)
         discrete_state = torch.bucketize(continuous_state, bins) - 1  # Subtract 1 to match 0-indexing
         return discrete_state
+    
+    def calculate_index_from_obs_buf(obs_buf, num_bins_per_feature):
+        """
+        Convert discretized obs_buf (env_id, features) to a unique index for each environment.
+
+        Parameters:
+            obs_buf (torch.Tensor): Discretized observation buffer of size (env_id, features).
+            num_bins_per_feature (list): List of integers where each element is the number of bins for a feature.
+
+        Returns:
+            indices (torch.Tensor): Tensor of shape (env_id, 1) with a unique index per environment.
+        """
+        # Initialize the index tensor with zeros
+        indices = torch.zeros(obs_buf.shape[0], dtype=torch.long, device=obs_buf.device)
+        
+        # Multiply by powers of the bin sizes to create a unique index
+        multiplier = 1
+        for i, num_bins in enumerate(reversed(num_bins_per_feature)):
+            feature_idx = -(i+1)  # work backwards from the last feature
+            indices += obs_buf[:, feature_idx] * multiplier
+            multiplier *= num_bins  # Increase the base for the next feature
+
+        # Reshape to (env_id, 1) to match the expected shape
+        return indices.view(-1, 1)
 
     def get_observations(self):
         heights = self.get_heights()
@@ -218,25 +246,27 @@ class ReachingFoodTask(RLTask):
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
         # Discretize the states
-        # discrete_lin_vel = self.discretize_state(self.base_lin_vel, num_bins=10, low=-5, high=5)
-        # discrete_ang_vel = self.discretize_state(self.base_ang_vel, num_bins=10, low=-5, high=5)
+        discrete_lin_vel = self.discretize_state(self.base_lin_vel, num_bins=10, low=-5, high=5)
+        discrete_ang_vel = self.discretize_state(self.base_ang_vel, num_bins=10, low=-5, high=5)
         # discrete_projected_gravity = self.discretize_state(self.projected_gravity, num_bins=10, low=-10, high=10)
-        # discrete_delta_pos = self.discretize_state(delta_pos, num_bins=10, low=-7, high=7)
+        discrete_delta_pos = self.discretize_state(delta_pos, num_bins=10, low=-7, high=7)
         # discrete_heights = self.discretize_state(heights, num_bins=2, low=0, high=1)
         # discrete_current_efforts = self.discretize_state(current_efforts, num_bins=10, low=-5, high=5)
 
 
-        self.obs_buf = torch.cat(
+        self.temp_obs_buf = torch.cat(
             (
-                self.base_lin_vel,
-                self.base_ang_vel,
-                self.projected_gravity,
-                delta_pos,
-                heights,
-                current_efforts 
+                discrete_lin_vel[:, :2],
+                discrete_ang_vel[:, :2],
+                # self.projected_gravity,
+                discrete_delta_pos[:, :2],
+                # heights,
+                # current_efforts 
             ),
             dim=-1,
         )
+
+        self.obs_buf = self.calculate_index_from_obs_buf(self.temp_obs_buf, 10)
 
     def get_heights(self, env_ids=None):
         
