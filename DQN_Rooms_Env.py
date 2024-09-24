@@ -32,7 +32,7 @@ TASK_CFG = {"test": False,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
                              "controlFrequencyInv": 4,
-                             "baseInitState": {"pos": [2.0, 2.0, 0.62], # x,y,z [m]
+                             "baseInitState": {"pos": [0.0, 0.0, 0.62], # x,y,z [m]
                                               "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
                                               "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
                                               "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
@@ -122,14 +122,14 @@ class ReachingFoodTask(RLTask):
         self._env_spacing = self._task_cfg["env"]["envSpacing"]
         self._max_episode_length = self._task_cfg["env"]["episodeLength"]
         
-        # observation and action space DQN
-        self._num_observations = 1_000_000 # feuteres^bins 10^6
-        self._num_actions = 12  # Assuming 3 discrete actions per wheel
-
-
-        # observation and action space DQN
-        # self._num_observations = 20026 # 89 + 6 + 4 + 3 + 3 = hiehgtpoints + IMU vel + torque per wheel + target + grav vector
+        # observation and action 
+        # self._num_observations = 1_000_000 # feuteres^bins 10^6
         # self._num_actions = 12  # Assuming 3 discrete actions per wheel
+
+
+        # observation and action space DQN
+        self._num_observations = 20026 # 89 + 6 + 4 + 3 + 3 = hiehgtpoints + IMU vel + torque per wheel + target + grav vector
+        self._num_actions = 12  # Assuming 3 discrete actions per wheel
 
         self.update_config(sim_config)
 
@@ -203,71 +203,32 @@ class ReachingFoodTask(RLTask):
         self._create_trimesh(create_mesh=create_mesh)
         self.terrain_origins = torch.from_numpy(self.terrain.env_origins).to(self.device).to(torch.float)
 
-    def discretize_state(self, continuous_state, num_bins=10, low=-1.0, high=1.0):
-        # Discretize a continuous state into a discrete value
-        bins = torch.linspace(low, high, num_bins, device=self.device)
-        discrete_state = torch.bucketize(continuous_state, bins) - 1  # Subtract 1 to match 0-indexing
-        return discrete_state
-    
-    def calculate_index_from_obs_buf(self, obs_buf, num_bins_per_feature):
-        """
-        Convert discretized obs_buf (env_id, features) to a unique index for each environment.
-
-        Parameters:
-            obs_buf (torch.Tensor): Discretized observation buffer of size (env_id, features).
-            num_bins_per_feature (list): List of integers where each element is the number of bins for a feature.
-
-        Returns:
-            indices (torch.Tensor): Tensor of shape (env_id, 1) with a unique index per environment.
-        """
-        # Initialize the index tensor with zeros
-        Q_indices = torch.zeros(obs_buf.shape[0], dtype=torch.long, device=self.device)
-        
-        # Multiply by powers of the bin sizes to create a unique index
-        multiplier = 1
-        for i, num_bins in enumerate(reversed(num_bins_per_feature)):
-            feature_idx = -(i+1)  # work backwards from the last feature
-            Q_indices += obs_buf[:, feature_idx] * multiplier
-            multiplier *= num_bins  # Increase the base for the next feature
-
-        # Reshape to (env_id, 1) to match the expected shape
-        return Q_indices.view(-1, 1)
 
     def get_observations(self):
         heights = self.get_heights()
-
         base_pos, base_rot = self._robots._base.get_world_poses(clone=False)
         target_pos, target_rot = self._targets.get_world_poses(clone=False)
         delta_pos = target_pos - self.env_origins
+
         # Get current joint efforts (torques)
         _efforts = self._robots.get_applied_joint_efforts(clone=False)
         current_efforts = _efforts[:, 2:]
 
         # compute distance for calculate_metrics() and is_done()
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
-
-        # Discretize the states
-        discrete_lin_vel = self.discretize_state(self.base_lin_vel, num_bins=10, low=-5, high=5)
-        discrete_ang_vel = self.discretize_state(self.base_ang_vel, num_bins=10, low=-5, high=5)
-        # discrete_projected_gravity = self.discretize_state(self.projected_gravity, num_bins=10, low=-10, high=10)
-        discrete_delta_pos = self.discretize_state(delta_pos, num_bins=10, low=-7, high=7)
-        # discrete_heights = self.discretize_state(heights, num_bins=2, low=0, high=1)
-        # discrete_current_efforts = self.discretize_state(current_efforts, num_bins=10, low=-5, high=5)
-
-
-        self.temp_obs_buf = torch.cat(
+        
+        self.obs_buf = torch.cat(
             (
-                discrete_lin_vel[:, :2],
-                discrete_ang_vel[:, :2],
-                # self.projected_gravity,
-                discrete_delta_pos[:, :2],
-                # heights,
-                # current_efforts 
+                self.base_lin_vel,
+                self.base_ang_vel,
+                self.projected_gravity,
+                delta_pos,
+                heights,
+                current_efforts 
             ),
             dim=-1,
         )
 
-        self.obs_buf = self.calculate_index_from_obs_buf(self.temp_obs_buf, [10, 10, 10, 10, 10, 10]).to(torch.int64)
         return {self._robots.name: {"obs_buf": self.obs_buf}}
 
     def get_heights(self, env_ids=None):
@@ -391,18 +352,18 @@ class ReachingFoodTask(RLTask):
         # Step 4: Decode the action index (0-11) into a specific torque change vector for all four wheels.
         # There are 12 possible actions, which corresponds to all possible combinations of [1.0, 0.0, -1.0] for each of the four wheels.
         action_torque_vectors = torch.tensor([
-            [10.0, 10.0, 10.0, 10.0],
-            [10.0, 10.0, 10.0, 0.0],
-            [10.0, 10.0, 10.0, -10.0],
-            [0.0, 0.0, 0.0, 10.0],
+            [1.0, 1.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0, 0.0],
+            [1.0, 1.0, 1.0, -1.0],
+            [0.0, 0.0, 0.0, 1.0],
             [0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, -10.0],
-            [-10.0, -10.0, -10.0, 10.0],
-            [-10.0, -10.0, -10.0, 0.0],
-            [-10.0, -10.0, -10.0, -10.0],
-            [10.0, -10.0, 0.0, 10.0],
-            [10.0, -10.0, 0.0, 0.0],
-            [-10.0, 10.0, 0.0, -10.0]
+            [0.0, 0.0, 0.0, -1.0],
+            [-1.0, -1.0, -1.0, 1.0],
+            [-1.0, -1.0, -1.0, 0.0],
+            [-1.0, -1.0, -1.0, -1.0],
+            [1.0, -1.0, 0.0, 1.0],
+            [1.0, -1.0, 0.0, 0.0],
+            [-1.0, 1.0, 0.0, -1.0]
         ], device=self.device)
 
         # Step 5: Initialize an empty tensor to store the updated torques for each environment
@@ -414,10 +375,7 @@ class ReachingFoodTask(RLTask):
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id,2:] = current_efforts[env_id,2:] + delta_torque  # Update the torque for this environment
 
-        # Step 7: Clip the torques to ensure they are within the allowed range [-80.0, 80.0]
-        updated_efforts = torch.clip(updated_efforts, -80.0, 80.0)
-
-        # Step 8: Apply the updated torques to all environments
+        # Step 7: Apply the updated torques to all environments
         joint_indices_temp = torch.tensor([2, 3, 4, 5], device=self.device, dtype=torch.long)
 
         self._robots.set_joint_efforts(efforts=updated_efforts[:,2:], joint_indices=joint_indices_temp) #self._robots._dof_indices or joint_indices_temp
