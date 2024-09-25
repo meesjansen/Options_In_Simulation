@@ -64,7 +64,7 @@ world.scene.add(robot)
 world.reset()
 
 # Define joint indices for the wheels (you can double-check them with the USD file)
-joint_indices = [robot.wheel_dof_indices[name] for name in wheel_dof_names]  # Should return correct indices
+joint_indices = [robot.get_dof_index(name) for name in wheel_dof_names]  # Should return correct indices
 
 def apply_wheel_torques(articulation_view, torques, indices):
     articulation_view.set_joint_efforts(efforts=torques, joint_indices=indices)
