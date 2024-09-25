@@ -7,6 +7,7 @@ simulation_app = SimulationApp({"headless": True, "enable_livestream": True, "en
 from omni.isaac.core import World
 from omni.isaac.core.utils.stage import open_stage
 from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 
 import torch
@@ -24,13 +25,34 @@ prim_path = "/World/LimoRobot"
 # Add the USD file reference to the simulation stage
 add_reference_to_stage(usd_path, prim_path)
 
+# Create an ArticulationView for the robot to retrieve DOF names
+articulation_view = ArticulationView(prim_paths_expr=prim_path)
+
+# Reset world to initialize everything
+world.reset()
+
+# Step once to ensure physics and articulation are loaded
+world.step(render=False)
+
+# Retrieve and print the DOF names
+dof_names = articulation_view.get_dof_names()
+print("DOF Names from USD file:", dof_names)
+
+wheel_dof_names = [
+    "front_left_wheel_link/front_left_wheel", 
+    "front_right_wheel_link/front_right_wheel",
+    "rear_left_wheel_link/rear_left_wheel", 
+    "rear_right_wheel_link/rear_right_wheel"
+]
+
 # Load Limo robot instance
 robot = WheeledRobot(
     prim_path=prim_path,  # You can adjust the prim path as needed
     name="limo_robot",
-    wheel_dof_names=["front_left_wheel_link/front_left_wheel", "front_right_wheel_link/front_right_wheel",
-                     "rear_left_wheel_link/rear_left_wheel", "rear_right_wheel_link/rear_right_wheel"]
+    wheel_dof_names=wheel_dof_names
 )
+
+print("Using predefined wheel DOF names:", wheel_dof_names)
 
 # Add robot to the world
 world.scene.add(robot)
