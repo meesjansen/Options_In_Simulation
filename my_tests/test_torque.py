@@ -26,7 +26,7 @@ prim_path = "/World/LimoRobot"
 add_reference_to_stage(usd_path, prim_path)
 
 # Create an ArticulationView for the robot to retrieve DOF names
-articulation_view = ArticulationView(prim_paths_expr=prim_path)
+robot_articulations = ArticulationView(prim_paths_expr=prim_path, name="robot_view")
 
 # Reset world to initialize everything
 world.reset()
@@ -35,10 +35,10 @@ world.reset()
 world.step(render=False)
 
 # Initialize the ArticulationView
-articulation_view.initialize()  # This line is critical
+robot_articulations.initialize()  # This line is critical
 
 # Retrieve and print the DOF names
-dof_names = articulation_view.dof_names
+dof_names = robot_articulations.dof_names
 print("DOF Names from USD file:", dof_names)
 
 wheel_dof_names = [
@@ -64,12 +64,10 @@ world.scene.add(robot)
 world.reset()
 
 # Define joint indices for the wheels (you can double-check them with the USD file)
-joint_indices = [robot.wheel_dof_indices[name] for name in robot.wheel_dof_names]  # Should return correct indices
+joint_indices = [robot.wheel_dof_indices[name] for name in wheel_dof_names]  # Should return correct indices
 
-# Function to set torques to the robot's wheels
-def apply_wheel_torques(robot, torques):
-    # Set torques to the robot's wheels
-    robot.apply_torque(joint_indices, torques)
+def apply_wheel_torques(articulation_view, torques, indices):
+    articulation_view.set_joint_efforts(efforts=torques, joint_indices=indices)
 
 # Run the simulation loop
 while simulation_app.is_running():
@@ -79,7 +77,7 @@ while simulation_app.is_running():
     # Apply torques to the wheels (for this example, let's drive the robot forward)
     # You can try different values to see the effect
     wheel_torques = torch.tensor([10.0, 10.0, 10.0, 10.0])  # Simple forward driving torques for all wheels
-    apply_wheel_torques(robot, wheel_torques)
+    apply_wheel_torques(robot_articulations, wheel_torques, joint_indices)
 
     # Break the loop if the simulation is done
     if not simulation_app.is_running():

@@ -41,10 +41,10 @@ class LimoAckermann(WheeledRobot):
 
         # Define the wheels and their corresponding DOF paths
         self._dof_names = [
-            "front_left_wheel_link/front_left_wheel",
-            "front_right_wheel_link/front_right_wheel",
-            "rear_left_wheel_link/rear_left_wheel",
-            "rear_right_wheel_link/rear_right_wheel"
+                "rear_left_wheel", 
+                "rear_right_wheel",
+                "front_left_wheel",
+                "front_right_wheel"
         ]
 
         

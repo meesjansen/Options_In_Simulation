@@ -102,12 +102,6 @@ class RobotView(ArticulationView):
     def __init__(self, prim_paths_expr: str, name: str = "robot_view") -> None:
         super().__init__(prim_paths_expr=prim_paths_expr, name=name, reset_xform_properties=False)
 
-        self._base = RigidPrimView(
-            prim_paths_expr="/World/envs/.*/robot/base_link",
-            name="base_view",
-            reset_xform_properties=False
-        )
-
 
 class ReachingFoodTask(RLTask):
     def __init__(self, name, sim_config, env, offset=None) -> None:
@@ -159,8 +153,7 @@ class ReachingFoodTask(RLTask):
         # robot view
         self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot", name="robot_view")
         scene.add(self._robots)
-        scene.add(self._robots._base)
-
+        
         # food view
         self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
         scene.add(self._targets)
@@ -239,7 +232,7 @@ class ReachingFoodTask(RLTask):
     def get_observations(self):
         heights = self.get_heights()
 
-        base_pos, base_rot = self._robots._base.get_world_poses(clone=False)
+        base_pos, base_rot = self._robots.get_world_poses(clone=False)
         target_pos, target_rot = self._targets.get_world_poses(clone=False)
         delta_pos = target_pos - self.env_origins
         # Get current joint efforts (torques)
@@ -283,7 +276,7 @@ class ReachingFoodTask(RLTask):
     
     def refresh_body_state_tensors(self):
         self.base_pos, self.base_quat = self._robots.get_world_poses(clone=False)
-        self.base_velocities = self._robots._base.get_velocities(clone=False)
+        self.base_velocities = self._robots.get_velocities(clone=False)
         self.wheel_torques = self._robots.get_applied_joint_efforts(clone=False)[:, 2:]
 
     
