@@ -6,6 +6,7 @@ simulation_app = SimulationApp({"headless": True, "enable_livestream": True, "en
 
 from omni.isaac.core import World
 from omni.isaac.core.utils.stage import open_stage
+from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 
 import torch
@@ -16,10 +17,16 @@ import os
 # Initialize simulation world
 world = World(stage_units_in_meters=1.0)
 
+# Add the custom USD file to the stage
+usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_assets", "limo_ackermann.usd")),  # Adjust this to the actual USD path for your Limo robot
+prim_path = "/World/LimoRobot"
+
+# Add the USD file reference to the simulation stage
+add_reference_to_stage(usd_path, prim_path)
+
 # Load Limo robot instance
 robot = WheeledRobot(
-    prim_path="/World/LimoRobot",  # You can adjust the prim path as needed
-    usd_path=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_assets", "limo_ackermann.usd")),  # Adjust this to the actual USD path for your Limo robot
+    prim_path=prim_path,  # You can adjust the prim path as needed
     name="limo_robot",
     wheel_dof_names=["front_left_wheel_link/front_left_wheel", "front_right_wheel_link/front_right_wheel",
                      "rear_left_wheel_link/rear_left_wheel", "rear_right_wheel_link/rear_right_wheel"]
