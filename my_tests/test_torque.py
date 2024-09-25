@@ -38,7 +38,7 @@ world.step(render=False)
 articulation_view.initialize()  # This line is critical
 
 # Retrieve and print the DOF names
-dof_names = articulation_view.dof_names()
+dof_names = articulation_view.dof_names
 print("DOF Names from USD file:", dof_names)
 
 wheel_dof_names = [
