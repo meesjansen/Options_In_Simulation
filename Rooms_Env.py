@@ -37,7 +37,7 @@ TASK_CFG = {"test": False,
                                               "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
                                               "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
                                                 },
-                            "baseInitTorques": [0.0, 0.0, 0.0, 0.0]                            
+                            "baseInitTorques": [40.0, 40.0, 40.0, 40.0]                            
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
                              "use_gpu_pipeline": True,

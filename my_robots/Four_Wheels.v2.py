@@ -37,20 +37,13 @@ class LimoAckermann(WheeledRobot):
         add_reference_to_stage(self._usd_path, prim_path)
 
         # Define the wheels and their corresponding DOF paths
-        self.wheel_dof_paths = [
+        self._dof_names = [
             "front_left_wheel_link/front_left_wheel",
             "front_right_wheel_link/front_right_wheel",
             "rear_left_wheel_link/rear_left_wheel",
             "rear_right_wheel_link/rear_right_wheel"
         ]
 
-        self._dof_names = [
-            "front_left_wheel",
-            "front_right_wheel",
-            "rear_left_wheel",
-            "rear_right_wheel"
-        ]
-        
         super().__init__(
             prim_path=prim_path,
             name=name,
