@@ -1,4 +1,9 @@
 from omni.isaac.kit import SimulationApp
+
+# Initialize the SimulationApp before any imports from omni.isaac.core
+simulation_app = SimulationApp({"headless": False, "enable_livestream": True, "enable_viewport": True})
+
+
 from omni.isaac.core import World
 from omni.isaac.core.utils.stage import open_stage
 from omni.isaac.wheeled_robots.robots import WheeledRobot
@@ -7,9 +12,6 @@ import torch
 import numpy as np
 import os
 
-
-# Start the Isaac Sim simulation application
-simulation_app = SimulationApp({"headless": False, "enable_livestream": True, "enable_viewport": True})
 
 # Initialize simulation world
 world = World(stage_units_in_meters=1.0)
