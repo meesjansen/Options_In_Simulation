@@ -34,6 +34,9 @@ world.reset()
 # Step once to ensure physics and articulation are loaded
 world.step(render=False)
 
+# Initialize the ArticulationView
+articulation_view.initialize()  # This line is critical
+
 # Retrieve and print the DOF names
 dof_names = articulation_view.dof_names()
 print("DOF Names from USD file:", dof_names)
