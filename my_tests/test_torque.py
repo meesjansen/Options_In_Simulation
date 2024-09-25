@@ -64,8 +64,8 @@ world.scene.add(robot)
 # Define joint indices for the wheels (you can double-check them with the USD file)
 joint_indices = np.array([robot.get_dof_index(name) for name in wheel_dof_names], dtype=np.int32)  # Should return correct indices
 
-def apply_wheel_torques(articulation_view, torques, indices):
-    articulation_view.set_joint_efforts(efforts=torques, joint_indices=indices)
+def apply_wheel_torques(articulation_view, torques):
+    articulation_view.set_joint_efforts(efforts=torques, joint_indices=[1, 2, 4, 5])
 
 # Run the simulation loop
 while simulation_app.is_running():
@@ -75,7 +75,7 @@ while simulation_app.is_running():
     # Apply torques to the wheels (for this example, let's drive the robot forward)
     # You can try different values to see the effect
     wheel_torques = torch.tensor([10.0, 10.0, 10.0, 10.0])  # Simple forward driving torques for all wheels
-    apply_wheel_torques(robot_articulations, wheel_torques, joint_indices)
+    apply_wheel_torques(robot_articulations, wheel_torques)
 
     # Break the loop if the simulation is done
     if not simulation_app.is_running():
