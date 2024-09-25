@@ -18,7 +18,7 @@ import os
 world = World(stage_units_in_meters=1.0)
 
 # Add the custom USD file to the stage
-usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_assets", "limo_ackermann.usd")),  # Adjust this to the actual USD path for your Limo robot
+usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_assets", "limo_ackermann.usd"))  # Adjust this to the actual USD path for your Limo robot
 prim_path = "/World/LimoRobot"
 
 # Add the USD file reference to the simulation stage
