@@ -72,16 +72,6 @@ while simulation_app.is_running():
     # Step the simulation
     world.step(render=True)
 
-    if not physics_initialized:
-        # Check if the physics engine is ready
-        if robot_articulations.is_simulation_created():
-            physics_initialized = True
-            print("Physics initialized, starting to apply torques.")
-        else:
-            print("Waiting for physics to initialize...")
-            continue
-
-
     # Apply torques to the wheels (for this example, let's drive the robot forward)
     # You can try different values to see the effect
     wheel_torques = torch.tensor([10.0, 10.0, 10.0, 10.0])  # Simple forward driving torques for all wheels
