@@ -40,8 +40,8 @@ world.reset()
 world.scene.add(robot_articulations)
 robot_articulations.initialize()  # This line is critical
 
-robot_articulations.set_solver_velocity_iteration_count(64)
-robot_articulations.set_solver_position_iteration_count(32)
+robot_articulations.set_solver_velocity_iteration_counts(64)
+robot_articulations.set_solver_position_iteration_counts(32)
 
 world.play()
 
