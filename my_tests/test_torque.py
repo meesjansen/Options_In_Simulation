@@ -31,6 +31,8 @@ robot_articulations = ArticulationView(prim_paths_expr=prim_path, name="robot_vi
 # Reset world to initialize everything
 world.reset()
 
+world.play()
+
 # Step once to ensure physics and articulation are loaded
 world.step(render=False)
 
