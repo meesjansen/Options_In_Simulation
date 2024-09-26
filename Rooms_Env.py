@@ -425,12 +425,13 @@ class ReachingFoodTask(RLTask):
             updated_efforts[env_id,2:] = current_efforts[env_id,2:] + delta_torque  # Update the torque for this environment
 
         # Step 7: Clip the torques to ensure they are within the allowed range [-80.0, 80.0]
-        updated_efforts = torch.clip(updated_efforts, -80.0, 80.0)
+        updated_efforts = torch.clip(updated_efforts, -100.0, 100.0)
+        test_efforts = np.tile(np.array([900, 900, 900, 900,]), (1, 1))
 
         # Step 8: Apply the updated torques to all environments
         joint_indices_temp = torch.tensor([1, 2, 4, 5], device=self.device, dtype=torch.long)
 
-        self._robots.set_joint_efforts(efforts=updated_efforts[:,2:], joint_indices=joint_indices_temp) #self._robots._dof_indices or joint_indices_temp
+        self._robots.set_joint_efforts(test_efforts, indices=np.array([0]), joint_indices=np.array([1, 2, 4, 5])) #self._robots._dof_indices or joint_indices_temp
 
         # Continue to step the simulation, not needed for skrl?
         # SimulationContext.step(self.world, render=False)
