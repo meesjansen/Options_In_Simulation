@@ -335,7 +335,7 @@ class ReachingFoodTask(RLTask):
         for i in range(self.decimation):
             if self.world.is_playing():
                 
-                self._robots.set_joint_efforts(updated_efforts, np.array([1, 2, 4, 5]))
+                self._robots.set_joint_efforts(updated_efforts, joint_indices=np.array([1, 2, 4, 5]))
                 # self._robots.set_joint_efforts(test_efforts1, indices=np.array([0]),joint_indices=np.array([1, 2, 4, 5]))
                 # self._robots.set_joint_efforts(test_efforts2)
 
