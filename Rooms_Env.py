@@ -318,6 +318,8 @@ class ReachingFoodTask(RLTask):
         current_efforts = self._robots.get_applied_joint_efforts(clone=True)[:, np.array([1,2,4,5])]
         updated_efforts = torch.zeros_like(current_efforts)
 
+        print("Action Q-learning:", self.actions)
+
         for env_id in range(self.num_envs):
             action_index = self.actions[env_id].item()  # Get action index for the current environment
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
