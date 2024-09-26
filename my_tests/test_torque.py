@@ -1,7 +1,7 @@
 from omni.isaac.kit import SimulationApp
 
 # Initialize the SimulationApp before any imports from omni.isaac.core
-simulation_app = SimulationApp({"headless": True, "enable_livestream": True, "enable_viewport": True})
+simulation_app = SimulationApp({"headless": True, "enable_livestream": True})
 
 
 from omni.isaac.core import World
