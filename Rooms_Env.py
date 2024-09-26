@@ -299,7 +299,7 @@ class ReachingFoodTask(RLTask):
         if not self.world.is_playing():
             return
         
-        # There are 12 possible actions, which corresponds to all possible combinations of [1.0, 0.0, -1.0] for each of the four wheels.
+        # There are 12 possible actions
         action_torque_vectors = torch.tensor([
             [10.0, 10.0, 10.0, 10.0],
             [-10.0, -10.0, -10.0, -10.0],
@@ -321,8 +321,8 @@ class ReachingFoodTask(RLTask):
         print("Action Q-learning:", self.actions)
 
         for env_id in range(self.num_envs):
-            action_index = self.actions[env_id].item()  # Get action index for the current environment
-            delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
+            # action_index = self.actions[env_id].item()  # Get action index for the current environment
+            delta_torque = action_torque_vectors[0]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
         updated_efforts = torch.clip(updated_efforts, -100.0, 100.0)
