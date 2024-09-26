@@ -263,6 +263,9 @@ class ReachingFoodTask(RLTask):
             dim=-1,
         )
 
+        # Print the observation buffer
+        print("Observation buffer:", self.temp_obs_buf)
+
         self.obs_buf = self.calculate_index_from_obs_buf(self.temp_obs_buf, [10, 10, 10, 10, 10, 10]).to(torch.int64)
         return {self._robots.name: {"obs_buf": self.obs_buf}}
 
@@ -304,7 +307,7 @@ class ReachingFoodTask(RLTask):
         self.base_velocities[env_ids] = self.base_init_state[7:13]
         self.wheel_torques[env_ids] = self.torques
         
-        joint_indices_temp = torch.tensor([2, 3, 4, 5], device=self.device, dtype=torch.long)
+        joint_indices_temp = torch.tensor([1, 2, 4, 5], device=self.device, dtype=torch.long)
 
         self._robots.set_world_poses(positions=self.base_pos[env_ids].clone(), orientations=self.base_quat[env_ids].clone(), indices=indices)
         self._robots.set_joint_efforts(efforts=self.wheel_torques[env_ids].clone(), joint_indices=joint_indices_temp, indices=indices)
@@ -414,7 +417,7 @@ class ReachingFoodTask(RLTask):
         updated_efforts = torch.clip(updated_efforts, -80.0, 80.0)
 
         # Step 8: Apply the updated torques to all environments
-        joint_indices_temp = torch.tensor([2, 3, 4, 5], device=self.device, dtype=torch.long)
+        joint_indices_temp = torch.tensor([1, 2, 4, 5], device=self.device, dtype=torch.long)
 
         self._robots.set_joint_efforts(efforts=updated_efforts[:,2:], joint_indices=joint_indices_temp) #self._robots._dof_indices or joint_indices_temp
 
