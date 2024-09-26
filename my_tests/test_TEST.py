@@ -1,3 +1,6 @@
+from omni.isaac.kit import SimulationApp
+simulation_app = SimulationApp({"headless": True, "enable_livestream": True})
+
 import asyncio
 import numpy as np
 from omni.isaac.core.world import World

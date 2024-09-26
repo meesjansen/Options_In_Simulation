@@ -22,11 +22,7 @@ import time
 # Initialize simulation world
 world = World(stage_units_in_meters=1.0)
 
-physics_context = PhysicsContext()
-physics_context.set_gravity([0.0, 0.0, -9.81])
-
 GroundPlane(prim_path="/World/groundPlane", size=10, color=np.array([0.5, 0.5, 0.5]))
-
 
 # Add the custom USD file to the stage
 usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_assets", "limo_ackermann.usd"))  # Adjust this to the actual USD path for your Limo robot
