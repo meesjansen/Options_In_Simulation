@@ -9,6 +9,9 @@ from omni.isaac.core.utils.stage import open_stage
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.wheeled_robots.robots import WheeledRobot
+from omni.isaac.core.objects.ground_plane import GroundPlane
+from omni.isaac.core.physics_context import PhysicsContext
+
 
 import torch
 import numpy as np
@@ -17,6 +20,11 @@ import os
 
 # Initialize simulation world
 world = World(stage_units_in_meters=1.0)
+world.scene.add_default_ground_plane()
+
+physics_context = PhysicsContext()
+physics_context.set_gravity([0.0, 0.0, -9.81])
+
 
 # Add the custom USD file to the stage
 usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_assets", "limo_ackermann.usd"))  # Adjust this to the actual USD path for your Limo robot
@@ -31,13 +39,20 @@ robot_articulations = ArticulationView(prim_paths_expr=prim_path, name="robot_vi
 # Reset world to initialize everything
 world.reset()
 
+world.scene.add(robot_articulations)
+robot_articulations.initialize()  # This line is critical
+
+robot_articulations.set_solver_velocity_iteration_count(64)
+robot_articulations.set_solver_position_iteration_count(32)
+
 world.play()
 
 # Step once to ensure physics and articulation are loaded
-world.step(render=False)
+# world.step(render=False)
 
 # Initialize the ArticulationView
-robot_articulations.initialize()  # This line is critical
+
+
 
 # Retrieve and print the DOF names
 dof_names = robot_articulations.dof_names
@@ -51,16 +66,17 @@ wheel_dof_names = [
 ]
 
 # Load Limo robot instance
-robot = WheeledRobot(
-    prim_path=prim_path,  # You can adjust the prim path as needed
-    name="limo_robot",
-    wheel_dof_names=wheel_dof_names
-)
+# robot = WheeledRobot(
+#     prim_path=prim_path,  # You can adjust the prim path as needed
+#     name="limo_robot",
+#     wheel_dof_names=wheel_dof_names
+# )
 
 print("Using predefined wheel DOF names:", wheel_dof_names)
 
 # Add robot to the world
-world.scene.add(robot)
+# world.scene.add(robot)
+
 
 
 # Define joint indices for the wheels (you can double-check them with the USD file)
@@ -72,7 +88,7 @@ def apply_wheel_torques(articulation_view, torques):
 # Run the simulation loop
 while simulation_app.is_running():
     # Step the simulation
-    world.step(render=True)
+    world.step(render=False)
 
     # Apply torques to the wheels (for this example, let's drive the robot forward)
     # You can try different values to see the effect
