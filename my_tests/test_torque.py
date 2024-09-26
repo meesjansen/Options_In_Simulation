@@ -21,17 +21,11 @@ import time
 
 # Initialize simulation world
 world = World(stage_units_in_meters=1.0)
-world.scene.add_default_ground_plane(
-    z_position=0.0, 
-    static_friction=0.5, 
-    dynamic_friction=0.4, 
-    restitution=0.1
-)
-
-time.sleep(10)
 
 physics_context = PhysicsContext()
 physics_context.set_gravity([0.0, 0.0, -9.81])
+
+GroundPlane(prim_path="/World/groundPlane", size=10, color=np.array([0.5, 0.5, 0.5]))
 
 
 # Add the custom USD file to the stage
