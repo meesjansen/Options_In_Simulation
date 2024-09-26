@@ -238,11 +238,12 @@ class ReachingFoodTask(RLTask):
         self.last_actions = torch.zeros(
             self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False
         )
-     
+        self.num_dof = self._robots.num_dof 
         self.env_origins = self.terrain_origins.view(-1, 3)[:self.num_envs]
         self.base_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
         self.base_quat = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device)
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
+        self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
       
         indices = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.reset_idx(indices)
@@ -250,6 +251,9 @@ class ReachingFoodTask(RLTask):
 
     def reset_idx(self, env_ids):
         indices = env_ids.to(dtype=torch.int32)
+
+        velocities = torch_rand_float(-0.1, 0.1, (len(env_ids), self.num_dof), device=self.device)
+        self.dof_vel[env_ids] = velocities
 
         # reset robot
         self.base_pos[env_ids] = self.base_init_state[0:3]
@@ -418,7 +422,7 @@ class ReachingFoodTask(RLTask):
         base_pos, base_rot = self._robots.get_world_poses(clone=False)
         target_pos, target_rot = self._targets.get_world_poses(clone=False)
         delta_pos = target_pos - self.env_origins
-        
+
         # Get current joint efforts (torques)
         _efforts = self._robots.get_applied_joint_efforts(clone=False)
         current_efforts = _efforts[:, 2:]
