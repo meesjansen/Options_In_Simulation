@@ -22,14 +22,13 @@ class LimoAckermann(WheeledRobot):
         usd_path: Optional[str] = None,
         wheel_dof_names: Optional[str] = None,
         position: Optional[torch.tensor] = None,
-        orientation: Optional[torch.tensor] = None,
-        device: torch.device = torch.device('cpu')
+        orientation: Optional[torch.tensor] = None
     ) -> None:
         """Initialize the LimoAckermann robot with the appropriate drives and DoFs."""
         
         self._usd_path = usd_path
         self._name = name
-        self.device = device
+        # self.device = self.device
 
         self._position = torch.tensor([0.0, 0.0, 0.0]) if position is None else position
         self._orientation = torch.tensor([1.0, 0.0, 0.0, 0.0]) if orientation is None else orientation
@@ -65,7 +64,13 @@ class LimoAckermann(WheeledRobot):
     def dof_names(self):
         return self._dof_names
         
-    def apply_torque(self, torque_values):
-        """Apply the torque values to the robot's joints"""
-
-        self.set_joint_efforts(torque_values) 
+    def set_robot_properties(self, stage, prim):
+        for link_prim in prim.GetChildren():
+            if link_prim.HasAPI(PhysxSchema.PhysxRigidBodyAPI):
+                rb = PhysxSchema.PhysxRigidBodyAPI.Get(stage, link_prim.GetPrimPath())
+                rb.GetDisableGravityAttr().Set(False)
+                rb.GetRetainAccelerationsAttr().Set(False)
+                rb.GetLinearDampingAttr().Set(0.0)
+                rb.GetMaxLinearVelocityAttr().Set(1000.0)
+                rb.GetAngularDampingAttr().Set(0.0)
+                rb.GetMaxAngularVelocityAttr().Set(64 / np.pi * 180)
