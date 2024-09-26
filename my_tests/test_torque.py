@@ -12,15 +12,23 @@ from omni.isaac.wheeled_robots.robots import WheeledRobot
 from omni.isaac.core.objects.ground_plane import GroundPlane
 from omni.isaac.core.physics_context import PhysicsContext
 
-
 import torch
 import numpy as np
 import os
+import asyncio
+import time
 
 
 # Initialize simulation world
 world = World(stage_units_in_meters=1.0)
-world.scene.add_default_ground_plane()
+world.scene.add_default_ground_plane(
+    z_position=0.0, 
+    static_friction=0.5, 
+    dynamic_friction=0.4, 
+    restitution=0.1
+)
+
+time.sleep(10)
 
 physics_context = PhysicsContext()
 physics_context.set_gravity([0.0, 0.0, -9.81])
@@ -46,13 +54,6 @@ robot_articulations.set_solver_velocity_iteration_count(64)
 robot_articulations.set_solver_position_iteration_count(32)
 
 world.play()
-
-# Step once to ensure physics and articulation are loaded
-# world.step(render=False)
-
-# Initialize the ArticulationView
-
-
 
 # Retrieve and print the DOF names
 dof_names = robot_articulations.dof_names
@@ -85,19 +86,22 @@ print("Using predefined wheel DOF names:", wheel_dof_names)
 def apply_wheel_torques(articulation_view, torques):
     articulation_view.set_joint_efforts(efforts=torques, joint_indices=[1, 2, 4, 5])
 
-# Run the simulation loop
-while simulation_app.is_running():
-    # Step the simulation
-    world.step(render=False)
+async def run_simulation():
+    while simulation_app.is_running():
+        await asyncio.sleep(0)  # Yield control to allow async event loop to continue
 
-    # Apply torques to the wheels (for this example, let's drive the robot forward)
-    # You can try different values to see the effect
-    wheel_torques = torch.tensor([10.0, 10.0, 10.0, 10.0])  # Simple forward driving torques for all wheels
-    apply_wheel_torques(robot_articulations, wheel_torques)
+        # Step the simulation asynchronously
+        world.step(render=False)
 
-    # Break the loop if the simulation is done
-    if not simulation_app.is_running():
-        break
+        # Apply torques to the wheels
+        wheel_torques = torch.tensor([10.0, 10.0, 10.0, 10.0])
+        apply_wheel_torques(robot_articulations, wheel_torques)
+
+# Run the simulation asynchronously
+asyncio.run(run_simulation())
+
+# Close the simulation app when done
+simulation_app.close()
 
 # Close the simulation app when done
 simulation_app.close()
