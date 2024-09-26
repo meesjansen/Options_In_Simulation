@@ -315,7 +315,7 @@ class ReachingFoodTask(RLTask):
             [-10.0, -10.0, 10.0, 10.0]
         ], device=self.device)
 
-        current_efforts = self._robots.get_applied_joint_efforts(clone=True)[:, np.array[1,2,4,5]]
+        current_efforts = self._robots.get_applied_joint_efforts(clone=True)[:, np.array([1,2,4,5])]
         updated_efforts = torch.zeros_like(current_efforts)
 
         for env_id in range(self.num_envs):
