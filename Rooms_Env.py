@@ -264,7 +264,18 @@ class ReachingFoodTask(RLTask):
         )
 
         # Print the observation buffer
-        print("Observation buffer:", self.temp_obs_buf)
+        self.temp = torch.cat(
+            (
+                self.base_lin_vel[:, :2],
+                self.base_ang_vel[:, :2],
+                # discrete_projected_gravity,
+                delta_pos[:, :2],
+                # discrete_heights,
+                current_efforts 
+            ),
+            dim=-1,
+        )
+        print("Observation buffer:", self.temp)
 
         self.obs_buf = self.calculate_index_from_obs_buf(self.temp_obs_buf, [10, 10, 10, 10, 10, 10]).to(torch.int64)
         return {self._robots.name: {"obs_buf": self.obs_buf}}
