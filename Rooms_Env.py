@@ -333,12 +333,13 @@ class ReachingFoodTask(RLTask):
         updated_efforts = torch.clip(updated_efforts, -100.0, 100.0)
         test_efforts3 = torch.tensor([100.0, 100.0, 100.0, 100.0, 100.0, 100.0])
         test_efforts3 = test_efforts3.unsqueeze(0)
+        joint_indices = torch.tensor([1, 2, 4, 5])
           
         for i in range(self.decimation):
             if self.world.is_playing():
                 
                 # self._robots.set_joint_efforts(test_efforts1, indices=np.array([0]),joint_indices=np.array([1, 2, 4, 5]))
-                self._robots.set_joint_efforts(updated_efforts, joint_indices=np.array([1, 2, 4, 5]))
+                self._robots.set_joint_efforts(updated_efforts, joint_indices=joint_indices)
                 print("Applied torques:", updated_efforts)
 
                 self.torques = updated_efforts
