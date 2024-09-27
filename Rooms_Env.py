@@ -325,7 +325,7 @@ class ReachingFoodTask(RLTask):
         updated_efforts = torch.clip(updated_efforts, -100.0, 100.0)
         test_efforts1 = np.tile(np.array([100, 100, 100, 100,]), (1, 1))
         test_efforts2 = np.tile(np.array([100, 100, 100, 100, 100, 100]), (1, 1))
-        test_efforts3 = torch.tensor([100, 100, 100, 100, 100, 100])
+        test_efforts3 = torch.tensor([100.0, 100.0, 100.0, 100.0, 100.0, 100.0])
         test_efforts3 = test_efforts3.unsqueeze(0)
 
         
