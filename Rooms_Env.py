@@ -119,6 +119,7 @@ class ReachingFoodTask(RLTask):
         # observation and action space DQN
         self._num_observations = 1_000_000 # feuteres^bins 10^6
         self._num_actions = 12  # Assuming 3 discrete actions per wheel
+        self.common_step_counter = 0
 
 
         # observation and action space DQN
@@ -223,7 +224,6 @@ class ReachingFoodTask(RLTask):
 
         # initialize some data used later on
         self.up_axis_idx = 2
-        self.common_step_counter = 0
         self.extras = {}
         # self.noise_scale_vec = self._get_noise_scale_vec(self._task_cfg)
         
@@ -296,6 +296,13 @@ class ReachingFoodTask(RLTask):
         if not self.world.is_playing():
             return
         
+        # If we are still in the first two steps, don't apply any action but advance the simulation
+        if self.step_counter < 2:
+            print(f"Skipping actions for first {self.common_step_counter + 1} step(s)")
+            self.common_step_counter += 1
+            SimulationContext.step(self.world, render=False)  # Advance simulation
+            return 
+
         # There are 12 possible actions
         action_torque_vectors = torch.tensor([
             [10.0, 10.0, 10.0, 10.0],
