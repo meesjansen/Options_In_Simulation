@@ -297,7 +297,7 @@ class ReachingFoodTask(RLTask):
             return
         
         # If we are still in the first two steps, don't apply any action but advance the simulation
-        if self.step_counter < 2:
+        if self.common_step_counter < 2:
             print(f"Skipping actions for first {self.common_step_counter + 1} step(s)")
             self.common_step_counter += 1
             SimulationContext.step(self.world, render=False)  # Advance simulation
