@@ -325,6 +325,8 @@ class ReachingFoodTask(RLTask):
         updated_efforts = torch.clip(updated_efforts, -100.0, 100.0)
         test_efforts1 = np.tile(np.array([100, 100, 100, 100,]), (1, 1))
         test_efforts2 = np.tile(np.array([100, 100, 100, 100, 100, 100]), (1, 1))
+        test_efforts3 = torch.tensor([100, 100, 100, 100, 100, 100])
+        test_efforts3 = test_efforts3.unsqueeze(0)
 
         
         # Step 1: Clone the actions to the device and get indices for the relevant robots
@@ -332,10 +334,9 @@ class ReachingFoodTask(RLTask):
         for i in range(self.decimation):
             if self.world.is_playing():
                 
-                # self._robots.set_joint_efforts(updated_efforts, joint_indices=np.array([1, 2, 4, 5]))
                 # self._robots.set_joint_efforts(test_efforts1, indices=np.array([0]),joint_indices=np.array([1, 2, 4, 5]))
-                self._robots.set_joint_efforts(test_efforts2)
-                print("Applied torques:", test_efforts2)
+                self._robots.set_joint_efforts(test_efforts3)
+                print("Applied torques:", test_efforts3)
 
                 self.torques = updated_efforts
                 SimulationContext.step(self.world, render=False)
