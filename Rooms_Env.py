@@ -379,6 +379,10 @@ class ReachingFoodTask(RLTask):
             torch.zeros_like(self.timeout_buf),
         )
         
+        base_pos, base_rot = self._robots.get_world_poses(clone=False)
+        target_pos, target_rot = self._targets.get_world_poses(clone=False)
+        self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
+
         # target reached
         self.reset_buf = torch.where(self._computed_distance <= 0.035, torch.ones_like(self.reset_buf), self.reset_buf)
         # max episode length
