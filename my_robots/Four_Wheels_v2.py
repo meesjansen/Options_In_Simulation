@@ -3,6 +3,7 @@ import torch
 import numpy as np
 
 from typing import Optional
+from pxr import PhysxSchema
 
 from omni.isaac.kit import SimulationApp
 from omni.isaac.core.robots.robot import Robot
@@ -12,31 +13,34 @@ from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.wheeled_robots.robots import WheeledRobot
 
 
-from pxr import PhysxSchema
 
-class LimoAckermann(WheeledRobot):
+class LimoAckermann(Robot):
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "limo_ackermann",
+        name: Optional[str] = "limo",
         usd_path: Optional[str] = None,
-        wheel_dof_names: Optional[str] = None,
-        position: Optional[torch.tensor] = None,
-        orientation: Optional[torch.tensor] = None
+        translation: Optional[np.ndarray] = None,
+        orientation: Optional[np.ndarray] = None,
     ) -> None:
-        """Initialize the LimoAckermann robot with the appropriate drives and DoFs."""
+        """Initialize the Limo robot with the appropriate DoFs."""
         
         self._usd_path = usd_path
         self._name = name
         # self.device = self.device
 
-        self._position = torch.tensor([0.0, 0.0, 0.0]) if position is None else position
-        self._orientation = torch.tensor([1.0, 0.0, 0.0, 0.0]) if orientation is None else orientation
-
         if self._usd_path is None:
             self._usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_assets", "limo_ackermann.usd"))
 
         add_reference_to_stage(self._usd_path, prim_path)
+
+        super().__init__(
+            prim_path=prim_path,
+            name=name,
+            translation=translation,
+            orientation=orientation,
+            articulation_controller=None,
+        )
 
         # Define the wheels and their corresponding DOF paths
         self._dof_names = [
@@ -47,13 +51,7 @@ class LimoAckermann(WheeledRobot):
         ]
 
         
-        super().__init__(
-            prim_path=prim_path,
-            name=name,
-            wheel_dof_names=self._dof_names,
-            position=self._position,
-            orientation=self._orientation
-        )
+        
         
         # Convert the list of indices to a PyTorch tensor
         # self._dof_indices = torch.tensor([self.get_dof_index(dof) for dof in self._dof_names], dtype=torch.int64, device=self.device)
