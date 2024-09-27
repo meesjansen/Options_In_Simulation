@@ -326,7 +326,7 @@ class ReachingFoodTask(RLTask):
         print("Action Q-learning:", self.actions)
 
         for env_id in range(self.num_envs):
-            action_index = self.actions[env_id].item()  # Get action index for the current environment
+            action_index = int(self.actions[env_id].item())  # Get action index for the current environment
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
