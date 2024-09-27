@@ -196,7 +196,7 @@ class ReachingFoodTask(RLTask):
 
     def get_robot(self):
         # Assuming LIMO or similar wheeled robot
-        robot_translation = torch.tensor([0.0, 0.0, 0.66])
+        robot_translation = torch.tensor([1.0, 1.0, 0.4])
         robot_orientation = torch.tensor([1.0, 0.0, 0.0, 0.0])
         robot = Robot(
             prim_path=self.default_zero_env_path + "/robot",
