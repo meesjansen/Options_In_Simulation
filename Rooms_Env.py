@@ -159,9 +159,6 @@ class ReachingFoodTask(RLTask):
         self.get_robot()
         self.get_target()
 
-        # Move torques to the correct device once
-        # self.torques = torch.tensor(self.torques, dtype=torch.float32, device=self.device)
-
         super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"])
 
         # robot view
@@ -170,23 +167,6 @@ class ReachingFoodTask(RLTask):
         
         # food view
         self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
-        scene.add(self._targets)
-
-    def initialize_views(self, scene):
-        # initialize terrain variables even if we do not need to re-create the terrain mesh
-        self.get_terrain(create_mesh=False)
-
-        super().initialize_views(scene)
-        if scene.object_exists("robot_view"):
-            scene.remove_object("robot_view", registry_only=True)
-        if scene.object_exists("target_view"):
-            scene.remove_object("target_view", registry_only=True)
-        self._robots = RobotView(
-            prim_paths_expr="/World/envs/.*/robot", name="robot_view"
-        )
-        self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
-
-        scene.add(self._robots)
         scene.add(self._targets)
 
     def get_terrain(self, create_mesh=True):
@@ -382,13 +362,14 @@ class ReachingFoodTask(RLTask):
             torch.ones_like(self.timeout_buf),
             torch.zeros_like(self.timeout_buf),
         )
-        
+        self.reset_buf.fill_(0)
+
         base_pos, base_rot = self._robots.get_world_poses(clone=False)
         target_pos, target_rot = self._targets.get_world_poses(clone=False)
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
         # target reached
-        self.reset_buf = torch.where(self._computed_distance <= 0.035, torch.ones_like(self.reset_buf), self.reset_buf)
+        self.reset_buf = torch.where(self._computed_distance <= 0.0035, torch.ones_like(self.reset_buf), self.reset_buf)
         # max episode length
         self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
 
