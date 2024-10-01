@@ -196,7 +196,7 @@ class ReachingFoodTask(RLTask):
 
     def get_robot(self):
         # Assuming LIMO or similar wheeled robot
-        robot_translation = torch.tensor([1.0, 1.0, 0.4])
+        robot_translation = torch.tensor([3.0, 3.0, 0.4])
         robot_orientation = torch.tensor([1.0, 0.0, 0.0, 0.0])
         robot = Robot(
             prim_path=self.default_zero_env_path + "/robot",
@@ -390,8 +390,7 @@ class ReachingFoodTask(RLTask):
         # target reached
         self.reset_buf = torch.where(self._computed_distance <= 0.035, torch.ones_like(self.reset_buf), self.reset_buf)
         # max episode length
-        self.reset_buf = torch.where(self.progress_buf >= self._max_episode_length - 1, torch.ones_like(self.reset_buf), self.reset_buf)  
-        # tip over termination 
+        self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
 
     def calculate_metrics(self) -> None:
         self.rew_buf[:] = -self._computed_distance

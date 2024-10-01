@@ -51,7 +51,7 @@ from Rooms_Env import ReachingFoodTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 1
+TASK_CFG["task"]["env"]["numEnvs"] = 5
 
 
 sim_config = SimConfig(TASK_CFG)
