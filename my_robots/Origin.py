@@ -43,10 +43,10 @@ class AvularOrigin(Robot):
 
         # Define the wheels and their corresponding DOF paths
         self._dof_names = [
-                "left_front_wheel", 
-                "left_rear_wheel",
-                "right_front_wheel",
-                "right_rear_wheel"
+                "main_body_left_front_wheel", 
+                "main_body_left_rear_wheel",
+                "main_body_right_front_wheel",
+                "main_body_right_rear_wheel"
         ]
 
         

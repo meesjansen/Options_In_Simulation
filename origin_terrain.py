@@ -299,7 +299,7 @@ class ReachingFoodTask(RLTask):
             [-10.0, -10.0, 10.0, 10.0]
         ], device=self.device)
 
-        current_efforts = self._robots.get_applied_joint_efforts(clone=True)[:, np.array([1,2,4,5])]
+        current_efforts = self._robots.get_applied_joint_efforts(clone=True)
         updated_efforts = torch.zeros_like(current_efforts)
 
         self.actions = actions.clone().to(self.device)
@@ -311,15 +311,12 @@ class ReachingFoodTask(RLTask):
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
         updated_efforts = torch.clip(updated_efforts, -100.0, 100.0)
-        test_efforts3 = torch.tensor([100.0, 100.0, 100.0, 100.0, 100.0, 100.0])
-        test_efforts3 = test_efforts3.unsqueeze(0)
-        joint_indices = torch.tensor([1, 2, 4, 5])
           
         for i in range(self.decimation):
             if self.world.is_playing():
                 
                 # self._robots.set_joint_efforts(test_efforts1, indices=np.array([0]),joint_indices=np.array([1, 2, 4, 5]))
-                self._robots.set_joint_efforts(updated_efforts, joint_indices=joint_indices)
+                self._robots.set_joint_efforts(updated_efforts)
                 print("Applied torques:", updated_efforts)
 
                 self.torques = updated_efforts
@@ -408,8 +405,7 @@ class ReachingFoodTask(RLTask):
         delta_pos = target_pos - self.env_origins
 
         # Get current joint efforts (torques)
-        _efforts = self._robots.get_applied_joint_efforts(clone=True)
-        current_efforts = _efforts[:, np.array([1,2,4,5])]
+        current_efforts = self._robots.get_applied_joint_efforts(clone=True)
 
         # compute distance for calculate_metrics() and is_done()
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
