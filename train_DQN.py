@@ -21,7 +21,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from DQN_Rooms_Env import ReachingFoodTask, TASK_CFG
+from DQN_origin_terrain import ReachingFoodTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
