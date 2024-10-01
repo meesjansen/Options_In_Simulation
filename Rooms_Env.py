@@ -364,9 +364,9 @@ class ReachingFoodTask(RLTask):
             self.get_states()
             self.calculate_metrics()
             
-            # env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
-            # if len(env_ids) > 0:
-            #     self.reset_idx(env_ids)
+            env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
+            if len(env_ids) > 0:
+                self.reset_idx(env_ids)
 
             self.get_observations()
             
