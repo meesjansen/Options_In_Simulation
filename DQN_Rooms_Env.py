@@ -11,7 +11,7 @@ from omni.isaac.core.objects import DynamicSphere
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.torch.maths import torch_rand_float
 from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.simulation_context import SimulationContext #used to force step
+from omni.isaac.core.simulation_context import SimulationContext
 
 from my_robots.Four_Wheels_v2 import LimoAckermann as Robot
 from my_utils.terrain_generator import *
@@ -32,12 +32,12 @@ TASK_CFG = {"test": False,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
                              "controlFrequencyInv": 4,
-                             "baseInitState": {"pos": [0.0, 0.0, 0.62], # x,y,z [m]
+                             "baseInitState": {"pos": [-2.0, -2.0, 0.62], # x,y,z [m]
                                               "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
                                               "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
                                               "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
-                                              "Torques": [0.0, 0.0, 0.0, 0.0]
-                            }
+                                                },
+                            "baseInitTorques": [40.0, 40.0, 40.0, 40.0]                            
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
                              "use_gpu_pipeline": True,
@@ -102,12 +102,6 @@ class RobotView(ArticulationView):
     def __init__(self, prim_paths_expr: str, name: str = "robot_view") -> None:
         super().__init__(prim_paths_expr=prim_paths_expr, name=name, reset_xform_properties=False)
 
-        self._base = RigidPrimView(
-            prim_paths_expr="/World/envs/.*/robot/base_link",
-            name="base_view",
-            reset_xform_properties=False
-        )
-
 
 class ReachingFoodTask(RLTask):
     def __init__(self, name, sim_config, env, offset=None) -> None:
@@ -122,14 +116,15 @@ class ReachingFoodTask(RLTask):
         self._env_spacing = self._task_cfg["env"]["envSpacing"]
         self._max_episode_length = self._task_cfg["env"]["episodeLength"]
         
-        # observation and action 
-        # self._num_observations = 1_000_000 # feuteres^bins 10^6
-        # self._num_actions = 12  # Assuming 3 discrete actions per wheel
+        # observation and action space DQN
+        self._num_observations = 1_000_000 # feuteres^bins 10^6
+        self._num_actions = 12  # Assuming 3 discrete actions per wheel
+        self.common_step_counter = 0
 
 
         # observation and action space DQN
-        self._num_observations = 20026 # 89 + 6 + 4 + 3 + 3 = hiehgtpoints + IMU vel + torque per wheel + target + grav vector
-        self._num_actions = 12  # Assuming 3 discrete actions per wheel
+        # self._num_observations = 20026 # 89 + 6 + 4 + 3 + 3 = hiehgtpoints + IMU vel + torque per wheel + target + grav vector
+        # self._num_actions = 12  # Assuming 3 discrete actions per wheel
 
         self.update_config(sim_config)
 
@@ -142,50 +137,11 @@ class ReachingFoodTask(RLTask):
         rot = self._task_cfg["env"]["baseInitState"]["rot"]
         v_lin = self._task_cfg["env"]["baseInitState"]["vLinear"]
         v_ang = self._task_cfg["env"]["baseInitState"]["vAngular"]
-        torque = self._task_cfg["env"]["baseInitState"]["Torques"]
-        self.base_init_state = pos + rot + v_lin + v_ang + torque
+        self.torques = self._task_cfg["env"]["baseInitTorques"]
+        self.base_init_state = pos + rot + v_lin + v_ang
 
-    def set_up_scene(self, scene) -> None:
-        self._stage = get_current_stage()
-        self.get_terrain()
-        self.get_robot()
-        self.get_target()
+        self.decimation = 4
 
-        super().set_up_scene(scene)
-
-        # robot view
-        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot", name="robot_view")
-        scene.add(self._robots)
-        scene.add(self._robots._base)
-
-        # food view
-        self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
-        scene.add(self._targets)
-
-    
-
-    def get_robot(self):
-        # Assuming LIMO or similar wheeled robot
-        robot = Robot(
-            prim_path=self.default_zero_env_path + "/robot",
-            position=torch.tensor([0.0, 0.0, 0.0]),
-            orientation=torch.tensor([1.0, 0.0, 0.0, 0.0]),
-            name="robot",
-            device=self.device
-        )
-        self._sim_config.apply_articulation_settings(
-            "robot", get_prim_at_path(robot.prim_path), self._sim_config.parse_actor_config("robot")
-        )
-
-    def get_target(self):
-        target = DynamicSphere(prim_path=self.default_zero_env_path + "/target",
-                               name="target",
-                               radius=0.025,
-                               color=torch.tensor([1, 0, 0]))
-        self._sim_config.apply_articulation_settings("target", get_prim_at_path(target.prim_path), self._sim_config.parse_actor_config("target"))
-        target.set_collision_enabled(False)
-
-   
     def _create_trimesh(self, create_mesh=True):
         self.terrain = Terrain(num_robots=1)
         vertices = self.terrain.vertices
@@ -196,104 +152,50 @@ class ReachingFoodTask(RLTask):
         self.height_samples = (
             torch.tensor(self.terrain.heightsamples).view(self.terrain.tot_rows, self.terrain.tot_cols).to(self.device)
         )
-    
+
+    def set_up_scene(self, scene) -> None:
+        self._stage = get_current_stage()
+        self.get_terrain()
+        self.get_robot()
+        self.get_target()
+
+        super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"])
+
+        # robot view
+        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot", name="robot_view")
+        scene.add(self._robots)
+        
+        # food view
+        self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
+        scene.add(self._targets)
 
     def get_terrain(self, create_mesh=True):
         self.env_origins = torch.zeros((self.num_envs, 3), device=self.device, requires_grad=False)
         self._create_trimesh(create_mesh=create_mesh)
         self.terrain_origins = torch.from_numpy(self.terrain.env_origins).to(self.device).to(torch.float)
 
-
-    def get_observations(self):
-        heights = self.get_heights()
-        base_pos, base_rot = self._robots._base.get_world_poses(clone=False)
-        target_pos, target_rot = self._targets.get_world_poses(clone=False)
-        delta_pos = target_pos - self.env_origins
-
-        # Get current joint efforts (torques)
-        _efforts = self._robots.get_applied_joint_efforts(clone=False)
-        current_efforts = _efforts[:, 2:]
-
-        # compute distance for calculate_metrics() and is_done()
-        self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
-        
-        self.obs_buf = torch.cat(
-            (
-                self.base_lin_vel,
-                self.base_ang_vel,
-                self.projected_gravity,
-                delta_pos,
-                heights,
-                current_efforts 
-            ),
-            dim=-1,
+    def get_robot(self):
+        # Assuming LIMO or similar wheeled robot
+        robot_translation = torch.tensor([3.0, 3.0, 0.4])
+        robot_orientation = torch.tensor([1.0, 0.0, 0.0, 0.0])
+        robot = Robot(
+            prim_path=self.default_zero_env_path + "/robot",
+            name="robot",
+            translation=robot_translation,
+            orientation=robot_orientation,
         )
+        self._sim_config.apply_articulation_settings(
+            "robot", get_prim_at_path(robot.prim_path), self._sim_config.parse_actor_config("robot")
+        )
+        robot.set_robot_properties(self._stage, robot.prim)
 
-        return {self._robots.name: {"obs_buf": self.obs_buf}}
-
-    def get_heights(self, env_ids=None):
-        
-        heights = self.height_samples
-
-        
-        return heights.view(self.num_envs, -1) * self.terrain.vertical_scale
-    
-    
-    def refresh_body_state_tensors(self):
-        self.base_pos, self.base_quat = self._robots.get_world_poses(clone=False)
-        self.base_velocities = self._robots._base.get_velocities(clone=False)
-        self.wheel_torques = self._robots.get_applied_joint_efforts(clone=False)
-
-    
-    def calculate_metrics(self) -> None:
-        self.rew_buf[:] = -self._computed_distance
-
-
-    def is_done(self) -> None:
-        self.reset_buf.fill_(0)
-        # target reached
-        self.reset_buf = torch.where(self._computed_distance <= 0.035, torch.ones_like(self.reset_buf), self.reset_buf)
-        # max episode length
-        self.reset_buf = torch.where(self.progress_buf >= self._max_episode_length - 1, torch.ones_like(self.reset_buf), self.reset_buf)  
-        # tip over termination 
-
-    
-    def reset_idx(self, env_ids) -> None:
-        indices = env_ids.to(dtype=torch.int32)
-
-        # reset robot
-        self.base_pos[env_ids] = self.base_init_state[0:3]
-        self.base_pos[env_ids, 0:3] += self.env_origins[env_ids]
-        self.base_pos[env_ids, 0:2] += torch_rand_float(-0.5, 0.5, (len(env_ids), 2), device=self.device)
-        self.base_quat[env_ids] = self.base_init_state[3:7]
-        self.base_velocities[env_ids] = self.base_init_state[7:13]
-        self.wheel_torques[env_ids] = self.base_init_state[13:]
-        
-        joint_indices_temp = torch.tensor([2, 3, 4, 5], device=self.device, dtype=torch.long)
-
-        self._robots.set_world_poses(positions=self.base_pos[env_ids].clone(), orientations=self.base_quat[env_ids].clone(), indices=indices)
-        self._robots.set_joint_efforts(efforts=self.wheel_torques[env_ids].clone(), joint_indices=joint_indices_temp, indices=indices)
-        self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
-
-
-        # reset target
-        pos = (torch.rand((len(env_ids), 3), device=self.device) - 0.5) * 2 \
-            * torch.tensor([0.10, 0.20, 0.20], device=self.device) \
-            + torch.tensor([0.60, 0.00, 0.40], device=self.device)
-
-        self._targets.set_world_poses(pos + self._env_pos[env_ids], indices=indices)
-
-        self.last_actions[env_ids] = 0.0
-        self.progress_buf[env_ids] = 0
-        self.reset_buf[env_ids] = 0
-
-        # fill extras for reward shaping
-        # self.extras["episode"] = {}
-        # for key in self.episode_sums.keys():
-        #     self.extras["episode"]["rew_" + key] = (
-        #         torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
-        #     )
-        #     self.episode_sums[key][env_ids] = 0.0
+    def get_target(self):
+        target = DynamicSphere(prim_path=self.default_zero_env_path + "/target",
+                               name="target",
+                               radius=0.05,
+                               color=torch.tensor([1, 0, 0]))
+        self._sim_config.apply_articulation_settings("target", get_prim_at_path(target.prim_path), self._sim_config.parse_actor_config("target"))
+        target.set_collision_enabled(False)
 
     def post_reset(self):
         self.base_init_state = torch.tensor(self.base_init_state, dtype=torch.float, device=self.device, requires_grad=False)
@@ -302,7 +204,6 @@ class ReachingFoodTask(RLTask):
 
         # initialize some data used later on
         self.up_axis_idx = 2
-        self.common_step_counter = 0
         self.extras = {}
         # self.noise_scale_vec = self._get_noise_scale_vec(self._task_cfg)
         
@@ -319,71 +220,112 @@ class ReachingFoodTask(RLTask):
         self.last_actions = torch.zeros(
             self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False
         )
-     
+        self.num_dof = self._robots.num_dof 
         self.env_origins = self.terrain_origins.view(-1, 3)[:self.num_envs]
         self.base_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
         self.base_quat = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device)
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
+        self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
       
         indices = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.reset_idx(indices)
         self.init_done = True
 
-    
+    def reset_idx(self, env_ids):
+        indices = env_ids.to(dtype=torch.int32)
+
+        velocities = torch_rand_float(-0.1, 0.1, (len(env_ids), self.num_dof), device=self.device)
+        self.dof_vel[env_ids] = velocities
+
+        self.base_pos[env_ids] = self.base_init_state[0:3]
+        self.base_pos[env_ids, 0:3] += self.env_origins[env_ids]
+        self.base_pos[env_ids, 0:2] += torch_rand_float(-0.5, 0.5, (len(env_ids), 2), device=self.device)
+        self.base_quat[env_ids] = self.base_init_state[3:7]
+        self.base_velocities[env_ids] = self.base_init_state[7:13]
+     
+        
+        self._robots.set_world_poses(positions=self.base_pos[env_ids].clone(), orientations=self.base_quat[env_ids].clone(), indices=indices)
+        self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
+        self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)
+
+        # reset target
+        pos = (torch.rand((len(env_ids), 3), device=self.device) - 0.5) * 2 \
+            * torch.tensor([0.10, 0.20, 0.20], device=self.device) \
+            + torch.tensor([0.60, 0.00, 0.40], device=self.device)
+
+        self._targets.set_world_poses(pos + self._env_pos[env_ids], indices=indices)
+
+        self.last_actions[env_ids] = 0.0
+        self.progress_buf[env_ids] = 0
+        self.reset_buf[env_ids] = 1
+
+        # fill extras for reward shaping
+        # self.extras["episode"] = {}
+        # for key in self.episode_sums.keys():
+        #     self.extras["episode"]["rew_" + key] = (
+        #         torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
+        #     )
+        #     self.episode_sums[key][env_ids] = 0.0
+
+    def refresh_body_state_tensors(self):
+        self.base_pos, self.base_quat = self._robots.get_world_poses(clone=False)
+        self.base_velocities = self._robots.get_velocities(clone=False)
+        
+
     def pre_physics_step(self, actions):
         if not self.world.is_playing():
             return
         
-        reset_env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
-        if len(reset_env_ids) > 0:
-            self.reset_idx(reset_env_ids)
+        # If we are still in the first two steps, don't apply any action but advance the simulation
+        if self.common_step_counter < 2:
+            print(f"Skipping actions for first {self.common_step_counter + 1} step(s)")
+            self.common_step_counter += 1
+            SimulationContext.step(self.world, render=False)  # Advance simulation
+            return 
 
-        # Step 1: Clone the actions to the device and get indices for the relevant robots
-        self.actions = actions.clone().to(self.device)
-        env_ids_int32 = torch.arange(self._robots.count, dtype=torch.int32, device=self.device)
-
-
-        # Step 2: Fetch the current applied joint efforts (torques) for all wheels
-        current_efforts = self._robots.get_applied_joint_efforts(clone=False)
-
-        # Step 3: Define possible torque changes: [1.0, 0.0, -1.0]
-        torque_options = torch.tensor([1.0, 0.0, -1.0], device=self.device)
-
-        # Step 4: Decode the action index (0-11) into a specific torque change vector for all four wheels.
-        # There are 12 possible actions, which corresponds to all possible combinations of [1.0, 0.0, -1.0] for each of the four wheels.
+        # There are 12 possible actions
         action_torque_vectors = torch.tensor([
-            [1.0, 1.0, 1.0, 1.0],
-            [1.0, 1.0, 1.0, 0.0],
-            [1.0, 1.0, 1.0, -1.0],
-            [0.0, 0.0, 0.0, 1.0],
+            [10.0, 10.0, 10.0, 10.0],
+            [-10.0, -10.0, -10.0, -10.0],
+            [10.0, 0.0, 10.0, 0.0],
+            [0.0, 10.0, 0.0, 10.0],
             [0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, -1.0],
-            [-1.0, -1.0, -1.0, 1.0],
-            [-1.0, -1.0, -1.0, 0.0],
-            [-1.0, -1.0, -1.0, -1.0],
-            [1.0, -1.0, 0.0, 1.0],
-            [1.0, -1.0, 0.0, 0.0],
-            [-1.0, 1.0, 0.0, -1.0]
+            [0.0, 0.0, 0.0, 10.0],
+            [0.0, 0.0, 10.0, 0.0],
+            [0.0, 10.0, 0.0, 0.0],
+            [10.0, 0.0, 0.0, 0.0],
+            [10.0, 10.0, 0.0, 0.0],
+            [0.0, 0.0, 10.0, 10.0],
+            [-10.0, -10.0, 10.0, 10.0]
         ], device=self.device)
 
-        # Step 5: Initialize an empty tensor to store the updated torques for each environment
+        current_efforts = self._robots.get_applied_joint_efforts(clone=True)[:, np.array([1,2,4,5])]
         updated_efforts = torch.zeros_like(current_efforts)
 
-        # Step 6: Loop through each environment and update the torques based on the action index
-        for env_id in range(env_ids_int32):
-            action_index = self.actions[env_id].item()  # Get action index for the current environment
+        self.actions = actions.clone().to(self.device)
+        print("Action Q-learning:", self.actions)
+
+        for env_id in range(self.num_envs):
+            action_index = int(torch.argmax(self.actions[env_id]).item())  # Get action index for the current environment
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
-            updated_efforts[env_id,2:] = current_efforts[env_id,2:] + delta_torque  # Update the torque for this environment
+            updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
-        # Step 7: Apply the updated torques to all environments
-        joint_indices_temp = torch.tensor([2, 3, 4, 5], device=self.device, dtype=torch.long)
+        updated_efforts = torch.clip(updated_efforts, -100.0, 100.0)
+        test_efforts3 = torch.tensor([100.0, 100.0, 100.0, 100.0, 100.0, 100.0])
+        test_efforts3 = test_efforts3.unsqueeze(0)
+        joint_indices = torch.tensor([1, 2, 4, 5])
+          
+        for i in range(self.decimation):
+            if self.world.is_playing():
+                
+                # self._robots.set_joint_efforts(test_efforts1, indices=np.array([0]),joint_indices=np.array([1, 2, 4, 5]))
+                self._robots.set_joint_efforts(updated_efforts, joint_indices=joint_indices)
+                print("Applied torques:", updated_efforts)
 
-        self._robots.set_joint_efforts(efforts=updated_efforts[:,2:], joint_indices=joint_indices_temp) #self._robots._dof_indices or joint_indices_temp
-
-        # Continue to step the simulation, not needed for skrl?
-        # SimulationContext.step(self.world, render=False)
-
-
+                self.torques = updated_efforts
+                SimulationContext.step(self.world, render=False)
+                
+        
     def post_physics_step(self):
         self.progress_buf[:] += 1
 
@@ -395,20 +337,117 @@ class ReachingFoodTask(RLTask):
             self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 0:3])
             self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 3:6])
             self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
-            
-            self.get_observations()
+                        
             # if self.add_noise:
             #     self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
-
+            self.is_done()
             self.get_states()
             self.calculate_metrics()
-            self.is_done()
-
+            
             env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
             if len(env_ids) > 0:
                 self.reset_idx(env_ids)
 
+            self.get_observations()
             
             self.last_actions[:] = self.actions[:]
 
+
         return self.obs_buf, self.rew_buf, self.reset_buf, self.extras
+    
+
+    def is_done(self):
+        self.timeout_buf = torch.where(
+            self.progress_buf >= self._max_episode_length - 1,
+            torch.ones_like(self.timeout_buf),
+            torch.zeros_like(self.timeout_buf),
+        )
+        self.reset_buf.fill_(0)
+
+        base_pos, base_rot = self._robots.get_world_poses(clone=False)
+        target_pos, target_rot = self._targets.get_world_poses(clone=False)
+        self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
+
+        # target reached
+        self.reset_buf = torch.where(self._computed_distance <= 0.0035, torch.ones_like(self.reset_buf), self.reset_buf)
+        # max episode length
+        self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
+
+        # Calculate the up vector from the quaternion
+        up_vector = quat_rotate_inverse(base_rot, torch.tensor([0, 0, 1], device=self.device))
+        # Dot product with gravity (negative z-axis)
+        tipping_threshold = 0.5  # Adjust based on experimentation
+        dot_with_gravity = torch.sum(up_vector * torch.tensor([0, 0, -1], device=self.device), dim=-1)
+        
+        # Check if the robot is tipped over (i.e., dot product is below the threshold)
+        self.reset_buf = torch.where(dot_with_gravity < tipping_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
+
+    def calculate_metrics(self) -> None:
+        self.rew_buf[:] = -self._computed_distance
+
+
+    def discretize_state(self, continuous_state, num_bins=10, low=-1.0, high=1.0):
+        # Discretize a continuous state into a discrete value
+        bins = torch.linspace(low, high, num_bins, device=self.device)
+        discrete_state = torch.bucketize(continuous_state, bins) - 1  # Subtract 1 to match 0-indexing
+        return discrete_state
+    
+    
+    def calculate_index_from_obs_buf(self, obs_buf, num_bins_per_feature):
+        
+        # Initialize the index tensor with zeros
+        Q_indices = torch.zeros(obs_buf.shape[0], dtype=torch.long, device=self.device)
+        
+        # Multiply by powers of the bin sizes to create a unique index
+        multiplier = 1
+        for i, num_bins in enumerate(reversed(num_bins_per_feature)):
+            feature_idx = -(i+1)  # work backwards from the last feature
+            Q_indices += obs_buf[:, feature_idx] * multiplier
+            multiplier *= num_bins  # Increase the base for the next feature
+
+        # Reshape to (env_id, 1) to match the expected shape
+        return Q_indices.view(-1, 1)
+    
+
+    def get_observations(self):
+        heights = self.get_heights()
+
+        base_pos, base_rot = self._robots.get_world_poses(clone=False)
+        target_pos, target_rot = self._targets.get_world_poses(clone=False)
+        delta_pos = target_pos - base_pos
+
+        # Get current joint efforts (torques)
+        _efforts = self._robots.get_applied_joint_efforts(clone=True)
+        current_efforts = _efforts[:, np.array([1,2,4,5])]
+
+        # compute distance for calculate_metrics() and is_done()
+        self._computed_distance = torch.norm(delta_pos, dim=-1)
+
+        # Print the observation buffer
+        self.temp = torch.cat(
+            (
+                self.base_lin_vel,
+                self.base_ang_vel,
+                self.projected_gravity,
+                delta_pos,
+                # discrete_heights,
+                current_efforts 
+            ),
+            dim=-1,
+        )
+        print("Observation buffer with measured efforts:", self.temp)
+        
+        return {self._robots.name: {"obs_buf": self.obs_buf}}
+    
+
+    def get_heights(self, env_ids=None):
+        
+        heights = self.height_samples
+
+        
+        return heights.view(self.num_envs, -1) * self.terrain.vertical_scale
+
+    
+
+
+
