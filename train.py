@@ -89,10 +89,10 @@ Q_LEARNING_DEFAULT_CONFIG = {
 
     "experiment": {
         "directory": "./my_runs",            # experiment's parent directory
-        "experiment_name": "Terrains_Env",      # experiment name
-        "write_interval": "32",   # TensorBoard writing interval (timesteps)
+        "experiment_name": "Terrains_Env_Q_learning",      # experiment name
+        "write_interval": 32,   # TensorBoard writing interval (timesteps)
 
-        "checkpoint_interval": "250",      # interval for checkpoints (timesteps)
+        "checkpoint_interval": 250,      # interval for checkpoints (timesteps)
         "store_separately": False,          # whether to store checkpoints separately
 
         "wandb": False,             # whether to use Weights & Biases

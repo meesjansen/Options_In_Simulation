@@ -103,7 +103,7 @@ DQN_DEFAULT_CONFIG = {
 
     "experiment": {
         "directory": "",            # experiment's parent directory
-        "experiment_name": "",      # experiment name
+        "experiment_name": "Terrains_Env_DQN",      # experiment name
         "write_interval": "auto",   # TensorBoard writing interval (timesteps)
 
         "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
@@ -121,7 +121,7 @@ cfg["exploration"]["timesteps"] = 1500
 # logging to TensorBoard and write checkpoints (in timesteps)
 cfg["experiment"]["write_interval"] = 1000
 cfg["experiment"]["checkpoint_interval"] = 5000
-cfg["experiment"]["directory"] = "./my_runs"
+cfg["experiment"]["directory"] = "my_runs"
 
 agent = DQN(models=models,
             memory=memory,
