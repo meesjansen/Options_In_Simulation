@@ -327,6 +327,9 @@ class ReachingFoodTask(RLTask):
 
                 self.torques = updated_efforts
                 SimulationContext.step(self.world, render=False)
+
+        print("Named dof indices:", self._robots.get_dof_index("rear_left_wheel"))
+
                 
         
     def post_physics_step(self):
@@ -364,7 +367,7 @@ class ReachingFoodTask(RLTask):
             self.progress_buf >= self._max_episode_length - 1,
             torch.ones_like(self.timeout_buf),
             torch.zeros_like(self.timeout_buf),
-        )
+        )   
         self.reset_buf.fill_(0)
 
         base_pos, base_quat = self._robots.get_world_poses(clone=False)
@@ -391,7 +394,7 @@ class ReachingFoodTask(RLTask):
 
         # Detect if the robot is on its back based on positive Z-axis component of the projected gravity
         positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
-        # self.reset_buf = torch.where(projected_gravity[:, 2] > positive_gravity_z_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
+        self.reset_buf = torch.where(projected_gravity[:, 2] < positive_gravity_z_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
 
     
     def calculate_metrics(self) -> None:
