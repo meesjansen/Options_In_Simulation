@@ -32,7 +32,7 @@ TASK_CFG = {"test": False,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
                              "controlFrequencyInv": 4,
-                             "baseInitState": {"pos": [-2.0, -2.0, 0.62], # x,y,z [m]
+                             "baseInitState": {"pos": [-4.0, -4.0, 1.0], # x,y,z [m]
                                               "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
                                               "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
                                               "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
@@ -373,15 +373,23 @@ class ReachingFoodTask(RLTask):
         # max episode length
         self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
 
-        # Calculate the up vector from the quaternion
-        up_vector = quat_rotate_inverse(base_quat, torch.tensor([0.0, 0.0, 1.0]).repeat(self.num_envs, 1).to(self.device))
-        # Dot product with gravity (negative z-axis)
-        tipping_threshold = 0.5  # Adjust based on experimentation
-        dot_with_gravity = torch.sum(up_vector * torch.tensor([0, 0, -1], device=self.device), dim=-1)
+        # # Calculate the up vector from the quaternion
+        # up_vector = quat_rotate_inverse(base_quat, torch.tensor([0.0, 0.0, 1.0]).repeat(self.num_envs, 1).to(self.device))
+        # # Dot product with gravity (negative z-axis)
+        # tipping_threshold = 0.5  # Adjust based on experimentation
+        # dot_with_gravity = torch.sum(up_vector * torch.tensor([0, 0, -1], device=self.device), dim=-1)
         
-        # Check if the robot is tipped over (i.e., dot product is below the threshold)
-        self.reset_buf = torch.where(dot_with_gravity < tipping_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
+        # # Check if the robot is tipped over (i.e., dot product is below the threshold)
+        # self.reset_buf = torch.where(dot_with_gravity < tipping_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
 
+        # Calculate the projected gravity in the robot's local frame
+        projected_gravity = quat_rotate_inverse(base_quat, self.gravity_vec)
+
+        # Detect if the robot is on its back based on positive Z-axis component of the projected gravity
+        positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
+        self.reset_buf = torch.where(projected_gravity[:, 2] > positive_gravity_z_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
+
+    
     def calculate_metrics(self) -> None:
         self.rew_buf[:] = -self._computed_distance
 
