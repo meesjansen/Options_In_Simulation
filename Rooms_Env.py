@@ -189,6 +189,9 @@ class ReachingFoodTask(RLTask):
         )
         robot.set_robot_properties(self._stage, robot.prim)
 
+        self._dof_indices = torch.tensor([robot.get_dof_index(dof) for dof in robot.dof_names], dtype=torch.int32, device=self.device)
+        print("Named dof indices:", self._dof_indices)
+
     def get_target(self):
         target = DynamicSphere(prim_path=self.default_zero_env_path + "/target",
                                name="target",
@@ -384,6 +387,7 @@ class ReachingFoodTask(RLTask):
 
         # Calculate the projected gravity in the robot's local frame
         projected_gravity = quat_rotate_inverse(base_quat, self.gravity_vec)
+        print("Projected gravity vector", projected_gravity)
 
         # Detect if the robot is on its back based on positive Z-axis component of the projected gravity
         positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
