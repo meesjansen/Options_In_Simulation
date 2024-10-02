@@ -32,7 +32,7 @@ TASK_CFG = {"test": False,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
                              "controlFrequencyInv": 4,
-                             "baseInitState": {"pos": [-2.0, -2.0, 0.62], # x,y,z [m]
+                             "baseInitState": {"pos": [-2.0, -2.0, 0.40], # x,y,z [m]
                                               "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
                                               "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
                                               "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
@@ -117,14 +117,9 @@ class ReachingFoodTask(RLTask):
         self._max_episode_length = self._task_cfg["env"]["episodeLength"]
         
         # observation and action space DQN
-        self._num_observations = 1_000_000 # feuteres^bins 10^6
+        self._num_observations = 12 # feuteres^bins 10^6
         self._num_actions = 12  # Assuming 3 discrete actions per wheel
         self.common_step_counter = 0
-
-
-        # observation and action space DQN
-        # self._num_observations = 20026 # 89 + 6 + 4 + 3 + 3 = hiehgtpoints + IMU vel + torque per wheel + target + grav vector
-        # self._num_actions = 12  # Assuming 3 discrete actions per wheel
 
         self.update_config(sim_config)
 
@@ -188,6 +183,7 @@ class ReachingFoodTask(RLTask):
             "robot", get_prim_at_path(robot.prim_path), self._sim_config.parse_actor_config("robot")
         )
         robot.set_robot_properties(self._stage, robot.prim)
+
 
     def get_target(self):
         target = DynamicSphere(prim_path=self.default_zero_env_path + "/target",
@@ -257,7 +253,7 @@ class ReachingFoodTask(RLTask):
 
         self.last_actions[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
-        self.reset_buf[env_ids] = 1
+        self.reset_buf[env_ids] = 0
 
         # fill extras for reward shaping
         # self.extras["episode"] = {}
@@ -303,7 +299,7 @@ class ReachingFoodTask(RLTask):
         updated_efforts = torch.zeros_like(current_efforts)
 
         self.actions = actions.clone().to(self.device)
-        print("Action Q-learning:", self.actions)
+        print("Action values DQN:", self.actions)
 
         for env_id in range(self.num_envs):
             action_index = int(torch.argmax(self.actions[env_id]).item())  # Get action index for the current environment
@@ -311,8 +307,6 @@ class ReachingFoodTask(RLTask):
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
         updated_efforts = torch.clip(updated_efforts, -100.0, 100.0)
-        test_efforts3 = torch.tensor([100.0, 100.0, 100.0, 100.0, 100.0, 100.0])
-        test_efforts3 = test_efforts3.unsqueeze(0)
         joint_indices = torch.tensor([1, 2, 4, 5])
           
         for i in range(self.decimation):
@@ -324,6 +318,14 @@ class ReachingFoodTask(RLTask):
 
                 self.torques = updated_efforts
                 SimulationContext.step(self.world, render=False)
+
+        # self._dof_indices = torch.tensor([robot.get_dof_index(dof) for dof in robot.dof_names], dtype=torch.int32, device=self.device)
+        print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in [
+                "rear_left_wheel", 
+                "rear_right_wheel",
+                "front_left_wheel",
+                "front_right_wheel"
+        ]])
                 
         
     def post_physics_step(self):
@@ -361,10 +363,10 @@ class ReachingFoodTask(RLTask):
             self.progress_buf >= self._max_episode_length - 1,
             torch.ones_like(self.timeout_buf),
             torch.zeros_like(self.timeout_buf),
-        )
+        )   
         self.reset_buf.fill_(0)
 
-        base_pos, base_rot = self._robots.get_world_poses(clone=False)
+        base_pos, base_quat = self._robots.get_world_poses(clone=False)
         target_pos, target_rot = self._targets.get_world_poses(clone=False)
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
@@ -373,15 +375,15 @@ class ReachingFoodTask(RLTask):
         # max episode length
         self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
 
-        # Calculate the up vector from the quaternion
-        up_vector = quat_rotate_inverse(base_rot, torch.tensor([0, 0, 1], device=self.device))
-        # Dot product with gravity (negative z-axis)
-        tipping_threshold = 0.5  # Adjust based on experimentation
-        dot_with_gravity = torch.sum(up_vector * torch.tensor([0, 0, -1], device=self.device), dim=-1)
-        
-        # Check if the robot is tipped over (i.e., dot product is below the threshold)
-        self.reset_buf = torch.where(dot_with_gravity < tipping_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
+        # Calculate the projected gravity in the robot's local frame
+        projected_gravity = quat_rotate_inverse(base_quat, self.gravity_vec)
+        print("Projected gravity vector", projected_gravity)
 
+        # Detect if the robot is on its back based on positive Z-axis component of the projected gravity
+        positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
+        self.reset_buf = torch.where(projected_gravity[:, 2] < positive_gravity_z_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
+
+    
     def calculate_metrics(self) -> None:
         self.rew_buf[:] = -self._computed_distance
 
@@ -424,18 +426,18 @@ class ReachingFoodTask(RLTask):
         self._computed_distance = torch.norm(delta_pos, dim=-1)
 
         # Print the observation buffer
-        self.temp = torch.cat(
+        self.obs_buf = torch.cat(
             (
                 self.base_lin_vel,
                 self.base_ang_vel,
                 self.projected_gravity,
                 delta_pos,
-                # discrete_heights,
+                # heights,
                 current_efforts 
             ),
             dim=-1,
         )
-        print("Observation buffer with measured efforts:", self.temp)
+        print("Observation buffer minus heights:", self.obs_buf)
         
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     

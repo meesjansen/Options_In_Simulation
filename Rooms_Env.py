@@ -321,7 +321,6 @@ class ReachingFoodTask(RLTask):
                 self._robots.set_joint_efforts(updated_efforts, joint_indices=joint_indices)
                 print("Applied torques:", updated_efforts)
 
-                self.torques = updated_efforts
                 SimulationContext.step(self.world, render=False)
 
         # self._dof_indices = torch.tensor([robot.get_dof_index(dof) for dof in robot.dof_names], dtype=torch.int32, device=self.device)
@@ -380,15 +379,6 @@ class ReachingFoodTask(RLTask):
         self.reset_buf = torch.where(self._computed_distance <= 0.0035, torch.ones_like(self.reset_buf), self.reset_buf)
         # max episode length
         self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
-
-        # # Calculate the up vector from the quaternion
-        # up_vector = quat_rotate_inverse(base_quat, torch.tensor([0.0, 0.0, 1.0]).repeat(self.num_envs, 1).to(self.device))
-        # # Dot product with gravity (negative z-axis)
-        # tipping_threshold = 0.5  # Adjust based on experimentation
-        # dot_with_gravity = torch.sum(up_vector * torch.tensor([0, 0, -1], device=self.device), dim=-1)
-        
-        # # Check if the robot is tipped over (i.e., dot product is below the threshold)
-        # self.reset_buf = torch.where(dot_with_gravity < tipping_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
 
         # Calculate the projected gravity in the robot's local frame
         projected_gravity = quat_rotate_inverse(base_quat, self.gravity_vec)
