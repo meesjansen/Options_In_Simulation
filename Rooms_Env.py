@@ -364,7 +364,7 @@ class ReachingFoodTask(RLTask):
         )
         self.reset_buf.fill_(0)
 
-        base_pos, base_rot = self._robots.get_world_poses(clone=False)
+        base_pos, base_quat = self._robots.get_world_poses(clone=False)
         target_pos, target_rot = self._targets.get_world_poses(clone=False)
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
@@ -374,7 +374,7 @@ class ReachingFoodTask(RLTask):
         self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
 
         # Calculate the up vector from the quaternion
-        up_vector = quat_rotate_inverse(base_rot, torch.tensor([0, 0, 1], device=self.device))
+        up_vector = quat_rotate_inverse(base_quat, torch.tensor([0, 0, 1]).repeat(self.num_envs, 1))
         # Dot product with gravity (negative z-axis)
         tipping_threshold = 0.5  # Adjust based on experimentation
         dot_with_gravity = torch.sum(up_vector * torch.tensor([0, 0, -1], device=self.device), dim=-1)
