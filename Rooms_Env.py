@@ -189,8 +189,8 @@ class ReachingFoodTask(RLTask):
         )
         robot.set_robot_properties(self._stage, robot.prim)
 
-        self._dof_indices = torch.tensor([robot.get_dof_index(dof) for dof in robot.dof_names], dtype=torch.int32, device=self.device)
-        print("Named dof indices:", self._dof_indices)
+        # self._dof_indices = torch.tensor([robot.get_dof_index(dof) for dof in robot.dof_names], dtype=torch.int32, device=self.device)
+        print("Named dof indices:", robot.get_dof_index("rear_left_wheel"))
 
     def get_target(self):
         target = DynamicSphere(prim_path=self.default_zero_env_path + "/target",
