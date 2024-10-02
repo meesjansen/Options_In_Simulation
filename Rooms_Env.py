@@ -257,7 +257,7 @@ class ReachingFoodTask(RLTask):
 
         self.last_actions[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
-        self.reset_buf[env_ids] = 1
+        self.reset_buf[env_ids] = 0
 
         # fill extras for reward shaping
         # self.extras["episode"] = {}
@@ -414,7 +414,7 @@ class ReachingFoodTask(RLTask):
 
         base_pos, base_rot = self._robots.get_world_poses(clone=False)
         target_pos, target_rot = self._targets.get_world_poses(clone=False)
-        delta_pos = target_pos - self.env_origins
+        delta_pos = target_pos - base_pos
 
         # Get current joint efforts (torques)
         _efforts = self._robots.get_applied_joint_efforts(clone=True)
