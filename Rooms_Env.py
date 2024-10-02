@@ -32,7 +32,7 @@ TASK_CFG = {"test": False,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
                              "controlFrequencyInv": 4,
-                             "baseInitState": {"pos": [-4.0, -4.0, 1.0], # x,y,z [m]
+                             "baseInitState": {"pos": [-2.0, -2.0, 0.20], # x,y,z [m]
                                               "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
                                               "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
                                               "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
@@ -189,8 +189,6 @@ class ReachingFoodTask(RLTask):
         )
         robot.set_robot_properties(self._stage, robot.prim)
 
-        # self._dof_indices = torch.tensor([robot.get_dof_index(dof) for dof in robot.dof_names], dtype=torch.int32, device=self.device)
-        print("Named dof indices:", robot.get_dof_index("rear_left_wheel"))
 
     def get_target(self):
         target = DynamicSphere(prim_path=self.default_zero_env_path + "/target",
@@ -314,8 +312,6 @@ class ReachingFoodTask(RLTask):
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
         updated_efforts = torch.clip(updated_efforts, -100.0, 100.0)
-        test_efforts3 = torch.tensor([100.0, 100.0, 100.0, 100.0, 100.0, 100.0])
-        test_efforts3 = test_efforts3.unsqueeze(0)
         joint_indices = torch.tensor([1, 2, 4, 5])
           
         for i in range(self.decimation):
@@ -328,7 +324,8 @@ class ReachingFoodTask(RLTask):
                 self.torques = updated_efforts
                 SimulationContext.step(self.world, render=False)
 
-        print("Named dof indices:", self._robots.get_dof_index("rear_left_wheel"))
+        # self._dof_indices = torch.tensor([robot.get_dof_index(dof) for dof in robot.dof_names], dtype=torch.int32, device=self.device)
+        print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in self._robots.dof_names])
 
                 
         
@@ -394,7 +391,7 @@ class ReachingFoodTask(RLTask):
 
         # Detect if the robot is on its back based on positive Z-axis component of the projected gravity
         positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
-        self.reset_buf = torch.where(projected_gravity[:, 2] < positive_gravity_z_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
+        # self.reset_buf = torch.where(projected_gravity[:, 2] < positive_gravity_z_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
 
     
     def calculate_metrics(self) -> None:
