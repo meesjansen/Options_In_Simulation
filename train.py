@@ -45,7 +45,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from origin_terrain import ReachingFoodTask, TASK_CFG
+from Rooms_Env import ReachingFoodTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
@@ -75,8 +75,32 @@ models_q["policy"] = EpilonGreedyPolicy(observation_space=env.observation_space,
 # Configure and instantiate the agent.
 # Only modify some of the default configuration, visit its documentation to see all the options
 # https://skrl.readthedocs.io/en/latest/api/agents/q_learning.html
-cfg_agent = Q_LEARNING_DEFAULT_CONFIG.copy()
+
 # cfg_agent["<KEY>"] = ...
+Q_LEARNING_DEFAULT_CONFIG = {
+    "discount_factor": 0.99,        # discount factor (gamma)
+
+    "random_timesteps": 0,          # random exploration steps
+    "learning_starts": 0,           # learning starts after this many steps
+
+    "learning_rate": 0.5,           # learning rate (alpha)
+
+    "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
+
+    "experiment": {
+        "directory": "./my_runs",            # experiment's parent directory
+        "experiment_name": "Terrains_Env",      # experiment name
+        "write_interval": "32",   # TensorBoard writing interval (timesteps)
+
+        "checkpoint_interval": "250",      # interval for checkpoints (timesteps)
+        "store_separately": False,          # whether to store checkpoints separately
+
+        "wandb": False,             # whether to use Weights & Biases
+        "wandb_kwargs": {}          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
+    }
+}
+
+cfg_agent = Q_LEARNING_DEFAULT_CONFIG.copy()
 
 
 agent = Q_LEARNING(models=models_q,

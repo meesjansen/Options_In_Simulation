@@ -373,6 +373,15 @@ class ReachingFoodTask(RLTask):
         # max episode length
         self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
 
+        # Calculate the up vector from the quaternion
+        up_vector = quat_rotate_inverse(base_rot, torch.tensor([0, 0, 1], device=self.device))
+        # Dot product with gravity (negative z-axis)
+        tipping_threshold = 0.5  # Adjust based on experimentation
+        dot_with_gravity = torch.sum(up_vector * torch.tensor([0, 0, -1], device=self.device), dim=-1)
+        
+        # Check if the robot is tipped over (i.e., dot product is below the threshold)
+        self.reset_buf = torch.where(dot_with_gravity < tipping_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
+
     def calculate_metrics(self) -> None:
         self.rew_buf[:] = -self._computed_distance
 
