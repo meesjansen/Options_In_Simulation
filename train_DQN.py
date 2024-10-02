@@ -6,6 +6,7 @@ from skrl.memories.torch import RandomMemory
 from skrl.agents.torch.dqn import DQN, DQN_DEFAULT_CONFIG
 from skrl.utils.model_instantiators.torch import Shape, deterministic_model
 from skrl.trainers.torch import SequentialTrainer
+from skrl.resources.preprocessors.torch import RunningStandardScaler
 from skrl.utils.omniverse_isaacgym_utils import get_env_instance
 from skrl.envs.wrappers.torch import wrap_env
 from skrl.utils import set_seed
@@ -122,6 +123,9 @@ cfg["exploration"]["timesteps"] = 1500
 cfg["experiment"]["write_interval"] = 1000
 cfg["experiment"]["checkpoint_interval"] = 5000
 cfg["experiment"]["directory"] = "my_runs"
+cfg["state_preprocessor"] = RunningStandardScaler
+cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
+
 
 agent = DQN(models=models,
             memory=memory,
