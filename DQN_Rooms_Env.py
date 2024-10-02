@@ -117,8 +117,8 @@ class ReachingFoodTask(RLTask):
         self._max_episode_length = self._task_cfg["env"]["episodeLength"]
         
         # observation and action space DQN
-        self._num_observations = 12 # feuteres^bins 10^6
-        self._num_actions = 12  # Assuming 3 discrete actions per wheel
+        self._num_observations = 16 
+        self._num_actions = 12  
         self.common_step_counter = 0
 
         self.update_config(sim_config)
