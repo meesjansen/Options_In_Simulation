@@ -8,6 +8,7 @@ from omniisaacgymenvs.tasks.base.rl_task import RLTask
 from omni.isaac.core.prims import RigidPrimView
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.objects import DynamicSphere
+from omni.isaac.core.utils.torch.rotations import *
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.torch.maths import torch_rand_float
 from omni.isaac.core.utils.stage import get_current_stage
@@ -26,7 +27,7 @@ TASK_CFG = {"test": False,
             "seed": 42,
             "task": {"name": "ReachingFood",
                      "physics_engine": "physx",
-                     "env": {"numEnvs": 1,
+                     "env": {"numEnvs": 4,
                              "envSpacing": 1.5,
                              "episodeLength": 1000,
                              "enableDebugVis": False,
@@ -37,7 +38,7 @@ TASK_CFG = {"test": False,
                                               "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
                                               "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
                                                 },
-                            "baseInitTorques": [40.0, 40.0, 40.0, 40.0]                            
+                            "baseInitTorques": [0.0, 0.0, 0.0, 0.0]                            
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
                              "use_gpu_pipeline": True,
@@ -105,33 +106,38 @@ class RobotView(ArticulationView):
 
 class ReachingFoodTask(RLTask):
     def __init__(self, name, sim_config, env, offset=None) -> None:
-        self._sim_config = sim_config
-        self._cfg = sim_config.config
-        self._task_cfg = sim_config.task_config
 
+        self.height_samples = None
+        self.init_done = False
+        
         self.dt = 1 / 120.0
 
-        self._num_envs = self._task_cfg["env"]["numEnvs"]
-        self._num_envs = torch.tensor(self._num_envs, dtype=torch.int64)
-        self._env_spacing = self._task_cfg["env"]["envSpacing"]
-        self._max_episode_length = self._task_cfg["env"]["episodeLength"]
-        
         # observation and action space DQN
         self._num_observations = 1_000_000 # feuteres^bins 10^6
         self._num_actions = 12  # Assuming 3 discrete actions per wheel
         self.common_step_counter = 0
 
-
-        # observation and action space DQN
-        # self._num_observations = 20026 # 89 + 6 + 4 + 3 + 3 = hiehgtpoints + IMU vel + torque per wheel + target + grav vector
-        # self._num_actions = 12  # Assuming 3 discrete actions per wheel
-
         self.update_config(sim_config)
 
         RLTask.__init__(self, name, env)
 
+        self.height_points = self.init_height_points()  
+        self.measured_heights = None
+
+        return
+
 
     def update_config(self, sim_config):
+        self._sim_config = sim_config
+        self._cfg = sim_config.config
+        self._task_cfg = sim_config.task_config
+
+        # env config
+        self._num_envs = self._task_cfg["env"]["numEnvs"]
+        self._num_envs = torch.tensor(self._num_envs, dtype=torch.int64)
+        self._env_spacing = self._task_cfg["env"]["envSpacing"]
+        self._max_episode_length = self._task_cfg["env"]["episodeLength"]
+
         # base init state
         pos = self._task_cfg["env"]["baseInitState"]["pos"]
         rot = self._task_cfg["env"]["baseInitState"]["rot"]
@@ -142,8 +148,24 @@ class ReachingFoodTask(RLTask):
 
         self.decimation = 4
 
+    def init_height_points(self):
+        # 4mx4m rectangle (without center line)
+        y = 0.25 * torch.tensor(
+            [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6 -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], device=self.device, requires_grad=False
+        )  # 25cm on each side
+        x = 0.25 * torch.tensor(
+            [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6 -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], device=self.device, requires_grad=False
+        )  
+        grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
+
+        self.num_height_points = grid_x.numel()
+        points = torch.zeros(self.num_envs, self.num_height_points, 3, device=self.device, requires_grad=False)
+        points[:, :, 0] = grid_x.flatten()
+        points[:, :, 1] = grid_y.flatten()
+        return points
+
     def _create_trimesh(self, create_mesh=True):
-        self.terrain = Terrain(num_robots=1)
+        self.terrain = Terrain(num_robots=self.num_envs)
         vertices = self.terrain.vertices
         triangles = self.terrain.triangles
         position = torch.tensor([-self.terrain.border_size, -self.terrain.border_size, 0.0])
@@ -375,18 +397,21 @@ class ReachingFoodTask(RLTask):
         target_pos, target_rot = self._targets.get_world_poses(clone=False)
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
-        # target reached
+        # target reached or lost
         self.reset_buf = torch.where(self._computed_distance <= 0.0035, torch.ones_like(self.reset_buf), self.reset_buf)
+        self.reset_buf = torch.where(self._computed_distance >= 3.0, torch.ones_like(self.reset_buf), self.reset_buf)
+
         # max episode length
         self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
 
         # Calculate the projected gravity in the robot's local frame
-        projected_gravity = quat_rotate_inverse(base_quat, self.gravity_vec)
+        print("Gravity vector", self.gravity_vec)
+        projected_gravity = quat_apply(base_quat, self.gravity_vec)
         print("Projected gravity vector", projected_gravity)
 
         # Detect if the robot is on its back based on positive Z-axis component of the projected gravity
         positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
-        self.reset_buf = torch.where(projected_gravity[:, 2] < positive_gravity_z_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
+        self.reset_buf = torch.where(projected_gravity[:, 2] > positive_gravity_z_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
 
     
     def calculate_metrics(self) -> None:
@@ -417,7 +442,8 @@ class ReachingFoodTask(RLTask):
     
 
     def get_observations(self):
-        heights = self.get_heights()
+        self.measured_heights = self.get_heights()
+        heights = self.measured_heights * self.terrain.vertical_scale 
 
         base_pos, base_rot = self._robots.get_world_poses(clone=False)
         target_pos, target_rot = self._targets.get_world_poses(clone=False)
@@ -458,9 +484,9 @@ class ReachingFoodTask(RLTask):
             (
                 self.base_lin_vel[:, :2],
                 self.base_ang_vel[:, :2],
-                # discrete_projected_gravity,
+                # projected_gravity,
                 delta_pos[:, :2],
-                # discrete_heights,
+                # heights,
                 current_efforts 
             ),
             dim=-1,
@@ -472,12 +498,33 @@ class ReachingFoodTask(RLTask):
 
     def get_heights(self, env_ids=None):
         
-        heights = self.height_samples
+        if env_ids:
+            # Simply grab height_points for each environment based on the grid position
+            points = self.height_points[env_ids] + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
+        else:
+            # No rotation, just use the stationary grid and base positions
+            points = self.height_points + self.base_pos[:, 0:3].unsqueeze(1)
 
+        # Add terrain border size
+        points += self.terrain.border_size
+
+        # Convert to terrain grid coordinates (account for terrain scaling)
+        points = (points / self.terrain.horizontal_scale).long()
         
+        # Extract the x and y coordinates for indexing into height_samples
+        px = points[:, :, 0].view(-1)  # Flatten x coordinates
+        py = points[:, :, 1].view(-1)  # Flatten y coordinates
+        
+        # Clip the values to stay within the height samples bounds
+        px = torch.clip(px, 0, self.height_samples.shape[0] - 2)
+        py = torch.clip(py, 0, self.height_samples.shape[1] - 2)
+        
+        # Get heights from the height_samples for these coordinates
+        heights1 = self.height_samples[px, py]
+        heights2 = self.height_samples[px + 1, py + 1]
+        
+        # Use the minimum height as a conservative estimate
+        heights = torch.min(heights1, heights2)
+
+        # Return the heights, scaled by the vertical scale
         return heights.view(self.num_envs, -1) * self.terrain.vertical_scale
-
-    
-
-
-

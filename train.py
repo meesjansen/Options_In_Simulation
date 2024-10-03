@@ -11,7 +11,7 @@ from skrl.utils.omniverse_isaacgym_utils import get_env_instance
 from skrl.envs.wrappers.torch import wrap_env
 from skrl.utils import set_seed
 
-from q_learning import Q_LEARNING
+from my_agents.q_learning import Q_LEARNING
 
 
 # Seed for reproducibility
@@ -45,7 +45,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from Rooms_Env import ReachingFoodTask, TASK_CFG
+from Rooms_Envs import ReachingFoodTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
