@@ -112,11 +112,6 @@ class ReachingFoodTask(RLTask):
         
         self.dt = 1 / 120.0
 
-        self._num_envs = self._task_cfg["env"]["numEnvs"]
-        self._num_envs = torch.tensor(self._num_envs, dtype=torch.int64)
-        self._env_spacing = self._task_cfg["env"]["envSpacing"]
-        self._max_episode_length = self._task_cfg["env"]["episodeLength"]
-        
         # observation and action space DQN
         self._num_observations = 1_000_000 # feuteres^bins 10^6
         self._num_actions = 12  # Assuming 3 discrete actions per wheel
@@ -132,11 +127,16 @@ class ReachingFoodTask(RLTask):
         return
 
 
-
     def update_config(self, sim_config):
         self._sim_config = sim_config
         self._cfg = sim_config.config
         self._task_cfg = sim_config.task_config
+
+        # env config
+        self._num_envs = self._task_cfg["env"]["numEnvs"]
+        self._num_envs = torch.tensor(self._num_envs, dtype=torch.int64)
+        self._env_spacing = self._task_cfg["env"]["envSpacing"]
+        self._max_episode_length = self._task_cfg["env"]["episodeLength"]
 
         # base init state
         pos = self._task_cfg["env"]["baseInitState"]["pos"]
