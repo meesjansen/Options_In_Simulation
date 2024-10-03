@@ -60,6 +60,59 @@ def rooms_terrain(terrain, wall_height=400, wall_thickness=5, passage_width=20):
 # print(terrain.height_field_raw)
 # np.savetxt('terrain_height_field.txt', terrain.height_field_raw, fmt='%d')
 
+def stairs_terrain(terrain, step_width, step_height):
+    """
+    Generate a stairs
+
+    Parameters:
+        terrain (terrain): the terrain
+        step_width (float):  the width of the step [meters]
+        step_height (float):  the height of the step [meters]
+    Returns:
+        terrain (SubTerrain): update terrain
+    """
+    # switch parameters to discrete units
+    step_width = int(step_width / terrain.horizontal_scale)
+    step_height = int(step_height / terrain.vertical_scale)
+
+    num_steps = terrain.width // step_width
+    height = step_height
+    for i in range(num_steps):
+        terrain.height_field_raw[i * step_width : (i + 1) * step_width, :] += height
+        height += step_height
+    return terrain
+
+def pyramid_stairs_terrain(terrain, step_width, step_height, platform_size=1.0):
+    """
+    Generate stairs
+
+    Parameters:
+        terrain (terrain): the terrain
+        step_width (float):  the width of the step [meters]
+        step_height (float): the step_height [meters]
+        platform_size (float): size of the flat platform at the center of the terrain [meters]
+    Returns:
+        terrain (SubTerrain): update terrain
+    """
+    # switch parameters to discrete units
+    step_width = int(step_width / terrain.horizontal_scale)
+    step_height = int(step_height / terrain.vertical_scale)
+    platform_size = int(platform_size / terrain.horizontal_scale)
+
+    height = 0
+    start_x = 0
+    stop_x = terrain.width
+    start_y = 0
+    stop_y = terrain.length
+    while (stop_x - start_x) > platform_size and (stop_y - start_y) > platform_size:
+        start_x += step_width
+        stop_x -= step_width
+        start_y += step_width
+        stop_y -= step_width
+        height += step_height
+        terrain.height_field_raw[start_x:stop_x, start_y:stop_y] = height
+    return terrain
+
 
 
 def convert_heightfield_to_trimesh(height_field_raw, horizontal_scale, vertical_scale, slope_threshold=None):
