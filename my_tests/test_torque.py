@@ -46,10 +46,10 @@ rubber_material = PhysicsMaterial(
 
 # Apply the physics material to each wheel
 wheel_prim_paths = [
-    "/World/YourRobot/left_front_wheel",
-    "/World/YourRobot/right_front_wheel",
-    "/World/YourRobot/left_rear_wheel",
-    "/World/YourRobot/right_rear_wheel"
+    "/World/Robot/left_front_wheel",
+    "/World/Robot/left_rear_wheel",
+    "/World/Robot/right_front_wheel",
+    "/World/Robot/right_rear_wheel",
 ]
 
 for wheel_path in wheel_prim_paths:
@@ -75,13 +75,11 @@ dof_names = robot_articulations.dof_names
 print("DOF Names from USD file:", dof_names)
 
 wheel_dof_names = [
-    "rear_left_wheel", 
-    "rear_right_wheel",
-    "front_left_wheel",
-    "front_right_wheel"
+    "left_front_wheel", 
+    "left_rear_wheel",
+    "right_front_wheel",
+    "right_rear_wheel"
 ]
-
-# joint_indices = torch.tensor([1, 2, 4, 5])
 
 print("Using predefined wheel DOF names:", wheel_dof_names)
 

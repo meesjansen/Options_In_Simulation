@@ -17,7 +17,7 @@
       </geometry>
     </collision>
     <visual name='visual'>
-      <origin xyz="0 0 0" rpy="0 0 0.0"/>
+      <origin xyz="0 0 0.07" rpy="0 0 0.0"/>
       <geometry>
         <box size=".65 .4 .125"/>
       </geometry>
@@ -39,7 +39,7 @@
       </geometry>
     </collision>
     <visual>
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 0.0"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 1.5707"/>
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
@@ -62,7 +62,7 @@
       </geometry>
     </collision>
     <visual>
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 0.0"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 1.5707"/>
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
@@ -84,7 +84,7 @@
       </geometry>
     </collision>
     <visual>
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 0.0"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 1.5707"/>
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
@@ -106,7 +106,7 @@
       </geometry>
     </collision>
     <visual>
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 0.0"/>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 1.5707"/>
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
@@ -139,7 +139,6 @@
     </collision>
   </link>
 
-  <link name="os_sensor" />
 
   <link name="lidar_link_gazebo">
     <inertial>
@@ -167,18 +166,6 @@
       </geometry>
     </collision>
   </link>
-
-  <link name="gnss_link">
-    <visual name="visual_pole">
-      <geometry>
-        <box size="0.03 0.03 0.1"/>
-      </geometry>
-      <material name="gnss_link_color">
-        <color rgba="1 1 1 1"/>  <!-- White -->
-      </material>
-    </visual>
-  </link>
-  
 
   <joint type="fixed" name="base_body">
     <origin xyz="0.0 0 0.064" rpy="0 0 0"/>
@@ -224,12 +211,6 @@
     <parent link="main_body"/>
   </joint>
 
-  <joint name="ouster_orientation_joint" type="fixed">
-    <parent link="ouster_base" />
-    <child link="os_sensor" />
-    <origin xyz="0 0 0" rpy="0 0 0" />
-  </joint>
-
   <joint type="fixed" name="lidar_joint_gazebo">
     <origin xyz="0 0 0.035" rpy="0 0 0"/>
     <child link="lidar_link_gazebo" />
@@ -239,12 +220,6 @@
   <joint type="fixed" name="realsense_joint">
     <origin xyz="0.32 0.03 0.1" rpy="0 0 0"/>
     <child link="camera_link"/>
-    <parent link="main_body"/>
-  </joint>
-
-  <joint type="fixed" name="gnss_joint">
-    <origin xyz="-0.0505 0 0.212" rpy="0 0 0"/>
-    <child link="gnss_link"/>
     <parent link="main_body"/>
   </joint>
 
