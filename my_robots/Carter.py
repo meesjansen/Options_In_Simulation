@@ -13,7 +13,7 @@ class Carter(Robot):
     def __init__(
         self,
         prim_path: str,
-        name: Optional[str] = "origin",
+        name: Optional[str] = "carter",
         usd_path: Optional[str] = None,
         translation: Optional[np.ndarray] = None,
         orientation: Optional[np.ndarray] = None,

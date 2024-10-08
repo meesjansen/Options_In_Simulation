@@ -19,9 +19,11 @@
     <visual name='visual'>
       <origin xyz="0 0 0" rpy="0 0 0.0"/>
       <geometry>
-        <mesh filename="../meshes/body.obj"
-          scale="1.0 1.0 1.0" />
+        <box size=".65 .4 .125"/>
       </geometry>
+      <material name="main_body_color">
+        <color rgba="1 0 0 1"/>  <!-- RED -->
+      </material>
     </visual>
   </link>
 
@@ -39,9 +41,11 @@
     <visual>
       <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 0.0"/>
       <geometry>
-        <mesh filename="../meshes/wheel.obj"
-          scale="1.0 1.0 1.0" />
+        <cylinder length=".07" radius=".1175"/>
       </geometry>
+      <material name="left_front_wheel_color">
+        <color rgba="0 0 0 1"/>  <!-- Black -->
+      </material>
     </visual>
   </link>
 
@@ -60,9 +64,11 @@
     <visual>
       <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 0.0"/>
       <geometry>
-        <mesh filename="../meshes/wheel.obj"
-          scale="1.0 1.0 1.0" />
+        <cylinder length=".07" radius=".1175"/>
       </geometry>
+      <material name="right_front_wheel_color">
+        <color rgba="0 0 0 1"/>  <!-- Black -->
+      </material>
     </visual>
   </link>
 
@@ -80,9 +86,11 @@
     <visual>
       <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 0.0"/>
       <geometry>
-        <mesh filename="../meshes/wheel.obj"
-          scale="1.0 1.0 1.0" />
+        <cylinder length=".07" radius=".1175"/>
       </geometry>
+      <material name="left_rear_wheel_color">
+        <color rgba="0 0 0 1"/>  <!-- Black -->
+      </material>
     </visual>
   </link>
 
@@ -100,9 +108,11 @@
     <visual>
       <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 0.0"/>
       <geometry>
-        <mesh filename="../meshes/wheel.obj"
-          scale="1.0 1.0 1.0" />
+        <cylinder length=".07" radius=".1175"/>
       </geometry>
+      <material name="right_rear_wheel_color">
+        <color rgba="0 0 0 1"/>  <!-- Black -->
+      </material>
     </visual>
   </link>
 
@@ -115,9 +125,11 @@
     </inertial>
     <visual name="visual">
       <geometry>
-        <mesh filename="../meshes/ouster.obj"
-          scale="1.0 1.0 1.0" />
+        <box size="0.1 0.1 0.1"/>
       </geometry>
+      <material name="ouster_base_color">
+        <color rgba="1 1 1 1"/>  <!-- White -->
+      </material>
     </visual>
     <collision name="collision-base">
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
@@ -159,13 +171,11 @@
   <link name="gnss_link">
     <visual name="visual_pole">
       <geometry>
-        <mesh filename="../meshes/antenna.obj"
-          scale="1.0 1.0 1.0" />
-      </geometry>
-      <origin xyz="0.0 0 0.0" rpy="0 0 0"/>
-      <geometry>
         <box size="0.03 0.03 0.1"/>
       </geometry>
+      <material name="gnss_link_color">
+        <color rgba="1 1 1 1"/>  <!-- White -->
+      </material>
     </visual>
   </link>
   
