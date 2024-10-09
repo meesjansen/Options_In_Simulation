@@ -13,7 +13,8 @@ CONFIG = {
     "height": 720,                                                                                                          
     "window_width": 1920,                                                                                                   
     "window_height": 1080,                                                                                                  
-    "headless": True,                                                                                                       
+    "headless": True, 
+    "enable_livestream": True,                                                                                                      
     "renderer": "RayTracedLighting",                                                                                        
     "display_options": 3286, 
      
