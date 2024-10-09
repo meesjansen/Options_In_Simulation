@@ -28,14 +28,15 @@ from omni.isaac.core.prims import GeometryPrim
 from omni.isaac.core.utils.extensions import enable_extension
 import numpy as np
 
-# Enable Native Livestream extension
-enable_extension("omni.kit.livestream.native")
 
 # Set livestream settings
 simulation_app.set_setting("/app/window/drawMouse", True)
 simulation_app.set_setting("/app/livestream/proto", "ws")
 simulation_app.set_setting("/app/livestream/websocket/framerate_limit", 120)
 simulation_app.set_setting("/ngx/enabled", False)
+
+# Enable Native Livestream extension
+enable_extension("omni.kit.livestream.native")
 
 # Initialize the simulation world
 world = World(stage_units_in_meters=1.0)
