@@ -6,13 +6,12 @@ from my_utils.terrain_utils import *
 
 class Terrain:
     def __init__(self, num_robots) -> None:
-        self.horizontal_scale = 0.1
+        self.horizontal_scale = 0.05
         self.vertical_scale = 0.005
         self.border_size = 20
         self.num_per_env = 1
         self.env_length = 4
         self.env_width = 4
-        # self.proportions = [np.sum(cfg["terrainProportions"][: i + 1]) for i in range(len(cfg["terrainProportions"]))]
 
         self.env_rows = 2
         self.env_cols = 2
@@ -33,7 +32,7 @@ class Terrain:
 
         self.heightsamples = self.height_field_raw
         self.vertices, self.triangles = convert_heightfield_to_trimesh(
-                    self.height_field_raw, self.horizontal_scale, self.vertical_scale, slope_threshold=0.5)
+                    self.height_field_raw, self.horizontal_scale, self.vertical_scale, slope_threshold=0.9)
 
 
     def cr_rooms_env(self):
@@ -88,7 +87,7 @@ class Terrain:
             )
 
             step_height = np.random.choice([-0.1, 0.1])
-            pyramid_stairs_terrain(terrain, step_width=0.8, step_height=step_height, platform_size=0.8)
+            pyramid_stairs_terrain(terrain, step_width=0.8, step_height=0.1, platform_size=0.8)
 
             self.height_field_raw[start_x:end_x, start_y:end_y] = terrain.height_field_raw
 

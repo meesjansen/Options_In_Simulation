@@ -89,9 +89,19 @@ async def run_simulation():
         await asyncio.sleep(0)  # Yield control to allow async event loop to continue
 
         # Apply torques to the wheels
+        # wheel_torques = [100.0, 100.0, 100.0, 100.0]
         wheel_torques = torch.tensor([100.0, 100.0, 100.0, 100.0])
         robot_articulations.set_joint_efforts(wheel_torques) #, joint_indices=joint_indices)
         world.step(render=True)
+
+    # steps = 100  # Run for 100 steps
+    # for _ in range(steps):
+    #     await asyncio.sleep(0)  # Yield control to allow async event loop to continue
+    #     robot_articulations.set_joint_efforts(wheel_torques)
+    #     world.step(render=True)
+
+
+
 
 # Run the simulation asynchronously
 asyncio.run(run_simulation())
