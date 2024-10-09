@@ -52,11 +52,7 @@ wheel_prim_paths = [
     "/World/Robot/right_rear_wheel",
 ]
 
-for wheel_path in wheel_prim_paths:
-    # Define the geometry prim for each wheel
-    wheel_prim = GeometryPrim(prim_path=wheel_path)
-    # Apply the physics material to the wheel
-    wheel_prim.apply_physics_material(rubber_material)
+
 
 # Add the USD file reference to the simulation stage
 # add_reference_to_stage(usd_path, prim_path)
@@ -68,6 +64,12 @@ world.scene.add(robot_articulations)
 # Reset world to initialize everything
 world.reset()
 robot_articulations.initialize()  # This line is critical
+
+for wheel_path in wheel_prim_paths:
+    # Define the geometry prim for each wheel
+    wheel_prim = GeometryPrim(prim_path=wheel_path)
+    # Apply the physics material to the wheel
+    wheel_prim.apply_physics_material(rubber_material)
 
 
 # Retrieve and print the DOF names
