@@ -13,8 +13,11 @@ from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.torch.maths import torch_rand_float
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.simulation_context import SimulationContext
+from omni.isaac.core.materials.physics_material import PhysicsMaterial
+from omni.isaac.core.prims import GeometryPrim
 
-from my_robots.Four_Wheels_v2 import LimoAckermann as Robot
+
+from my_robots.Origin import AvularOrigin as Robot
 from my_utils.terrain_generator import *
 from my_utils.terrain_utils import *
 
@@ -190,6 +193,29 @@ class ReachingFoodTask(RLTask):
         # food view
         self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
         scene.add(self._targets)
+
+        rubber_material = PhysicsMaterial(
+            prim_path="/World/PhysicsMaterials/RubberMaterial",
+            static_friction=0.9,
+            dynamic_friction=0.8,
+            restitution=0.2
+        )
+
+        # Define the relative wheel paths for each robot instance
+        wheel_prim_paths = [
+            "main_body/main_body_left_front_wheel",
+            "main_body/main_body_left_rear_wheel",
+            "main_body/main_body_right_front_wheel",
+            "main_body/main_body_right_rear_wheel",
+        ]
+
+        # Apply the material to each robot's wheels
+        for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
+            for wheel_relative_path in wheel_prim_paths:
+                wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
+                wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
+                wheel_prim.apply_physics_material(rubber_material)  # Apply the material
+
 
     def get_terrain(self, create_mesh=True):
         self.env_origins = torch.zeros((self.num_envs, 3), device=self.device, requires_grad=False)

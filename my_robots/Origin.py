@@ -11,6 +11,8 @@ from omni.isaac.core.utils.stage import add_reference_to_stage
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.wheeled_robots.robots import WheeledRobot
+from omni.isaac.core.prims import GeometryPrim
+from omni.isaac.core.materials.physics_material import PhysicsMaterial
 
 
 
