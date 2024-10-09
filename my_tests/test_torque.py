@@ -35,6 +35,7 @@ GroundPlane(prim_path="/World/groundPlane", size=10, color=np.array([0.5, 0.5, 0
 # Add the custom USD file to the stage
 usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_assets", "origin_v10.usd"))  # Adjust this to the actual USD path for your Limo robot
 prim_path = "/World/Robot"
+add_reference_to_stage(usd_path, prim_path)
 
 # Define the physics material properties for rubber
 rubber_material = PhysicsMaterial(
@@ -52,6 +53,8 @@ wheel_prim_paths = [
     "/World/Robot/right_rear_wheel",
 ]
 
+from omni.isaac.core.utils.stage import print_stage_prim_paths
+print_stage_prim_paths()
 
 
 # Add the USD file reference to the simulation stage
@@ -64,6 +67,8 @@ world.scene.add(robot_articulations)
 # Reset world to initialize everything
 world.reset()
 robot_articulations.initialize()  # This line is critical
+
+
 
 for wheel_path in wheel_prim_paths:
     # Define the geometry prim for each wheel
