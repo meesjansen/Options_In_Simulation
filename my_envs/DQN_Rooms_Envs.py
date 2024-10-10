@@ -307,7 +307,7 @@ class ReachingFoodTask(RLTask):
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
 
         # Z position is fixed at 0.2
-        z_pos = 0.2
+        z_pos = 0.8
 
         # Store the position in a list
         pos = ([x_pos, y_pos, z_pos])
@@ -386,7 +386,7 @@ class ReachingFoodTask(RLTask):
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
-        updated_efforts = torch.clip(updated_efforts, -5.0, 5.0)
+        updated_efforts = torch.clip(updated_efforts, -10.0, 10.0)
         # joint_indices = torch.tensor([1, 2, 4, 5])
           
         for i in range(self.decimation):
