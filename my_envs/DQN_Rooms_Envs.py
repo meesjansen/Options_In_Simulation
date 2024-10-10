@@ -376,10 +376,10 @@ class ReachingFoodTask(RLTask):
 
         # self._dof_indices = torch.tensor([robot.get_dof_index(dof) for dof in robot.dof_names], dtype=torch.int32, device=self.device)
         print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in [
-                "rear_left_wheel", 
-                "rear_right_wheel",
-                "front_left_wheel",
-                "front_right_wheel"
+                "main_body_left_front_wheel", 
+                "main_body_left_rear_wheel",
+                "main_body_right_front_wheel",
+                "main_body_right_rear_wheel"
         ]])
 
                 
