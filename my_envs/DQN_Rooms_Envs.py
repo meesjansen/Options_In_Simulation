@@ -11,7 +11,7 @@ from omni.isaac.core.objects import DynamicSphere
 from omni.isaac.core.utils.torch.rotations import *
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.torch.maths import torch_rand_float
-from omni.isaac.core.utils.stage import get_current_stage
+from omni.isaac.core.utils.stage import get_current_stage, add_reference_to_stage, print_stage_prim_paths
 from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.materials.physics_material import PhysicsMaterial
 from omni.isaac.core.prims import GeometryPrim
@@ -209,6 +209,8 @@ class ReachingFoodTask(RLTask):
             "main_body_right_rear_wheel",
         ]
 
+        print_stage_prim_paths()
+
         # Apply the material to each robot's wheels
         for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
             for wheel_relative_path in wheel_prim_paths:
@@ -348,7 +350,7 @@ class ReachingFoodTask(RLTask):
             [-10.0, -10.0, 10.0, 10.0]
         ], device=self.device)
 
-        current_efforts = self._robots.get_applied_joint_efforts(clone=True)[:, np.array([1,2,4,5])]
+        current_efforts = self._robots.get_applied_joint_efforts(clone=True) # [:, np.array([1,2,4,5])]
         updated_efforts = torch.zeros_like(current_efforts)
 
         self.actions = actions.clone().to(self.device)
@@ -360,13 +362,13 @@ class ReachingFoodTask(RLTask):
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
         updated_efforts = torch.clip(updated_efforts, -100.0, 100.0)
-        joint_indices = torch.tensor([1, 2, 4, 5])
+        # joint_indices = torch.tensor([1, 2, 4, 5])
           
         for i in range(self.decimation):
             if self.world.is_playing():
                 
                 # self._robots.set_joint_efforts(test_efforts1, indices=np.array([0]),joint_indices=np.array([1, 2, 4, 5]))
-                self._robots.set_joint_efforts(updated_efforts, joint_indices=joint_indices)
+                self._robots.set_joint_efforts(updated_efforts) # , joint_indices=joint_indices)
                 print("Applied torques:", updated_efforts)
 
                 SimulationContext.step(self.world, render=False)
@@ -454,7 +456,7 @@ class ReachingFoodTask(RLTask):
 
         # Get current joint efforts (torques)
         _efforts = self._robots.get_applied_joint_efforts(clone=True)
-        current_efforts = _efforts[:, np.array([1,2,4,5])]
+        current_efforts = _efforts #[:, np.array([1,2,4,5])]
 
         # compute distance for calculate_metrics() and is_done()
         self._computed_distance = torch.norm(delta_pos, dim=-1)
