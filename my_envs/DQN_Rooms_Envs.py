@@ -203,16 +203,17 @@ class ReachingFoodTask(RLTask):
 
         # Define the relative wheel paths for each robot instance
         wheel_prim_paths = [
-            "main_body_left_front_wheel",
-            "main_body_left_rear_wheel",
-            "main_body_right_front_wheel",
-            "main_body_right_rear_wheel",
+            "main_body/main_body_left_front_wheel",
+            "main_body/main_body_left_rear_wheel",
+            "main_body/main_body_right_front_wheel",
+            "main_body/main_body_right_rear_wheel",
         ]
 
         print_stage_prim_paths()
 
         # Apply the material to each robot's wheels
         for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
+            robot_prim_path = robot_prim_path.replace("/base_link", "")
             for wheel_relative_path in wheel_prim_paths:
                 wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
                 wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
