@@ -337,18 +337,18 @@ class ReachingFoodTask(RLTask):
 
         # There are 12 possible actions
         action_torque_vectors = torch.tensor([
-            [10.0, 10.0, 10.0, 10.0],
-            [-10.0, -10.0, -10.0, -10.0],
-            [10.0, 0.0, 10.0, 0.0],
-            [0.0, 10.0, 0.0, 10.0],
+            [1.0, 1.0, 1.0, 1.0],
+            [-1.0, -1.0, -1.0, -1.0],
+            [1.0, .0, 1.0, 0.0],
+            [0.0, 1.0, 0.0, 1.0],
             [0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 10.0],
-            [0.0, 0.0, 10.0, 0.0],
-            [0.0, 10.0, 0.0, 0.0],
-            [10.0, 0.0, 0.0, 0.0],
-            [10.0, 10.0, 0.0, 0.0],
-            [0.0, 0.0, 10.0, 10.0],
-            [-10.0, -10.0, 10.0, 10.0]
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0, 0.0],
+            [1.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 1.0],
+            [-1.0, -1.0, 1.0, 1.0]
         ], device=self.device)
 
         current_efforts = self._robots.get_applied_joint_efforts(clone=True) # [:, np.array([1,2,4,5])]
@@ -362,7 +362,7 @@ class ReachingFoodTask(RLTask):
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
-        updated_efforts = torch.clip(updated_efforts, -100.0, 100.0)
+        updated_efforts = torch.clip(updated_efforts, -10.0, 10.0)
         # joint_indices = torch.tensor([1, 2, 4, 5])
           
         for i in range(self.decimation):
