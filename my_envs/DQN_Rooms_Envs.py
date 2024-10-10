@@ -290,23 +290,30 @@ class ReachingFoodTask(RLTask):
         square_size_x = 8.0  # Total width of the square
         square_size_y = 8.0  # Total height of the square
 
-        # Randomly decide which edge the target will spawn on: 0=left, 1=right, 2=top, 3=bottom
-        edge = torch.randint(0, 4, (1,), device=self.device).item()
+        edge = random.randint(0, 3)
 
-        # Generate random positions along the edges
-        x_pos = torch.where((edge == 0) | (edge == 1),  # For left or right edge
-                            torch.tensor([square_size_x / 2], device=self.device) * torch.where(edge == 0, torch.tensor([-1.0], device=self.device), torch.tensor([1.0], device=self.device)),  # Left (-0.5) or Right (+0.5)
-                            torch_rand_float(-square_size_x / 2, square_size_x / 2, 0, device=self.device))  # Random along the top/bottom edges
+        # Generate x and y positions based on the edge
+        if edge == 0:  # Left edge
+            x_pos = -square_size_x / 2
+            y_pos = random.uniform(-square_size_y / 2, square_size_y / 2)
+        elif edge == 1:  # Right edge
+            x_pos = square_size_x / 2
+            y_pos = random.uniform(-square_size_y / 2, square_size_y / 2)
+        elif edge == 2:  # Top edge
+            y_pos = square_size_y / 2
+            x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
+        else:  # Bottom edge
+            y_pos = -square_size_y / 2
+            x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
 
-        y_pos = torch.where((edge == 2) | (edge == 3),  # For top or bottom edge
-                            torch.tensor([square_size_y / 2], device=self.device) * torch.where(edge == 3, torch.tensor([-1.0], device=self.device), torch.tensor([1.0], device=self.device)),  # Bottom (-0.5) or Top (+0.5)
-                            torch_rand_float(-square_size_y / 2, square_size_y / 2, 0, device=self.device))  # Random along the left/right edges
+        # Z position is fixed at 0.2
+        z_pos = 0.2
 
-        # The z position can be fixed if you're working in 2D
-        z_pos = torch.tensor([0.2], device=self.device)
+        # Store the position in a list
+        pos = ([x_pos, y_pos, z_pos])
 
-        # Combine to form the position tensor
-        pos = torch.stack([x_pos, y_pos, z_pos], dim=1)
+        # Convert the positions list to a torch tensor
+        pos = torch.tensor(pos, device=self.device)
 
         velocities = torch_rand_float(-0.1, 0.1, (len(env_ids), self.num_dof), device=self.device)
         self.dof_vel[env_ids] = velocities
