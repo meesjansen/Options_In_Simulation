@@ -116,7 +116,7 @@ class ReachingFoodTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 1_000_000 # feuteres^bins 10^6
+        self._num_observations = 16 # feuteres^bins 10^6
         self._num_actions = 12  # Assuming 3 discrete actions per wheel
         self.common_step_counter = 0
 
