@@ -440,7 +440,7 @@ class ReachingFoodTask(RLTask):
 
         # Detect if the robot is on its back based on positive Z-axis component of the projected gravity
         positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
-        self.reset_buf = torch.where(projected_gravity[:, 2] > positive_gravity_z_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
+        # self.reset_buf = torch.where(projected_gravity[:, 2] > positive_gravity_z_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
 
     
     def calculate_metrics(self) -> None:
