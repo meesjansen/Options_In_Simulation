@@ -295,11 +295,11 @@ class ReachingFoodTask(RLTask):
 
         # Generate random positions along the edges
         x_pos = torch.where((edge == 0) | (edge == 1),  # For left or right edge
-                            torch.tensor([square_size_x / 2], device=self.device) * torch.where(edge == 0, -1, 1),  # Left (-0.5) or Right (+0.5)
+                            torch.tensor([square_size_x / 2], device=self.device) * torch.where(edge == 0, torch.tensor(-1, device=self.device), torch.tensor(1, device=self.device)),  # Left (-0.5) or Right (+0.5)
                             torch_rand_float(-square_size_x / 2, square_size_x / 2, 0, device=self.device))  # Random along the top/bottom edges
 
         y_pos = torch.where((edge == 2) | (edge == 3),  # For top or bottom edge
-                            torch.tensor([square_size_y / 2], device=self.device) * torch.where(edge == 3, -1, 1),  # Bottom (-0.5) or Top (+0.5)
+                            torch.tensor([square_size_y / 2], device=self.device) * torch.where(edge == 3, torch.tensor(-1, device=self.device), torch.tensor(1, device=self.device)),  # Bottom (-0.5) or Top (+0.5)
                             torch_rand_float(-square_size_y / 2, square_size_y / 2, 0, device=self.device))  # Random along the left/right edges
 
         # The z position can be fixed if you're working in 2D
