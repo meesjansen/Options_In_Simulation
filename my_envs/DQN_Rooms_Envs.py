@@ -203,10 +203,10 @@ class ReachingFoodTask(RLTask):
 
         # Define the relative wheel paths for each robot instance
         wheel_prim_paths = [
-            "main_body/main_body_left_front_wheel",
-            "main_body/main_body_left_rear_wheel",
-            "main_body/main_body_right_front_wheel",
-            "main_body/main_body_right_rear_wheel",
+            "main_body_left_front_wheel",
+            "main_body_left_rear_wheel",
+            "main_body_right_front_wheel",
+            "main_body_right_rear_wheel",
         ]
 
         # Apply the material to each robot's wheels
