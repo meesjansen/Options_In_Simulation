@@ -386,7 +386,7 @@ class ReachingFoodTask(RLTask):
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
-        updated_efforts = torch.clip(updated_efforts, -3.0, 3.0)
+        updated_efforts = torch.clip(updated_efforts, -5.0, 5.0)
         # joint_indices = torch.tensor([1, 2, 4, 5])
           
         for i in range(self.decimation):
