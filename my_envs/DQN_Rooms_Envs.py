@@ -36,7 +36,7 @@ TASK_CFG = {"test": False,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
                              "controlFrequencyInv": 4,
-                             "baseInitState": {"pos": [-2.0, -2.0, 0.20], # x,y,z [m]
+                             "baseInitState": {"pos": [0.0, 0.0, 0.0], # x,y,z [m]
                                               "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
                                               "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
                                               "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
@@ -227,7 +227,7 @@ class ReachingFoodTask(RLTask):
 
     def get_robot(self):
         # Assuming LIMO or similar wheeled robot
-        robot_translation = torch.tensor([3.0, 3.0, 0.4])
+        robot_translation = torch.tensor([0.0, 0.0, 0.2])
         robot_orientation = torch.tensor([1.0, 0.0, 0.0, 0.0])
         robot = Robot(
             prim_path=self.default_zero_env_path + "/robot",
@@ -337,18 +337,18 @@ class ReachingFoodTask(RLTask):
 
         # There are 12 possible actions
         action_torque_vectors = torch.tensor([
-            [1.0, 1.0, 1.0, 1.0],
-            [-1.0, -1.0, -1.0, -1.0],
-            [1.0, .0, 1.0, 0.0],
-            [0.0, 1.0, 0.0, 1.0],
+            [0.2, 0.2, 0.2, 0.2],
+            [-0.2, -0.2, -0.2, -0.2],
+            [0.2, 0.0, 0.2, 0.0],
+            [0.0, 0.2, 0.0, 0.2],
             [0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 10.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0, 0.0],
-            [1.0, 1.0, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 1.0],
-            [-1.0, -1.0, 1.0, 1.0]
+            [0.0, 0.0, 0.0, 0.2],
+            [0.0, 0.0, 0.2, 0.0],
+            [0.0, 0.2, 0.0, 0.0],
+            [0.2, 0.0, 0.0, 0.0],
+            [0.2, 0.2, 0.0, 0.0],
+            [0.0, 0.0, 0.2, 0.2],
+            [-0.2, -0.2, 0.2, 0.2]
         ], device=self.device)
 
         current_efforts = self._robots.get_applied_joint_efforts(clone=True) # [:, np.array([1,2,4,5])]
@@ -362,7 +362,7 @@ class ReachingFoodTask(RLTask):
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
-        updated_efforts = torch.clip(updated_efforts, -10.0, 10.0)
+        updated_efforts = torch.clip(updated_efforts, -3.0, 3.0)
         # joint_indices = torch.tensor([1, 2, 4, 5])
           
         for i in range(self.decimation):
@@ -386,6 +386,11 @@ class ReachingFoodTask(RLTask):
         
     def post_physics_step(self):
         self.progress_buf[:] += 1
+        print(f"ENV0 Episode {self.progress_buf[0]}/{self._max_episode_length}")
+        print(f"ENV1 Episode {self.progress_buf[1]}/{self._max_episode_length}")
+        print(f"ENV2 Episode {self.progress_buf[2]}/{self._max_episode_length}")
+        print(f"ENV3 Episode {self.progress_buf[3]}/{self._max_episode_length}")
+
 
         if self.world.is_playing():
 
@@ -427,8 +432,8 @@ class ReachingFoodTask(RLTask):
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
         # target reached or lost
-        # self.reset_buf = torch.where(self._computed_distance <= 0.0035, torch.ones_like(self.reset_buf), self.reset_buf)
-        # self.reset_buf = torch.where(self._computed_distance >= 3.0, torch.ones_like(self.reset_buf), self.reset_buf)
+        self.reset_buf = torch.where(self._computed_distance <= 0.00035, torch.ones_like(self.reset_buf), self.reset_buf)
+        self.reset_buf = torch.where(self._computed_distance >= 6.0, torch.ones_like(self.reset_buf), self.reset_buf)
 
         # max episode length
         # self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
