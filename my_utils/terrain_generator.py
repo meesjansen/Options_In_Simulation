@@ -10,8 +10,8 @@ class Terrain:
         self.vertical_scale = 0.005
         self.border_size = 20
         self.num_per_env = 1
-        self.env_length = 4
-        self.env_width = 4
+        self.env_length = 8
+        self.env_width = 8
 
         self.env_rows = 2
         self.env_cols = 2
@@ -87,7 +87,7 @@ class Terrain:
             )
 
             step_height = np.random.choice([-0.1, 0.1])
-            pyramid_stairs_terrain(terrain, step_width=0.8, step_height=0.1, platform_size=0.8)
+            pyramid_stairs_terrain(terrain, step_width=1.0, step_height=0.1, platform_size=2.5)
 
             self.height_field_raw[start_x:end_x, start_y:end_y] = terrain.height_field_raw
 

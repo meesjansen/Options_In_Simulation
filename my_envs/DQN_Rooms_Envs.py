@@ -227,7 +227,7 @@ class ReachingFoodTask(RLTask):
 
     def get_robot(self):
         # Assuming LIMO or similar wheeled robot
-        robot_translation = torch.tensor([0.0, 0.0, 0.2])
+        robot_translation = torch.tensor([0.0, 0.0, 0.0])
         robot_orientation = torch.tensor([1.0, 0.0, 0.0, 0.0])
         robot = Robot(
             prim_path=self.default_zero_env_path + "/robot",
@@ -286,6 +286,28 @@ class ReachingFoodTask(RLTask):
     def reset_idx(self, env_ids):
         indices = env_ids.to(dtype=torch.int32)
 
+        # Define square boundary size (assuming square extends from -0.5 to 0.5 in both axes)
+        square_size_x = 8.0  # Total width of the square
+        square_size_y = 8.0  # Total height of the square
+
+        # Randomly decide which edge the target will spawn on: 0=left, 1=right, 2=top, 3=bottom
+        edge = torch.randint(0, 4, (len(env_ids),), device=self.device)
+
+        # Generate random positions along the edges
+        x_pos = torch.where((edge == 0) | (edge == 1),  # For left or right edge
+                            torch.tensor([square_size_x / 2], device=self.device) * torch.where(edge == 0, -1, 1),  # Left (-0.5) or Right (+0.5)
+                            torch_rand_float(-square_size_x / 2, square_size_x / 2, (len(env_ids),), device=self.device))  # Random along the top/bottom edges
+
+        y_pos = torch.where((edge == 2) | (edge == 3),  # For top or bottom edge
+                            torch.tensor([square_size_y / 2], device=self.device) * torch.where(edge == 3, -1, 1),  # Bottom (-0.5) or Top (+0.5)
+                            torch_rand_float(-square_size_y / 2, square_size_y / 2, (len(env_ids),), device=self.device))  # Random along the left/right edges
+
+        # The z position can be fixed if you're working in 2D
+        z_pos = torch.full((len(env_ids),), 0.2, device=self.device)
+
+        # Combine to form the position tensor
+        pos = torch.stack([x_pos, y_pos, z_pos], dim=1)
+
         velocities = torch_rand_float(-0.1, 0.1, (len(env_ids), self.num_dof), device=self.device)
         self.dof_vel[env_ids] = velocities
 
@@ -300,12 +322,7 @@ class ReachingFoodTask(RLTask):
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)
 
-        # reset target
-        pos = (torch.rand((len(env_ids), 3), device=self.device) - 0.5) * 2 \
-            * torch.tensor([0.10, 0.20, 0.20], device=self.device) \
-            + torch.tensor([0.60, 0.00, 0.40], device=self.device)
-
-        self._targets.set_world_poses(pos + self._env_pos[env_ids], indices=indices)
+        self._targets.set_world_poses(pos + self.env_origins[env_ids], indices=indices)
 
         self.last_actions[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
@@ -386,10 +403,10 @@ class ReachingFoodTask(RLTask):
         
     def post_physics_step(self):
         self.progress_buf[:] += 1
-        print(f"ENV0 Episode {self.progress_buf[0]}/{self._max_episode_length}")
-        print(f"ENV1 Episode {self.progress_buf[1]}/{self._max_episode_length}")
-        print(f"ENV2 Episode {self.progress_buf[2]}/{self._max_episode_length}")
-        print(f"ENV3 Episode {self.progress_buf[3]}/{self._max_episode_length}")
+        print(f"ENV0 timesteps/MaxEpisodeLength {self.progress_buf[0]}/{self._max_episode_length}")
+        print(f"ENV1 timesteps/MaxEpisodeLength {self.progress_buf[1]}/{self._max_episode_length}")
+        print(f"ENV2 timesteps/MaxEpisodeLength {self.progress_buf[2]}/{self._max_episode_length}")
+        print(f"ENV3 timesteps/MaxEpisodeLength {self.progress_buf[3]}/{self._max_episode_length}")
 
 
         if self.world.is_playing():
