@@ -427,11 +427,11 @@ class ReachingFoodTask(RLTask):
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
         # target reached or lost
-        self.reset_buf = torch.where(self._computed_distance <= 0.0035, torch.ones_like(self.reset_buf), self.reset_buf)
-        self.reset_buf = torch.where(self._computed_distance >= 3.0, torch.ones_like(self.reset_buf), self.reset_buf)
+        # self.reset_buf = torch.where(self._computed_distance <= 0.0035, torch.ones_like(self.reset_buf), self.reset_buf)
+        # self.reset_buf = torch.where(self._computed_distance >= 3.0, torch.ones_like(self.reset_buf), self.reset_buf)
 
         # max episode length
-        self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
+        # self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
 
         # Calculate the projected gravity in the robot's local frame
         print("Gravity vector", self.gravity_vec)

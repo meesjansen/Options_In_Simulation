@@ -201,7 +201,7 @@ class DQN(Agent):
 
         indexes = (torch.rand(states.shape[0], device=self.device) >= epsilon).nonzero().view(-1)
         if indexes.numel():
-            actions[indexes.long()] = torch.argmax(self.q_network.act({"states": states[indexes]}, role="q_network")[0], dim=1, keepdim=True)
+            actions[indexes] = self.q_network.act({"states": states[indexes]}, role="q_network")[0]
 
         # record epsilon
         self.track_data("Exploration / Exploration epsilon", epsilon)
