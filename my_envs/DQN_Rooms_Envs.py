@@ -386,14 +386,12 @@ class ReachingFoodTask(RLTask):
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
-        updated_efforts = torch.clip(updated_efforts, -10.0, 10.0)
-        # joint_indices = torch.tensor([1, 2, 4, 5])
+        updated_efforts = torch.clip(updated_efforts, -40.0, 40.0)
           
         for i in range(self.decimation):
             if self.world.is_playing():
                 
-                # self._robots.set_joint_efforts(test_efforts1, indices=np.array([0]),joint_indices=np.array([1, 2, 4, 5]))
-                self._robots.set_joint_efforts(updated_efforts) # , joint_indices=joint_indices)
+                self._robots.set_joint_efforts(updated_efforts) 
                 print("Applied torques:", updated_efforts)
 
                 SimulationContext.step(self.world, render=False)
@@ -458,9 +456,12 @@ class ReachingFoodTask(RLTask):
         # target reached or lost
         self.reset_buf = torch.where(self._computed_distance <= 0.00035, torch.ones_like(self.reset_buf), self.reset_buf)
         self.reset_buf = torch.where(self._computed_distance >= 6.0, torch.ones_like(self.reset_buf), self.reset_buf)
+        print("Reset buffer post distance", self.reset_buf)
 
         # max episode length
         # self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
+        print("Reset buffer post episode length", self.reset_buf)
+
 
         # Calculate the projected gravity in the robot's local frame
         print("Gravity vector", self.gravity_vec)
@@ -469,8 +470,8 @@ class ReachingFoodTask(RLTask):
 
         # Detect if the robot is on its back based on positive Z-axis component of the projected gravity
         positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
-        # self.reset_buf = torch.where(projected_gravity[:, 2] > positive_gravity_z_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
-
+        self.reset_buf = torch.where(projected_gravity[:, 2] > positive_gravity_z_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
+        print("Reset buffer post gravity", self.reset_buf)
     
     def calculate_metrics(self) -> None:
         self.rew_buf[:] = -self._computed_distance
