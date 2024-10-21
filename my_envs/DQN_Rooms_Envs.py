@@ -260,6 +260,8 @@ class ReachingFoodTask(RLTask):
 
     def post_reset(self):
         self.base_init_state = torch.tensor(self.base_init_state, dtype=torch.float, device=self.device, requires_grad=False)
+        self.dof_init_state = torch.tensor(self.dof_init_state, dtype=torch.float, device=self.device, requires_grad=False)
+
 
         self.timeout_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
 
