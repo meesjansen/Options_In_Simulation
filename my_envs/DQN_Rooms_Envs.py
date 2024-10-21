@@ -212,10 +212,10 @@ class ReachingFoodTask(RLTask):
 
         # Define the relative wheel paths for each robot instance
         wheel_prim_paths = [
-            "main_body/main_body_left_front_wheel",
-            "main_body/main_body_left_rear_wheel",
-            "main_body/main_body_right_front_wheel",
-            "main_body/main_body_right_rear_wheel",
+            "left_front_wheel",
+            "eft_rear_wheel",
+            "right_front_wheel",
+            "right_rear_wheel",
         ]
 
         print_stage_prim_paths()
@@ -225,6 +225,7 @@ class ReachingFoodTask(RLTask):
             robot_prim_path = robot_prim_path.replace("/base_link", "")
             for wheel_relative_path in wheel_prim_paths:
                 wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
+                print("Paths to wheels:", wheel_full_path)
                 wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
                 wheel_prim.apply_physics_material(rubber_material)  # Apply the material
 
@@ -318,8 +319,8 @@ class ReachingFoodTask(RLTask):
             y_pos = -square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
 
-        # Z position is fixed at 0.2
-        z_pos = 0.8
+        # Z position is fixed at 0.4
+        z_pos = 0.4
 
         # Store the position in a list
         pos = ([x_pos, y_pos, z_pos])
