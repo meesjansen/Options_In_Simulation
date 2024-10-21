@@ -41,7 +41,8 @@ TASK_CFG = {"test": False,
                                               "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
                                               "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
                                                 },
-                            "baseInitTorques": [0.0, 0.0, 0.0, 0.0]                            
+                            "dofInitTorques": [0.0, 0.0, 0.0, 0.0],
+                            "dofInitVelocities": [0.0, 0.0, 0.0, 0.0],                        
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
                              "use_gpu_pipeline": True,
@@ -151,8 +152,11 @@ class ReachingFoodTask(RLTask):
         rot = self._task_cfg["env"]["baseInitState"]["rot"]
         v_lin = self._task_cfg["env"]["baseInitState"]["vLinear"]
         v_ang = self._task_cfg["env"]["baseInitState"]["vAngular"]
-        self.torques = self._task_cfg["env"]["baseInitTorques"]
         self.base_init_state = pos + rot + v_lin + v_ang
+
+        torques = self._task_cfg["env"]["dofInitTorques"]
+        dof_velocities = self._task_cfg["env"]["dofInitVelocities"]
+        self.dof_init_state = torques + dof_velocities
 
         self.decimation = 4
 
@@ -283,6 +287,7 @@ class ReachingFoodTask(RLTask):
         self.base_quat = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device)
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
         self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
+        self.dof_efforts = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
       
         indices = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.reset_idx(indices)
@@ -320,8 +325,9 @@ class ReachingFoodTask(RLTask):
         # Convert the positions list to a torch tensor
         pos = torch.tensor(pos, device=self.device)
 
-        velocities = torch_rand_float(-0.1, 0.1, (len(env_ids), self.num_dof), device=self.device)
-        self.dof_vel[env_ids] = velocities
+        self.dof_vel[env_ids] = self.dof_init_state[4:8]
+        self.dof_efforts[env_ids] = self.dof_init_state[0:4]
+
 
         self.base_pos[env_ids] = self.base_init_state[0:3]
         self.base_pos[env_ids, 0:3] += self.env_origins[env_ids]
@@ -330,9 +336,10 @@ class ReachingFoodTask(RLTask):
         self.base_velocities[env_ids] = self.base_init_state[7:13]
      
         
+        self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
+        self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)
         self._robots.set_world_poses(positions=self.base_pos[env_ids].clone(), orientations=self.base_quat[env_ids].clone(), indices=indices)
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
-        self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)
 
         self._targets.set_world_poses(pos + self.env_origins[env_ids], indices=indices)
 
@@ -491,6 +498,7 @@ class ReachingFoodTask(RLTask):
             self.position_buffer = self.base_pos[:,:2].clone()
         elif self.counter == 4:
             changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
+            print("Changed pos pre standing still", self.reset_buf)
             self.standing_still = changed_pos < 0.05 
             self.counter = 0  # Reset counter
         else:
