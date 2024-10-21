@@ -127,7 +127,7 @@ class ReachingFoodTask(RLTask):
         self.height_points = self.init_height_points()  
         self.measured_heights = None
 
-        self.bounds = torch.tensor([4.0, -4.0, 4.0, -4.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-4.0, 4.0, -4.0, 4.0], device=self.device, dtype=torch.float)
         self.still_steps = torch.zeros(self.num_envs)
         self.position_buffer = torch.zeros(self.num_envs, 2)  # Assuming 2D position still condition
         self.counter = 0 # still condition counter
@@ -486,6 +486,7 @@ class ReachingFoodTask(RLTask):
         print("Reset buffer post out of bounds", self.reset_buf)
 
         # Check standing still condition every still_check_interval timesteps
+        self.standing_still = torch.tensor([False, False, False, False], dtype=torch.bool)
         if self.counter == 0:
             self.position_buffer = self.base_pos[:,:2].clone()
         elif self.counter == 4:
