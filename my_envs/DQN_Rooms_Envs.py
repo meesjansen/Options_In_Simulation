@@ -500,6 +500,7 @@ class ReachingFoodTask(RLTask):
         print("Standing still counter", self.counter)
         if self.counter == 0:
             self.position_buffer = self.base_pos[:,:2].clone()
+            self.counter += 1
         elif self.counter == 4:
             changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
             print("Changed pos pre standing still", self.reset_buf)
