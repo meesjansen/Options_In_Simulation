@@ -497,6 +497,7 @@ class ReachingFoodTask(RLTask):
 
         # Check standing still condition every still_check_interval timesteps
         self.standing_still = torch.tensor([False, False, False, False], dtype=torch.bool, device=self.device)
+        print("Standing still counter", self.counter)
         if self.counter == 0:
             self.position_buffer = self.base_pos[:,:2].clone()
         elif self.counter == 4:
