@@ -118,7 +118,7 @@ class ReachingFoodTask(RLTask):
         # observation and action space DQN
         self._num_observations = 16 # feuteres^bins 10^6
         self._num_actions = 12  # Assuming 3 discrete actions per wheel
-        self.common_step_counter = 0
+        self.common_step_counter = 0 # Counter for the first two steps
 
         self.update_config(sim_config)
 
@@ -126,6 +126,11 @@ class ReachingFoodTask(RLTask):
 
         self.height_points = self.init_height_points()  
         self.measured_heights = None
+
+        self.bounds = torch.tensor([4.0, -4.0, 4.0, -4.0], device=self.device, dtype=torch.float)
+        self.still_steps = torch.zeros(self.num_envs)
+        self.position_buffer = torch.zeros(self.num_envs, 2)  # Assuming 2D position still condition
+        self.counter = 0 # still condition counter
 
         return
 
@@ -152,11 +157,11 @@ class ReachingFoodTask(RLTask):
         self.decimation = 4
 
     def init_height_points(self):
-        # 4mx4m rectangle (without center line)
-        y = 0.25 * torch.tensor(
+        # 8mx8m rectangle (without center line) 32x32=1024 points
+        y = 0.5 * torch.tensor(
             [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6 -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], device=self.device, requires_grad=False
-        )  # 25cm on each side
-        x = 0.25 * torch.tensor(
+        )  # 50cm on each side
+        x = 0.5 * torch.tensor(
             [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6 -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], device=self.device, requires_grad=False
         )  
         grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
@@ -334,6 +339,7 @@ class ReachingFoodTask(RLTask):
         self.last_actions[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
         self.reset_buf[env_ids] = 0
+        self.rew_buf[env_ids] = 0.0
 
         # fill extras for reward shaping
         # self.extras["episode"] = {}
@@ -364,7 +370,7 @@ class ReachingFoodTask(RLTask):
             [0.5, 0.5, 0.5, 0.5],
             [-0.5, -0.5, -0.5, -0.5],
             [0.5, 0.0, 0.5, 0.0],
-            [0.0, 0.5, 0.0, 0.5],
+            [0.0, 1.5, 0.0, 1.5],
             [0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 0.5],
             [0.0, 0.0, 0.5, 0.0],
@@ -450,12 +456,12 @@ class ReachingFoodTask(RLTask):
         self.reset_buf.fill_(0)
 
         base_pos, base_quat = self._robots.get_world_poses(clone=False)
-        target_pos, target_rot = self._targets.get_world_poses(clone=False)
+        target_pos, _ = self._targets.get_world_poses(clone=False)
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
         # target reached or lost
-        self.reset_buf = torch.where(self._computed_distance <= 0.00035, torch.ones_like(self.reset_buf), self.reset_buf)
-        self.reset_buf = torch.where(self._computed_distance >= 6.0, torch.ones_like(self.reset_buf), self.reset_buf)
+        self.target_reached = self._computed_distance <= 0.0035
+        self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
         print("Reset buffer post distance", self.reset_buf)
 
         # max episode length
@@ -470,19 +476,56 @@ class ReachingFoodTask(RLTask):
 
         # Detect if the robot is on its back based on positive Z-axis component of the projected gravity
         positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
-        self.reset_buf = torch.where(projected_gravity[:, 2] > positive_gravity_z_threshold, torch.ones_like(self.reset_buf), self.reset_buf)
+        self.fallen = projected_gravity[:, 2] > positive_gravity_z_threshold
+        self.reset_buf = torch.where(self.fallen, torch.ones_like(self.reset_buf), self.reset_buf)
         print("Reset buffer post gravity", self.reset_buf)
+
+        self.out_of_bounds = ((self.base_pos[:, 0] - self.env_origins[:, 0]) < self.bounds[0]) | ((self.base_pos[:, 0] - self.env_origins[:, 0]) > self.bounds[1]) | \
+                        ((self.base_pos[:, 1] - self.env_origins[:, 1]) < self.bounds[2]) | ((self.base_pos[:, 1] - self.env_origins[:, 1]) > self.bounds[3])
+        self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
+        print("Reset buffer post out of bounds", self.reset_buf)
+
+        # Check standing still condition every still_check_interval timesteps
+        if self.counter == 0:
+            self.position_buffer = self.base_pos[:,:2].clone()
+        elif self.counter == 4:
+            changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
+            self.standing_still = changed_pos < 0.05 
+            self.counter = 0  # Reset counter
+        else:
+            self.counter += 1
+
+        # Update reset_buf based on standing_still condition
+        self.reset_buf = torch.where(self.standing_still, torch.ones_like(self.reset_buf), self.reset_buf)
+        print("Reset buffer post standing still", self.reset_buf)
+
+
+
     
     def calculate_metrics(self) -> None:
-        self.rew_buf[:] = -self._computed_distance
+        # computed distance to target as updating reward
+        self.rew_buf[:] = 0.00035/self._computed_distance * 100.0
+
+        self.rew_buf[self.target_reached] += 50
+
+        # Check fallen condition
+        self.rew_buf[self.fallen] += -20.0
+
+        # Check out-of-bounds condition
+        self.rew_buf[self.out_of_bounds] += -10.0
+
+        # Check standing still condition
+        self.rew_buf[self.standing_still] += -10.0
+
+        return self.rew_buf
 
 
     def get_observations(self):
         self.measured_heights = self.get_heights()
         heights = self.measured_heights * self.terrain.vertical_scale 
 
-        base_pos, base_rot = self._robots.get_world_poses(clone=False)
-        target_pos, target_rot = self._targets.get_world_poses(clone=False)
+        base_pos, _ = self._robots.get_world_poses(clone=False)
+        target_pos, _ = self._targets.get_world_poses(clone=False)
         delta_pos = target_pos - base_pos
 
         # Get current joint efforts (torques)
@@ -541,3 +584,4 @@ class ReachingFoodTask(RLTask):
 
         # Return the heights, scaled by the vertical scale
         return heights.view(self.num_envs, -1) * self.terrain.vertical_scale
+
