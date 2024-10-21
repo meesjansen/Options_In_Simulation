@@ -213,7 +213,7 @@ class ReachingFoodTask(RLTask):
         # Define the relative wheel paths for each robot instance
         wheel_prim_paths = [
             "left_front_wheel",
-            "eft_rear_wheel",
+            "left_rear_wheel",
             "right_front_wheel",
             "right_rear_wheel",
         ]
