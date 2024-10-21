@@ -203,7 +203,7 @@ class ReachingFoodTask(RLTask):
         self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
         scene.add(self._targets)
 
-        rubber_material = PhysicsMaterial(
+        self.rubber_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/RubberMaterial",
             static_friction=0.9,
             dynamic_friction=0.8,
@@ -227,7 +227,7 @@ class ReachingFoodTask(RLTask):
                 wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
                 print("Paths to wheels:", wheel_full_path)
                 wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
-                wheel_prim.apply_physics_material(rubber_material)  # Apply the material
+                wheel_prim.apply_physics_material(self.rubber_material)  # Apply the material
 
 
     def get_terrain(self, create_mesh=True):
@@ -345,6 +345,23 @@ class ReachingFoodTask(RLTask):
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
 
         self._targets.set_world_poses(pos + self.env_origins[env_ids], indices=indices)
+
+        wheel_prim_paths = [
+            "left_front_wheel",
+            "left_rear_wheel",
+            "right_front_wheel",
+            "right_rear_wheel",
+        ]
+
+        # Apply the material to each robot's wheels
+        for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
+            robot_prim_path = robot_prim_path.replace("/base_link", "")
+            for wheel_relative_path in wheel_prim_paths:
+                wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
+                print("Paths to wheels:", wheel_full_path)
+                wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
+                wheel_prim.apply_physics_material(self.rubber_material)  # Apply the material
+
 
         self.last_actions[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
