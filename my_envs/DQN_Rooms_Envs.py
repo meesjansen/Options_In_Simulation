@@ -486,7 +486,7 @@ class ReachingFoodTask(RLTask):
         print("Reset buffer post out of bounds", self.reset_buf)
 
         # Check standing still condition every still_check_interval timesteps
-        self.standing_still = torch.tensor([False, False, False, False], dtype=torch.bool)
+        self.standing_still = torch.tensor([False, False, False, False], dtype=torch.bool, device=self.device)
         if self.counter == 0:
             self.position_buffer = self.base_pos[:,:2].clone()
         elif self.counter == 4:
