@@ -18,7 +18,7 @@ From: nvcr.io/nvidia/isaac-sim:4.0.0
 
     cd /workspace
     # Clone and install skrl
-    git clone https://github.com/Toni-SM/skrl.git /workspace/omniisaacgymenvs/skrl
+    git clone https://github.com/Toni-SM/skrl.git /workspace/skrl
     cd /workspace/skrl
     /isaac-sim/python.sh -m pip install .[torch]
 
