@@ -9,7 +9,7 @@ from omni.isaac.core.prims import RigidPrimView
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.objects import DynamicSphere
 from omni.isaac.core.utils.torch.rotations import *
-from omni.isaac.core.utils.prims import get_prim_at_path
+from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
 from omni.isaac.core.utils.torch.maths import torch_rand_float
 from omni.isaac.core.utils.stage import get_current_stage, add_reference_to_stage, print_stage_prim_paths
 from omni.isaac.core.simulation_context import SimulationContext
@@ -17,7 +17,9 @@ from omni.isaac.core.materials.physics_material import PhysicsMaterial
 from omni.isaac.core.prims import GeometryPrim
 
 
-from my_robots.Origin import AvularOrigin as Robot
+from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10
+from my_robots.origin_v11 import AvularOrigin_v11 as Robot_v11
+
 from my_utils.terrain_generator import *
 from my_utils.terrain_utils import *
 
@@ -188,20 +190,19 @@ class ReachingFoodTask(RLTask):
         )
 
     def set_up_scene(self, scene) -> None:
+        print_stage_prim_paths()
         self._stage = get_current_stage()
+        print_stage_prim_paths()
         self.get_terrain()
-        self.get_robot()
+        print_stage_prim_paths()
+        define_prim("/World/envs/env_0", "Xform")
+
         self.get_target()
 
         super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"])
 
-        # robot view
-        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot", name="robot_view")
-        scene.add(self._robots)
-        
-        # food view
-        self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
-        scene.add(self._targets)
+        self.get_robot()
+        print_stage_prim_paths()
 
         self.rubber_material = PhysicsMaterial(
             prim_path="/World/PhysicsMaterials/RubberMaterial",
@@ -216,19 +217,26 @@ class ReachingFoodTask(RLTask):
             "left_rear_wheel",
             "right_front_wheel",
             "right_rear_wheel",
-        ]
+        ] 
 
         print_stage_prim_paths()
 
         # Apply the material to each robot's wheels
-        for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
-            robot_prim_path = robot_prim_path.replace("/base_link", "")
-            for wheel_relative_path in wheel_prim_paths:
-                wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
-                print("Paths to wheels:", wheel_full_path)
-                wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
-                wheel_prim.apply_physics_material(self.rubber_material)  # Apply the material
+        # for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
+        #     robot_prim_path = robot_prim_path.replace("/base_link", "")
+        for wheel_relative_path in wheel_prim_paths:
+            wheel_full_path = f"{self.robot_v101.prim}/{wheel_relative_path}"  # Construct full wheel path
+            print("Paths to wheels:", wheel_full_path)
+            wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
+            wheel_prim.apply_physics_material(self.rubber_material)  # Apply the material
 
+        # robot view
+        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robot_view")
+        scene.add(self._robots)
+        
+        # food view
+        self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
+        scene.add(self._targets)
 
     def get_terrain(self, create_mesh=True):
         self.env_origins = torch.zeros((self.num_envs, 3), device=self.device, requires_grad=False)
@@ -236,19 +244,52 @@ class ReachingFoodTask(RLTask):
         self.terrain_origins = torch.from_numpy(self.terrain.env_origins).to(self.device).to(torch.float)
 
     def get_robot(self):
-        # Assuming LIMO or similar wheeled robot
-        robot_translation = torch.tensor([0.0, 0.0, 0.0])
+        
+        robot_translation = torch.tensor([-4.0, -4.0, 0.0])
         robot_orientation = torch.tensor([1.0, 0.0, 0.0, 0.0])
-        robot = Robot(
-            prim_path=self.default_zero_env_path + "/robot",
-            name="robot",
+        self.robot_v101 = Robot_v10(
+            prim_path=self.default_zero_env_path + "/robot_v10",
+            name="robot_v10",
             translation=robot_translation,
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot", get_prim_at_path(robot.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot", get_prim_at_path(self.robot_v101.prim_path), self._sim_config.parse_actor_config("robot")
         )
-        robot.set_robot_properties(self._stage, robot.prim)
+        self.robot_v101.set_robot_properties(self._stage, self.robot_v101.prim)
+
+        self.robot_v102 = Robot_v10(
+            prim_path="/World/envs/env_1/robot_v10",
+            name="robot_v10",
+            translation=robot_translation + torch.tensor([0.0, 8.0, 0.0]),
+            orientation=robot_orientation,
+        )
+        self._sim_config.apply_articulation_settings(
+            "robot", get_prim_at_path(self.robot_v102.prim_path), self._sim_config.parse_actor_config("robot")
+        )
+        self.robot_v102.set_robot_properties(self._stage, self.robot_v102.prim)
+
+        self.robot_v111 = Robot_v11(
+            prim_path="/World/envs/env_2/robot_v11",
+            name="robot_v11",
+            translation=robot_translation + torch.tensor([8.0, 0.0, 0.0]),
+            orientation=robot_orientation,
+        )
+        self._sim_config.apply_articulation_settings(
+            "robot", get_prim_at_path(self.robot_v111.prim_path), self._sim_config.parse_actor_config("robot")
+        )
+        self.robot_v111.set_robot_properties(self._stage, self.robot_v111.prim)
+
+        self.robot_v112 = Robot_v11(
+            prim_path="/World/envs/env_3/robot_v11",
+            name="robot_v11",
+            translation=robot_translation + torch.tensor([8.0, 8.0, 0.0]),
+            orientation=robot_orientation,
+        )
+        self._sim_config.apply_articulation_settings(
+            "robot", get_prim_at_path(self.robot_v112.prim_path), self._sim_config.parse_actor_config("robot")
+        )
+        self.robot_v112.set_robot_properties(self._stage, self.robot_v112.prim)
 
 
     def get_target(self):
@@ -309,15 +350,19 @@ class ReachingFoodTask(RLTask):
         if edge == 0:  # Left edge
             x_pos = -square_size_x / 2
             y_pos = random.uniform(-square_size_y / 2, square_size_y / 2)
+            quat = torch.tensor([0.0, 0.0, 0.7071, 0.7071], device=self.device)  # Looking right
         elif edge == 1:  # Right edge
             x_pos = square_size_x / 2
             y_pos = random.uniform(-square_size_y / 2, square_size_y / 2)
+            quat = torch.tensor([0.0, 0.0, -0.7071, 0.7071], device=self.device)  # Looking left
         elif edge == 2:  # Top edge
             y_pos = square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
+            quat = torch.tensor([0.0, 0.0, 1.0, 0.0], device=self.device)  # Looking down
         else:  # Bottom edge
             y_pos = -square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
+            quat = torch.tensor([0.0, 0.0, 0.0, 1.0], device=self.device)  # Looking up
 
         # Z position is fixed at 0.4
         z_pos = 0.4
@@ -334,33 +379,16 @@ class ReachingFoodTask(RLTask):
 
         self.base_pos[env_ids] = self.base_init_state[0:3]
         self.base_pos[env_ids, 0:3] += self.env_origins[env_ids]
-        self.base_pos[env_ids, 0:2] += torch_rand_float(-0.5, 0.5, (len(env_ids), 2), device=self.device)
         self.base_quat[env_ids] = self.base_init_state[3:7]
         self.base_velocities[env_ids] = self.base_init_state[7:13]
      
         
         self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)
-        self._robots.set_world_poses(positions=self.base_pos[env_ids].clone(), orientations=self.base_quat[env_ids].clone(), indices=indices)
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
 
-        self._targets.set_world_poses(pos + self.env_origins[env_ids], indices=indices)
-
-        wheel_prim_paths = [
-            "left_front_wheel",
-            "left_rear_wheel",
-            "right_front_wheel",
-            "right_rear_wheel",
-        ]
-
-        # Apply the material to each robot's wheels
-        for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
-            robot_prim_path = robot_prim_path.replace("/base_link", "")
-            for wheel_relative_path in wheel_prim_paths:
-                wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
-                print("Paths to wheels:", wheel_full_path)
-                wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
-                wheel_prim.apply_physics_material(self.rubber_material)  # Apply the material
+        self._robots.set_world_poses(positions=(pos + self.env_origins[env_ids]), orientations=quat, indices=indices)
+        self._targets.set_world_poses(positions=self.base_pos[env_ids].clone(), orientations=self.base_quat[env_ids].clone(), indices=indices)
 
 
         self.last_actions[env_ids] = 0.0

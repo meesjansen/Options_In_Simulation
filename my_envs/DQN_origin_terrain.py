@@ -13,7 +13,7 @@ from omni.isaac.core.utils.torch.maths import torch_rand_float
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.simulation_context import SimulationContext
 
-from my_robots.Origin import AvularOrigin as Robot
+from my_robots.origin_v10 import AvularOrigin as Robot
 from my_utils.terrain_generator import *
 from my_utils.terrain_utils import *
 

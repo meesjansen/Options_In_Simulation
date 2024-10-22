@@ -16,13 +16,13 @@ From: nvcr.io/nvidia/isaac-sim:4.0.0
     /isaac-sim/python.sh -m pip install tensorflow
     /isaac-sim/python.sh -m pip install torch
 
-    cd workspace/omniisaacgymenvs
+    cd /workspace
     # Clone and install the omniisaacgymenvs repo
     git clone https://github.com/yourusername/OmniIsaacGymEnvs.git /workspace/omniisaacgymenvs/OmniIsaacGymEnvs
     cd /workspace/OmniIsaacGymEnvs
     /isaac-sim/python.sh -m pip install -e .
 
-    cd workspace/omniisaacgymenvs
+    cd /workspace
     # Clone and install skrl
     git clone https://github.com/Toni-SM/skrl.git /workspace/omniisaacgymenvs/skrl
     cd /workspace/skrl
@@ -36,5 +36,5 @@ From: nvcr.io/nvidia/isaac-sim:4.0.0
 %runscript
     # This section allows you to define a default behavior when the container is run
     echo "Starting training..."
-    cd /workspace/omniisaacgymenvs/Options_In_Simulation
+    cd /workspace/Options_In_Simulation
     # /isaac-sim/python.sh train_DQN.py

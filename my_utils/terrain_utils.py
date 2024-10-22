@@ -109,7 +109,7 @@ def pyramid_stairs_terrain(terrain, step_width, step_height, platform_size=1.0):
         stop_x -= step_width
         start_y += step_width
         stop_y -= step_width
-        height -= step_height
+        height += step_height
         terrain.height_field_raw[start_x:stop_x, start_y:stop_y] = height
     return terrain
 
