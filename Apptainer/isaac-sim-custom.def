@@ -12,7 +12,7 @@ From: nvcr.io/nvidia/isaac-sim:4.0.0
     mkdir -p /workspace && cd /workspace
 
     # Clone and install the omniisaacgymenvs repo
-    git clone https://github.com/yourusername/OmniIsaacGymEnvs.git /workspace/omniisaacgymenvs/OmniIsaacGymEnvs
+    git clone https://github.com/NVIDIA-Omniverse/OmniIsaacGymEnvs.git /workspace/omniisaacgymenvs/OmniIsaacGymEnvs
     cd /workspace/OmniIsaacGymEnvs
     /isaac-sim/python.sh -m pip install -e .
 
