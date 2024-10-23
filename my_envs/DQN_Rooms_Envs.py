@@ -216,11 +216,9 @@ class ReachingFoodTask(RLTask):
             "right_rear_wheel",
         ] 
 
-        print_stage_prim_paths()
-
         # Apply the material to each robot's wheels
         # for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
-        #     robot_prim_path = robot_prim_path.replace("/base_link", "")
+        #     robot_prim_path = robot_prim_path.replace("/main_body", "")
         for wheel_relative_path in wheel_prim_paths:
             wheel_full_path = f"/World/envs/env_1/robot_v10/{wheel_relative_path}"  # Construct full wheel path
             print("Paths to wheels:", wheel_full_path)
@@ -368,7 +366,8 @@ class ReachingFoodTask(RLTask):
         pos = ([x_pos, y_pos, z_pos])
 
         # Convert the positions list to a torch tensor
-        pos = torch.tensor(pos, device=self.device)
+        pos = torch.tensor(pos, device=self.device).unsqueeze(0)
+        quat = quat.unsqueeze(0) 
 
         self.dof_vel[env_ids] = self.dof_init_state[4:8]
         self.dof_efforts[env_ids] = self.dof_init_state[0:4]
