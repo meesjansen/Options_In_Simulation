@@ -190,13 +190,11 @@ class ReachingFoodTask(RLTask):
         )
 
     def set_up_scene(self, scene) -> None:
-        print_stage_prim_paths()
         self._stage = get_current_stage()
-        print_stage_prim_paths()
         self.get_terrain()
         print_stage_prim_paths()
-        define_prim("/World/envs/env_0", "Xform")
 
+        # define_prim("/World/envs/env_0", "Xform")
         self.get_target()
 
         super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"])
