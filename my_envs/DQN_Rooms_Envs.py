@@ -192,12 +192,11 @@ class ReachingFoodTask(RLTask):
     def set_up_scene(self, scene) -> None:
         self._stage = get_current_stage()
         self.get_terrain()
-        print_stage_prim_paths()
-
-        # define_prim("/World/envs/env_0", "Xform")
         self.get_target()
 
+        print_stage_prim_paths()
         super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"])
+        print_stage_prim_paths()
 
         self.get_robot()
         print_stage_prim_paths()
@@ -223,7 +222,7 @@ class ReachingFoodTask(RLTask):
         # for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
         #     robot_prim_path = robot_prim_path.replace("/base_link", "")
         for wheel_relative_path in wheel_prim_paths:
-            wheel_full_path = f"{self.robot_v101.prim}/{wheel_relative_path}"  # Construct full wheel path
+            wheel_full_path = f"/World/envs/env_1/robot_v10/{wheel_relative_path}"  # Construct full wheel path
             print("Paths to wheels:", wheel_full_path)
             wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
             wheel_prim.apply_physics_material(self.rubber_material)  # Apply the material
