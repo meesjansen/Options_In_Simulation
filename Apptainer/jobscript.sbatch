@@ -21,7 +21,7 @@ previous=$(/usr/bin/nvidia-smi --query-accounted-apps='gpu_utilization,mem_utili
 #module use /opt/insy/modulefiles # Use DAIC INSY software collection
 module load cuda/12.1  # Adjust the CUDA version as needed
 
-export APPTAINER_ROOT="/winhome/meesjansen/OptionsInSimulation/Apptainer"
+export APPTAINER_ROOT="/winhome/meesjansen"
 export APPTAINER_NAME="isaac-sim-custom.sif"
 
 export ISAACSIM_PATH="/isaac-sim"
