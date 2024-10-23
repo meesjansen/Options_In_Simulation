@@ -366,7 +366,7 @@ class ReachingFoodTask(RLTask):
         pos = ([x_pos, y_pos, z_pos])
 
         # Convert the positions list to a torch tensor
-        pos = torch.tensor(pos, device=self.device).unsqueeze(0)
+        # pos = torch.tensor(pos, device=self.device).unsqueeze(0)
         quat = quat.unsqueeze(0) 
 
         self.dof_vel[env_ids] = self.dof_init_state[4:8]
@@ -387,9 +387,10 @@ class ReachingFoodTask(RLTask):
         print("env_origins shape:", self.env_origins[env_ids].shape)
         print("target pos shape:", self.base_pos[env_ids].clone())
         print("quat shape:", quat.shape)
+        print("base quat shape:", self.base_quat[env_ids].clone())
 
 
-        self._robots.set_world_poses(positions=(pos + self.env_origins[env_ids].clone), orientations=quat, indices=indices)
+        self._robots.set_world_poses(positions=(pos + self.env_origins[env_ids].clone), orientations=self.base_quat[env_ids].clone(), indices=indices)
         self._targets.set_world_poses(positions=self.base_pos[env_ids].clone(), orientations=self.base_quat[env_ids].clone(), indices=indices)
 
 
