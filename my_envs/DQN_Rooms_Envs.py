@@ -195,7 +195,7 @@ class ReachingFoodTask(RLTask):
         self.get_target()
 
         print_stage_prim_paths()
-        super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"])
+        super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"], copy_from_source=True)
         print_stage_prim_paths()
 
         self.get_robot()
@@ -366,8 +366,8 @@ class ReachingFoodTask(RLTask):
         pos = ([x_pos, y_pos, z_pos])
 
         # Convert the positions list to a torch tensor
-        pos = torch.tensor(pos, device=self.device).unsqueeze(0)
-        # quat = quat.unsqueeze(0) 
+        # pos = torch.tensor(pos, device=self.device).unsqueeze(0).repeat(self.num_envs, 1) #remember git history and understand ._robots
+        quat = quat.repeat(self.num_envs, 1)
 
         self.dof_vel[env_ids] = self.dof_init_state[4:8]
         self.dof_efforts[env_ids] = self.dof_init_state[0:4]
@@ -389,8 +389,8 @@ class ReachingFoodTask(RLTask):
         print("base quat shape:", self.base_quat[env_ids].clone())
 
 
-        self._robots.set_world_poses(positions=(pos + self.env_origins[env_ids].clone), orientations=self.base_quat[env_ids].clone(), indices=indices)
-        self._targets.set_world_poses(positions=self.base_pos[env_ids].clone(), orientations=self.base_quat[env_ids].clone(), indices=indices)
+        self._robots.set_world_poses(pos + self.env_origins[env_ids].clone, orientations=self.base_quat[env_ids].clone(), indices=indices)
+        self._targets.set_world_poses(positions=self.base_pos[env_ids].clone(), indices=indices)
 
 
         self.last_actions[env_ids] = 0.0
