@@ -366,8 +366,8 @@ class ReachingFoodTask(RLTask):
         pos = ([x_pos, y_pos, z_pos])
 
         # Convert the positions list to a torch tensor
-        # pos = torch.tensor(pos, device=self.device).unsqueeze(0)
-        quat = quat.unsqueeze(0) 
+        pos = torch.tensor(pos, device=self.device).unsqueeze(0)
+        # quat = quat.unsqueeze(0) 
 
         self.dof_vel[env_ids] = self.dof_init_state[4:8]
         self.dof_efforts[env_ids] = self.dof_init_state[0:4]
