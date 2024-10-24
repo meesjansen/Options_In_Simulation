@@ -380,8 +380,8 @@ class ReachingFoodTask(RLTask):
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
         
         print("env_origins shape:", self.env_origins[env_ids].shape)
-        print("target pos shape:", self.base_pos[env_ids].clone())
-        print("quat shape:", quat.shape)
+        print("target pos shape:", pos + self.env_origins[env_ids].clone().shape)
+        print("quat shape:", quat[env_ids].shape)
         print("base quat shape:", self.base_quat[env_ids].clone())
 
 
