@@ -345,19 +345,19 @@ class ReachingFoodTask(RLTask):
         if edge == 0:  # Left edge
             x_pos = -square_size_x / 2
             y_pos = random.uniform(-square_size_y / 2, square_size_y / 2)
-            quat = torch.tensor([0.0, 0.0, 0.7071, 0.7071], device=self.device)  # Looking right
+            quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking right
         elif edge == 1:  # Right edge
             x_pos = square_size_x / 2
             y_pos = random.uniform(-square_size_y / 2, square_size_y / 2)
-            quat = torch.tensor([0.0, 0.0, -0.7071, 0.7071], device=self.device)  # Looking left
+            quat = torch.tensor([0.7071, 0.0, 0.0, -0.7071], device=self.device)  # Looking left
         elif edge == 2:  # Top edge
             y_pos = square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
-            quat = torch.tensor([0.0, 0.0, 1.0, 0.0], device=self.device)  # Looking down
+            quat = torch.tensor([0.0, 0.0, 0.0, 1.0], device=self.device)  # Looking down
         else:  # Bottom edge
             y_pos = -square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
-            quat = torch.tensor([0.0, 0.0, 0.0, 1.0], device=self.device)  # Looking up
+            quat = torch.tensor([1.0, 0.0, 0.0, 0.0], device=self.device)  # Looking up
 
         # Z position is fixed at 0.4
         z_pos = 0.4
@@ -379,7 +379,7 @@ class ReachingFoodTask(RLTask):
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
         self._robots.set_world_poses(pos[env_ids] + self.env_origins[env_ids].clone(), orientations=quat[env_ids].clone(), indices=indices)
-        
+
         self._targets.set_world_poses(positions=self.base_pos[env_ids].clone(), indices=indices)
 
 
