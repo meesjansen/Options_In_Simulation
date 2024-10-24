@@ -378,10 +378,11 @@ class ReachingFoodTask(RLTask):
         self.base_quat[env_ids] = self.base_init_state[3:7]
         self.base_velocities[env_ids] = self.base_init_state[7:13]
      
-        
+        print_stage_prim_paths()
+
+        self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
         self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)
-        self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
 
         print("env_origins shape:", self.env_origins[env_ids].shape)
         print("target pos shape:", self.base_pos[env_ids].clone())
