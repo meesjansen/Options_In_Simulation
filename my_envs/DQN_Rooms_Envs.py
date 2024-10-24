@@ -363,10 +363,7 @@ class ReachingFoodTask(RLTask):
         z_pos = 0.4
 
         # Store the position in a list
-        pos = ([x_pos, y_pos, z_pos])
-
-        # Convert the positions list to a torch tensor
-        # pos = torch.tensor(pos, device=self.device).unsqueeze(0).repeat(self.num_envs, 1) #remember git history and understand ._robots
+        pos = torch.tensor([x_pos, y_pos, z_pos], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
         quat = quat.repeat(self.num_envs, 1)
 
         self.dof_vel[env_ids] = self.dof_init_state[4:8]
