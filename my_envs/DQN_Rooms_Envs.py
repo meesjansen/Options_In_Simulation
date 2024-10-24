@@ -336,8 +336,8 @@ class ReachingFoodTask(RLTask):
         indices = env_ids.to(dtype=torch.int32)
 
         # Define square boundary size (assuming square extends from -0.5 to 0.5 in both axes)
-        square_size_x = 8.0  # Total width of the square
-        square_size_y = 8.0  # Total height of the square
+        square_size_x = 7.5  # Total width of the square
+        square_size_y = 7.5  # Total height of the square
 
         edge = random.randint(0, 3)
 
@@ -375,17 +375,11 @@ class ReachingFoodTask(RLTask):
         self.base_quat[env_ids] = self.base_init_state[3:7]
         self.base_velocities[env_ids] = self.base_init_state[7:13]
      
-        print_stage_prim_paths()
-
+        self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
+        self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
-        
-        print("env_origins shape:", self.env_origins[env_ids].shape)
-        print("target pos shape:", (pos[env_ids] + self.env_origins[env_ids].clone()).shape)
-        print("quat shape:", quat[env_ids].shape)
-        print("base quat shape:", self.base_quat[env_ids].clone())
-
-
         self._robots.set_world_poses(pos[env_ids] + self.env_origins[env_ids].clone(), orientations=quat[env_ids].clone(), indices=indices)
+        
         self._targets.set_world_poses(positions=self.base_pos[env_ids].clone(), indices=indices)
 
 
