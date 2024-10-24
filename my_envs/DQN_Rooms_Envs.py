@@ -388,7 +388,7 @@ class ReachingFoodTask(RLTask):
         print("base quat shape:", self.base_quat[env_ids].clone())
 
 
-        self._robots.set_world_poses(pos + self.env_origins[env_ids].clone, orientations=self.base_quat[env_ids].clone(), indices=indices)
+        self._robots.set_world_poses(pos + self.env_origins[env_ids].clone(), orientations=quat[env_ids].clone(), indices=indices)
         self._targets.set_world_poses(positions=self.base_pos[env_ids].clone(), indices=indices)
 
 
