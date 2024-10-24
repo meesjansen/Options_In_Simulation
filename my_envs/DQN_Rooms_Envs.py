@@ -353,14 +353,14 @@ class ReachingFoodTask(RLTask):
         elif edge == 2:  # Top edge
             y_pos = square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
-            quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking down
+            quat = torch.tensor([0.7071, 0.0, 0.0, -0.7071], device=self.device)  # Looking down
         else:  # Bottom edge
             y_pos = -square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
-            quat = torch.tensor([0.7071, 0.0, 0.0, -0.7071], device=self.device)  # Looking up
+            quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking up
 
         # Z position is fixed at 0.4
-        z_pos = 0.4
+        z_pos = 0.5
 
         # Store the position in a list
         pos = torch.tensor([x_pos, y_pos, z_pos], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
