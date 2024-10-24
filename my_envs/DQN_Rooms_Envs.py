@@ -265,7 +265,7 @@ class ReachingFoodTask(RLTask):
         self.robot_v102.set_robot_properties(self._stage, self.robot_v102.prim)
 
         self.robot_v111 = Robot_v11(
-            prim_path="/World/envs/env_2/robot_v11",
+            prim_path="/World/envs/env_2/robot_v10",
             name="robot_v11",
             translation=robot_translation + torch.tensor([8.0, 0.0, 0.0]),
             orientation=robot_orientation,
@@ -276,7 +276,7 @@ class ReachingFoodTask(RLTask):
         self.robot_v111.set_robot_properties(self._stage, self.robot_v111.prim)
 
         self.robot_v112 = Robot_v11(
-            prim_path="/World/envs/env_3/robot_v11",
+            prim_path="/World/envs/env_3/robot_v10",
             name="robot_v11",
             translation=robot_translation + torch.tensor([8.0, 8.0, 0.0]),
             orientation=robot_orientation,
@@ -381,9 +381,7 @@ class ReachingFoodTask(RLTask):
         print_stage_prim_paths()
 
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
-        self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
-        self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)
-
+        
         print("env_origins shape:", self.env_origins[env_ids].shape)
         print("target pos shape:", self.base_pos[env_ids].clone())
         print("quat shape:", quat.shape)
