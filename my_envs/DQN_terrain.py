@@ -520,16 +520,18 @@ class ReachingTargetTask(RLTask):
         # computed distance to target as updating reward
         self.rew_buf[:] = 0.00035/self._computed_distance * 100.0
 
-        self.rew_buf[self.target_reached] += 50
+        self.rew_buf[self.target_reached] += 50 #target reached
 
         # Check fallen condition
-        self.rew_buf[self.fallen] += -20.0
+        self.rew_buf[self.fallen] += -20.0 # fallen
 
         # Check out-of-bounds condition
-        self.rew_buf[self.out_of_bounds] += -10.0
+        self.rew_buf[self.out_of_bounds] += -10.0 # out of bounds
 
         # Check standing still condition
-        self.rew_buf[self.standing_still] += -10.0
+        self.rew_buf[self.standing_still] += -10.0 # standing still
+
+        print("Reward buffer:", self.rew_buf)
 
         return self.rew_buf
 
