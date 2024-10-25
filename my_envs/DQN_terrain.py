@@ -335,10 +335,10 @@ class ReachingTargetTask(RLTask):
         self.dof_efforts[env_ids] = self.dof_init_state[0:4]
 
 
-        self.base_pos[env_ids] = self.base_init_state[0:3]
-        self.base_pos[env_ids, 0:3] += self.env_origins[env_ids]
-        self.base_quat[env_ids] = self.base_init_state[3:7]
-        self.base_velocities[env_ids] = self.base_init_state[7:13]
+        # self.base_pos[env_ids] = self.base_init_state[0:3]
+        # self.base_pos[env_ids, 0:3] += self.env_origins[env_ids]
+        # self.base_quat[env_ids] = self.base_init_state[3:7]
+        # self.base_velocities[env_ids] = self.base_init_state[7:13]
      
         self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
