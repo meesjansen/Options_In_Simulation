@@ -184,6 +184,7 @@ def mixed_pyramid_terrain(terrain, step_width, step_height, slope=1, platform_si
     xx = (center_x - np.abs(center_x - xx)) / center_x
     yy = (center_y - np.abs(center_y - yy)) / center_y
     max_height = int(slope * (terrain.horizontal_scale / terrain.vertical_scale) * (terrain.width / 2))
+    print(xx[:stop_x, :].shape, yy[:, stop_y // 2:].shape, terrain.height_field_raw[:stop_x, stop_y // 2:].shape)
     terrain.height_field_raw[:stop_x, stop_y // 2:] += (max_height * xx[:stop_x, :] * yy[:, stop_y // 2:]).astype(terrain.height_field_raw.dtype)
 
     return terrain
