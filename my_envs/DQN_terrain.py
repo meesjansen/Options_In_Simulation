@@ -17,7 +17,7 @@ from omni.isaac.core.materials.physics_material import PhysicsMaterial
 from omni.isaac.core.prims import GeometryPrim
 
 
-from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10
+from my_robots.origin_v11 import AvularOrigin_v11 as Robot_v10
 
 from my_utils.terrain_generator import *
 from my_utils.terrain_utils import *
@@ -31,7 +31,7 @@ TASK_CFG = {"test": False,
             "seed": 42,
             "task": {"name": "ReachingFood",
                      "physics_engine": "physx",
-                     "env": {"numEnvs": 4,
+                     "env": {"numEnvs": 144, # has to be perfect square
                              "envSpacing": 1.5,
                              "episodeLength": 1000,
                              "enableDebugVis": False,
@@ -43,7 +43,8 @@ TASK_CFG = {"test": False,
                                               "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
                                                 },
                             "dofInitTorques": [0.0, 0.0, 0.0, 0.0],
-                            "dofInitVelocities": [0.0, 0.0, 0.0, 0.0],                        
+                            "dofInitVelocities": [0.0, 0.0, 0.0, 0.0],
+                            "TerrainType": "mixed", # rooms, stairs, sloped, mixed                       
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
                              "use_gpu_pipeline": True,
@@ -118,8 +119,8 @@ class ReachingFoodTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 16 # feuteres^bins 10^6
-        self._num_actions = 12  # Assuming 3 discrete actions per wheel
+        self._num_observations = 16 + 256 # features + height points
+        self._num_actions = 12  # Designed discrete action space see pre_physics_step()
         self.common_step_counter = 0 # Counter for the first two steps
 
         self.update_config(sim_config)
@@ -129,7 +130,7 @@ class ReachingFoodTask(RLTask):
         self.height_points = self.init_height_points()  
         self.measured_heights = None
 
-        self.bounds = torch.tensor([-4.0, 4.0, -4.0, 4.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-2.0, 2.0, -2.0, 2.0], device=self.device, dtype=torch.float)
         self.still_steps = torch.zeros(self.num_envs)
         self.position_buffer = torch.zeros(self.num_envs, 2)  # Assuming 2D position still condition
         self.counter = 0 # still condition counter
@@ -162,12 +163,12 @@ class ReachingFoodTask(RLTask):
         self.decimation = 4
 
     def init_height_points(self):
-        # 8mx8m rectangle (without center line) 32x32=1024 points
-        y = 0.5 * torch.tensor(
-            [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6 -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], device=self.device, requires_grad=False
-        )  # 50cm on each side
-        x = 0.5 * torch.tensor(
-            [-16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6 -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], device=self.device, requires_grad=False
+        # 4mx8m rectangle (without center line) 16x16=256 points
+        y = 0.25 * torch.tensor(
+            [-8, -7, -6 -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, ], device=self.device, requires_grad=False
+        )  # 25cm on each side
+        x = 0.25 * torch.tensor(
+            [-8, -7, -6 -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
         )  
         grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
 
@@ -236,7 +237,7 @@ class ReachingFoodTask(RLTask):
 
     def get_robot(self):
         
-        robot_translation = torch.tensor([-7.5, -7.5, 0.0])
+        robot_translation = torch.tensor([-2.0, -2.0, 0.0])
         robot_orientation = torch.tensor([1.0, 0.0, 0.0, 0.0])
         self.robot_v101 = Robot_v10(
             prim_path=self.default_zero_env_path + "/robot_v10",
@@ -299,8 +300,8 @@ class ReachingFoodTask(RLTask):
         indices = env_ids.to(dtype=torch.int32)
 
         # Define square boundary size (assuming square extends from -0.5 to 0.5 in both axes)
-        square_size_x = 7.5  # Total width of the square
-        square_size_y = 7.5  # Total height of the square
+        square_size_x = 4.0  # Total width of the square
+        square_size_y = 4.0  # Total height of the square
 
         edge = random.randint(0, 3)
 
@@ -323,7 +324,7 @@ class ReachingFoodTask(RLTask):
             quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking up
 
         # Z position is fixed at 0.4
-        z_pos = 0.5
+        z_pos = 0.6
 
         # Store the position in a list
         pos = torch.tensor([x_pos, y_pos, z_pos], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
@@ -351,13 +352,6 @@ class ReachingFoodTask(RLTask):
         self.reset_buf[env_ids] = 0
         self.rew_buf[env_ids] = 0.0
 
-        # fill extras for reward shaping
-        # self.extras["episode"] = {}
-        # for key in self.episode_sums.keys():
-        #     self.extras["episode"]["rew_" + key] = (
-        #         torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
-        #     )
-        #     self.episode_sums[key][env_ids] = 0.0
 
     def refresh_body_state_tensors(self):
         self.base_pos, self.base_quat = self._robots.get_world_poses(clone=False)
@@ -556,7 +550,7 @@ class ReachingFoodTask(RLTask):
                 self.base_ang_vel,
                 self.projected_gravity,
                 delta_pos,
-                # heights,
+                heights,
                 current_efforts 
             ),
             dim=-1,

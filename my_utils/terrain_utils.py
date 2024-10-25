@@ -53,12 +53,6 @@ def rooms_terrain(terrain, wall_height=400, wall_thickness=5, passage_width=20):
     return terrain
 
 
-# TESTS:
-# terrain = SubTerrain(width=256, length=256, vertical_scale=0.005, horizontal_scale=0.1)
-# terrain = rooms_terrain(terrain, wall_height=400, wall_thickness=5, passage_width=20)
-# print(terrain.height_field_raw.shape)
-# print(terrain.height_field_raw)
-# np.savetxt('terrain_height_field.txt', terrain.height_field_raw, fmt='%d')
 
 def stairs_terrain(terrain, step_width, step_height):
     """
@@ -81,6 +75,42 @@ def stairs_terrain(terrain, step_width, step_height):
         terrain.height_field_raw[i * step_width : (i + 1) * step_width, :] += height
         height += step_height
     return terrain
+
+
+def pyramid_sloped_terrain(terrain, slope=1, platform_size=1.0):
+    """
+    Generate a sloped terrain
+
+    Parameters:
+        terrain (terrain): the terrain
+        slope (int): positive or negative slope
+        platform_size (float): size of the flat platform at the center of the terrain [meters]
+    Returns:
+        terrain (SubTerrain): update terrain
+    """
+    x = np.arange(0, terrain.width)
+    y = np.arange(0, terrain.length)
+    center_x = int(terrain.width / 2)
+    center_y = int(terrain.length / 2)
+    xx, yy = np.meshgrid(x, y, sparse=True)
+    xx = (center_x - np.abs(center_x - xx)) / center_x
+    yy = (center_y - np.abs(center_y - yy)) / center_y
+    xx = xx.reshape(terrain.width, 1)
+    yy = yy.reshape(1, terrain.length)
+    max_height = int(slope * (terrain.horizontal_scale / terrain.vertical_scale) * (terrain.width / 2))
+    terrain.height_field_raw += (max_height * xx * yy).astype(terrain.height_field_raw.dtype)
+
+    platform_size = int(platform_size / terrain.horizontal_scale / 2)
+    x1 = terrain.width // 2 - platform_size
+    x2 = terrain.width // 2 + platform_size
+    y1 = terrain.length // 2 - platform_size
+    y2 = terrain.length // 2 + platform_size
+
+    min_h = min(terrain.height_field_raw[x1, y1], 0)
+    max_h = max(terrain.height_field_raw[x1, y1], 0)
+    terrain.height_field_raw = np.clip(terrain.height_field_raw, min_h, max_h)
+    return terrain
+
 
 def pyramid_stairs_terrain(terrain, step_width, step_height, platform_size=1.0):
     """
@@ -113,6 +143,50 @@ def pyramid_stairs_terrain(terrain, step_width, step_height, platform_size=1.0):
         terrain.height_field_raw[start_x:stop_x, start_y:stop_y] = height
     return terrain
 
+
+def mixed_pyramid_terrain(terrain, step_width, step_height, slope=1, platform_size=1.0):
+    """
+    Generate a mixed pyramid terrain with steps on two sides and slopes on the other two sides.
+
+    Parameters:
+        terrain (terrain): the terrain
+        step_width (float):  the width of the steps [meters]
+        step_height (float): the height of the steps [meters]
+        slope (int): positive or negative slope for the sloped sides
+        platform_size (float): size of the flat platform at the center of the terrain [meters]
+    Returns:
+        terrain (SubTerrain): updated terrain
+    """
+    # Step sides (copy from pyramid_stairs_terrain)
+    step_width = int(step_width / terrain.horizontal_scale)
+    step_height = int(step_height / terrain.vertical_scale)
+    platform_size = int(platform_size / terrain.horizontal_scale)
+
+    height = 0
+    start_x = 0
+    stop_x = terrain.width
+    start_y = 0
+    stop_y = terrain.length
+
+    # Create steps on two opposite sides
+    while (stop_x - start_x) > platform_size:
+        start_x += step_width
+        stop_x -= step_width
+        height += step_height
+        terrain.height_field_raw[start_x:stop_x, start_y:stop_y // 2] = height  # Steps on one side
+
+    # Slope sides (copy from pyramid_sloped_terrain)
+    x = np.arange(0, terrain.width)
+    y = np.arange(0, terrain.length)
+    center_x = int(terrain.width / 2)
+    center_y = int(terrain.length / 2)
+    xx, yy = np.meshgrid(x, y, sparse=True)
+    xx = (center_x - np.abs(center_x - xx)) / center_x
+    yy = (center_y - np.abs(center_y - yy)) / center_y
+    max_height = int(slope * (terrain.horizontal_scale / terrain.vertical_scale) * (terrain.width / 2))
+    terrain.height_field_raw[:stop_x, stop_y // 2:] += (max_height * xx[:stop_x, :] * yy[:, stop_y // 2:]).astype(terrain.height_field_raw.dtype)
+
+    return terrain
 
 
 def convert_heightfield_to_trimesh(height_field_raw, horizontal_scale, vertical_scale, slope_threshold=None):
