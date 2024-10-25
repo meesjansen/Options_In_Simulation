@@ -119,7 +119,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 16 + 256 # features + height points
+        self._num_observations = 16 # + 256 # features + height points
         self._num_actions = 12  # Designed discrete action space see pre_physics_step()
         self.common_step_counter = 0 # Counter for the first two steps
 
@@ -550,7 +550,7 @@ class ReachingTargetTask(RLTask):
                 self.base_ang_vel,
                 self.projected_gravity,
                 delta_pos,
-                heights,
+                # heights,
                 current_efforts 
             ),
             dim=-1,
