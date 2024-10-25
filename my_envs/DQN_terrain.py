@@ -168,7 +168,7 @@ class ReachingTargetTask(RLTask):
             [-8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
         )  # 25cm on each side
         x = 0.25 * torch.tensor(
-            [-8, -7, -6 -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
+            [-8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
         )  
         grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
 
