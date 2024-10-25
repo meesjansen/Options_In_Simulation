@@ -17,7 +17,7 @@ from omni.isaac.core.materials.physics_material import PhysicsMaterial
 from omni.isaac.core.prims import GeometryPrim
 
 
-from my_robots.origin_v11 import AvularOrigin_v11 as Robot_v10
+from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10
 
 from my_utils.terrain_generator import *
 from my_utils.terrain_utils import *
@@ -287,8 +287,8 @@ class ReachingTargetTask(RLTask):
         )
         self.num_dof = self._robots.num_dof 
         self.env_origins = self.terrain_origins.view(-1, 3)[:self.num_envs]
-        self.base_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
-        self.base_quat = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device)
+        self.target_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
+        self.target_pos += torch.tensor([0.0, 0.0, 2.1], dtype=torch.float, device=self.device)
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
         self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
         self.dof_efforts = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
@@ -325,7 +325,7 @@ class ReachingTargetTask(RLTask):
             quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking up
 
         # Z position is fixed at 0.4
-        z_pos = 0.6
+        z_pos = 0.3
 
         # Store the position in a list
         pos = torch.tensor([x_pos, y_pos, z_pos], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
@@ -345,7 +345,7 @@ class ReachingTargetTask(RLTask):
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
         self._robots.set_world_poses(pos[env_ids] + self.env_origins[env_ids].clone(), orientations=quat[env_ids].clone(), indices=indices)
 
-        self._targets.set_world_poses(positions=self.base_pos[env_ids].clone(), indices=indices)
+        self._targets.set_world_poses(positions=self.target_pos[env_ids].clone(), indices=indices)
 
 
         self.last_actions[env_ids] = 0.0
@@ -469,7 +469,7 @@ class ReachingTargetTask(RLTask):
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
         # target reached or lost
-        self.target_reached = self._computed_distance <= 0.0035
+        self.target_reached = self._computed_distance <= 0.035
         self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
         print("Reset buffer post distance", self.reset_buf)
 
@@ -479,9 +479,9 @@ class ReachingTargetTask(RLTask):
 
 
         # Calculate the projected gravity in the robot's local frame
-        print("Gravity vector", self.gravity_vec)
+        # print("Gravity vector", self.gravity_vec)
         projected_gravity = quat_apply(base_quat, self.gravity_vec)
-        print("Projected gravity vector", projected_gravity)
+        # print("Projected gravity vector", projected_gravity)
 
         # Detect if the robot is on its back based on positive Z-axis component of the projected gravity
         positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
