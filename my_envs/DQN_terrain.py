@@ -32,7 +32,7 @@ TASK_CFG = {"test": False,
             "task": {"name": "ReachingFood",
                      "physics_engine": "physx",
                      "env": {"numEnvs": 25, # has to be perfect square
-                             "envSpacing": 1.5,
+                             "envSpacing": 10.5,
                              "episodeLength": 1000,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
@@ -165,10 +165,10 @@ class ReachingTargetTask(RLTask):
     def init_height_points(self):
         # 4mx4m rectangle (without center line) 16x16=256 points
         y = 0.25 * torch.tensor(
-            [-8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
+            [-9, -8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9], device=self.device, requires_grad=False
         )  # 25cm on each side
         x = 0.25 * torch.tensor(
-            [-8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
+            [-9, -8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9], device=self.device, requires_grad=False
         )  
         grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
 
