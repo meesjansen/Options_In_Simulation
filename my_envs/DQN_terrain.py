@@ -163,7 +163,7 @@ class ReachingTargetTask(RLTask):
         self.decimation = 4
 
     def init_height_points(self):
-        # 4mx8m rectangle (without center line) 16x16=256 points
+        # 4mx4m rectangle (without center line) 16x16=256 points
         y = 0.25 * torch.tensor(
             [-8, -7, -6 -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, ], device=self.device, requires_grad=False
         )  # 25cm on each side
@@ -565,6 +565,7 @@ class ReachingTargetTask(RLTask):
         
         if env_ids:
             # Simply grab height_points for each environment based on the grid position
+            print("Height points:", self.height_points[env_ids])
             points = self.height_points[env_ids] + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
         else:
             # No rotation, just use the stationary grid and base positions
