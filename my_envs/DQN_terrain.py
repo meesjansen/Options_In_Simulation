@@ -119,7 +119,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 16 # + 256 # features + height points
+        self._num_observations = 16 + 256 # features + height points
         self._num_actions = 12  # Designed discrete action space see pre_physics_step()
         self.common_step_counter = 0 # Counter for the first two steps
 
@@ -165,7 +165,7 @@ class ReachingTargetTask(RLTask):
     def init_height_points(self):
         # 4mx4m rectangle (without center line) 16x16=256 points
         y = 0.25 * torch.tensor(
-            [-8, -7, -6 -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, ], device=self.device, requires_grad=False
+            [-8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
         )  # 25cm on each side
         x = 0.25 * torch.tensor(
             [-8, -7, -6 -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
@@ -552,7 +552,7 @@ class ReachingTargetTask(RLTask):
                 self.base_ang_vel,
                 self.projected_gravity,
                 delta_pos,
-                # heights,
+                heights,
                 current_efforts 
             ),
             dim=-1,
