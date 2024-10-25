@@ -31,7 +31,7 @@ TASK_CFG = {"test": False,
             "seed": 42,
             "task": {"name": "ReachingFood",
                      "physics_engine": "physx",
-                     "env": {"numEnvs": 144, # has to be perfect square
+                     "env": {"numEnvs": 25, # has to be perfect square
                              "envSpacing": 1.5,
                              "episodeLength": 1000,
                              "enableDebugVis": False,
