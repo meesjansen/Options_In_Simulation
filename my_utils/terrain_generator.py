@@ -4,6 +4,12 @@ import numpy as np
 import torch
 from my_utils.terrain_utils import *
 
+task_cfg = {
+        "env": {
+            "TerrainType": "mixed",
+        }
+    }
+
 class Terrain:
     def __init__(self, num_robots) -> None:
         self.horizontal_scale = 0.05
@@ -29,7 +35,7 @@ class Terrain:
         self.height_field_raw = np.zeros((self.tot_rows, self.tot_cols), dtype=np.int16)
 
         # rooms, stairs, sloped, mixed
-        terrain_type = self._task_cfg["env"]["TerrainType"]
+        terrain_type = task_cfg["env"]["TerrainType"]
         if terrain_type == "rooms":
             self.cr_rooms_env()
         elif terrain_type == "stairs":
