@@ -563,13 +563,16 @@ class ReachingTargetTask(RLTask):
 
     def get_heights(self, env_ids=None):
         
-        if env_ids:
-            # Simply grab height_points for each environment based on the grid position
-            print("Height points:", self.height_points[env_ids])
-            points = self.height_points[env_ids] + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
-        else:
-            # No rotation, just use the stationary grid and base positions
-            points = self.height_points + self.base_pos[:, 0:3].unsqueeze(1)
+        # if env_ids:
+        #     # Simply grab height_points for each environment based on the grid position
+        #     print("Height points:", self.height_points[env_ids])
+        #     points = self.height_points[env_ids] + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
+        # else:
+        #     # No rotation, just use the stationary grid and base positions
+        #     points = self.height_points + self.base_pos[:, 0:3].unsqueeze(1)
+
+        points = self.height_points[env_ids] + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
+
 
         # Add terrain border size
         points += self.terrain.border_size
