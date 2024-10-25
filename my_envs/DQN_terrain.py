@@ -288,7 +288,8 @@ class ReachingTargetTask(RLTask):
         self.num_dof = self._robots.num_dof 
         self.env_origins = self.terrain_origins.view(-1, 3)[:self.num_envs]
         self.target_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
-        self.target_pos += torch.tensor([0.0, 0.0, 2.1], dtype=torch.float, device=self.device)
+        self.target_pos += torch.tensor([0.0, 0.0, 0.3], dtype=torch.float, device=self.device)
+        self.target_pos += self.env_origins
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
         self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
         self.dof_efforts = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
@@ -325,7 +326,7 @@ class ReachingTargetTask(RLTask):
             quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking up
 
         # Z position is fixed at 0.4
-        z_pos = 0.3
+        z_pos = 0.2
 
         # Store the position in a list
         pos = torch.tensor([x_pos, y_pos, z_pos], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
