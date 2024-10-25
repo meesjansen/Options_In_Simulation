@@ -175,7 +175,6 @@ def mixed_pyramid_terrain(terrain, step_width, step_height, slope=1, platform_si
         height += step_height
         terrain.height_field_raw[start_x:stop_x, start_y:stop_y // 2] = height  # Steps on one side
 
-    # Slope sides (copy from pyramid_sloped_terrain)
     x = np.arange(0, terrain.width)
     y = np.arange(0, terrain.length)
     center_x = int(terrain.width / 2)
@@ -183,9 +182,20 @@ def mixed_pyramid_terrain(terrain, step_width, step_height, slope=1, platform_si
     xx, yy = np.meshgrid(x, y, sparse=True)
     xx = (center_x - np.abs(center_x - xx)) / center_x
     yy = (center_y - np.abs(center_y - yy)) / center_y
+    xx = xx.reshape(terrain.width, 1)
+    yy = yy.reshape(1, terrain.length)
     max_height = int(slope * (terrain.horizontal_scale / terrain.vertical_scale) * (terrain.width / 2))
-    print(xx[:stop_x, :].shape, yy[:, stop_y // 2:].shape, terrain.height_field_raw[:stop_x, stop_y // 2:].shape)
-    terrain.height_field_raw[:stop_x, stop_y // 2:] += (max_height * xx[:stop_x, :] * yy[:, stop_y // 2:]).astype(terrain.height_field_raw.dtype)
+    terrain.height_field_raw += (max_height * xx * yy).astype(terrain.height_field_raw.dtype)
+
+    platform_size = int(platform_size / terrain.horizontal_scale / 2)
+    x1 = terrain.width // 2 - platform_size
+    x2 = terrain.width // 2 + platform_size
+    y1 = terrain.length // 2 - platform_size
+    y2 = terrain.length // 2 + platform_size
+
+    min_h = min(terrain.height_field_raw[x1, y1], 0)
+    max_h = max(terrain.height_field_raw[x1, y1], 0)
+    terrain.height_field_raw = np.clip(terrain.height_field_raw, min_h, max_h)
 
     return terrain
 
