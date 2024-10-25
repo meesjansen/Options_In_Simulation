@@ -215,6 +215,14 @@ class ReachingTargetTask(RLTask):
             "right_rear_wheel",
         ] 
 
+        # robot view
+        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robot_view")
+        scene.add(self._robots)
+        
+        # target view
+        self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
+        scene.add(self._targets)
+
         # Apply the material to each robot's wheels
         for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
             robot_prim_path = robot_prim_path.replace("/main_body", "")
@@ -223,16 +231,7 @@ class ReachingTargetTask(RLTask):
             print("Paths to wheels:", wheel_full_path)
             wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
             wheel_prim.apply_physics_material(self.rubber_material)  # Apply the material
-
-        print_stage_prim_paths()
-
-        # robot view
-        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robot_view")
-        scene.add(self._robots)
-        
-        # target view
-        self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
-        scene.add(self._targets)
+            
 
     def get_terrain(self, create_mesh=True):
         self.env_origins = torch.zeros((self.num_envs, 3), device=self.device, requires_grad=False)
