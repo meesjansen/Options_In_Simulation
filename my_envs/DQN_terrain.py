@@ -529,7 +529,8 @@ class ReachingTargetTask(RLTask):
 
 
     def get_observations(self):
-        self.measured_heights = self.get_heights()
+        ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
+        self.measured_heights = self.get_heights(ids)
         heights = self.measured_heights * self.terrain.vertical_scale 
         print("Heights size:", heights.size())
 
