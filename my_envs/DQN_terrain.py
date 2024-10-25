@@ -572,6 +572,7 @@ class ReachingTargetTask(RLTask):
 
         # Add terrain border size
         points += self.terrain.border_size
+        print("Points parameter shape:", points.size())
 
         # Convert to terrain grid coordinates (account for terrain scaling)
         points = (points / self.terrain.horizontal_scale).long()
@@ -590,6 +591,9 @@ class ReachingTargetTask(RLTask):
         
         # Use the minimum height as a conservative estimate
         heights = torch.min(heights1, heights2)
+
+        print("heights shape:", points.size())
+
 
         # Return the heights, scaled by the vertical scale
         return heights.view(self.num_envs, -1) * self.terrain.vertical_scale
