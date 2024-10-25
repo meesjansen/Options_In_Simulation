@@ -531,7 +531,7 @@ class ReachingTargetTask(RLTask):
     def get_observations(self):
         self.measured_heights = self.get_heights()
         heights = self.measured_heights * self.terrain.vertical_scale 
-        print("Heights:", heights)
+        print("Heights size:", heights.size())
 
         base_pos, _ = self._robots.get_world_poses(clone=False)
         target_pos, _ = self._targets.get_world_poses(clone=False)
