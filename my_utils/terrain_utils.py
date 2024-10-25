@@ -160,7 +160,7 @@ def mixed_pyramid_terrain(terrain, step_width, step_height, slope=1, platform_si
     # Step sides (copy from pyramid_stairs_terrain)
     step_width = int(step_width / terrain.horizontal_scale)
     step_height = int(step_height / terrain.vertical_scale)
-    platform_size = int(platform_size / terrain.horizontal_scale)
+    platform_size_step = int(platform_size / terrain.horizontal_scale)
 
     height = 0
     start_x = 0
@@ -169,7 +169,7 @@ def mixed_pyramid_terrain(terrain, step_width, step_height, slope=1, platform_si
     stop_y = terrain.length
 
     # Create steps on two opposite sides
-    while (stop_x - start_x) > platform_size:
+    while (stop_x - start_x) > platform_size_step:
         start_x += step_width
         stop_x -= step_width
         height += step_height
