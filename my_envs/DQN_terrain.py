@@ -32,7 +32,7 @@ TASK_CFG = {"test": False,
             "task": {"name": "ReachingFood",
                      "physics_engine": "physx",
                      "env": {"numEnvs": 25, # has to be perfect square
-                             "envSpacing": 10.5,
+                             "envSpacing": 10.0,
                              "episodeLength": 1000,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
@@ -118,7 +118,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 16 + 256 # features + height points
+        self._num_observations = 340 # features + height points
         self._num_actions = 12  # Designed discrete action space see pre_physics_step()
         self.common_step_counter = 0 # Counter for the first two steps
 
