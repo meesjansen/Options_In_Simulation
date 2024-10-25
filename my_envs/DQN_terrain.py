@@ -44,7 +44,6 @@ TASK_CFG = {"test": False,
                                                 },
                             "dofInitTorques": [0.0, 0.0, 0.0, 0.0],
                             "dofInitVelocities": [0.0, 0.0, 0.0, 0.0],
-                            "TerrainType": "stairs", # rooms, stairs, sloped, mixed                       
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
                              "use_gpu_pipeline": True,

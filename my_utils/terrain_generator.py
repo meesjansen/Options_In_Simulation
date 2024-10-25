@@ -6,7 +6,7 @@ from my_utils.terrain_utils import *
 
 task_cfg = {
         "env": {
-            "TerrainType": "mixed",
+            "TerrainType": "stairs",
         }
     }
 
