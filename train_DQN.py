@@ -25,15 +25,15 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.DQN_terrain import ReachingFoodTask, TASK_CFG
+from my_envs.DQN_terrain import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 4
+TASK_CFG["task"]["env"]["numEnvs"] = 256
 
 
 sim_config = SimConfig(TASK_CFG)
-task = ReachingFoodTask(name="ReachingFood", sim_config=sim_config, env=env)
+task = ReachingTargetTask(name="ReachingTarget", sim_config=sim_config, env=env)
 env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="torch", init_sim=True)
 
 

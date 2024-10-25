@@ -110,7 +110,7 @@ class RobotView(ArticulationView):
         super().__init__(prim_paths_expr=prim_paths_expr, name=name, reset_xform_properties=False)
 
 
-class ReachingFoodTask(RLTask):
+class ReachingTargetTask(RLTask):
     def __init__(self, name, sim_config, env, offset=None) -> None:
 
         self.height_samples = None
@@ -216,11 +216,11 @@ class ReachingFoodTask(RLTask):
         # Apply the material to each robot's wheels
         # for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
         #     robot_prim_path = robot_prim_path.replace("/main_body", "")
-        for wheel_relative_path in wheel_prim_paths:
-            wheel_full_path = f"/World/envs/env_1/robot_v10/{wheel_relative_path}"  # Construct full wheel path
-            print("Paths to wheels:", wheel_full_path)
-            wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
-            wheel_prim.apply_physics_material(self.rubber_material)  # Apply the material
+        # for wheel_relative_path in wheel_prim_paths:
+        #     wheel_full_path = f"/World/envs/env_1/robot_v10/{wheel_relative_path}"  # Construct full wheel path
+        #     print("Paths to wheels:", wheel_full_path)
+        #     wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
+        #     wheel_prim.apply_physics_material(self.rubber_material)  # Apply the material
 
         # robot view
         self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robot_view")

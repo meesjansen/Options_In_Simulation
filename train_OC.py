@@ -107,13 +107,12 @@ class OptionCriticModel(Model):
 headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
-from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.origin_terrain import ReachingFoodTask, TASK_CFG
-
 sim_config = SimConfig(TASK_CFG)
-task = ReachingFoodTask(name="ReachingFood", sim_config=sim_config, env=env)
+task = ReachingTargetTask(name="ReachingTarget", sim_config=sim_config, env=env)
 env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="torch", init_sim=True)
 
+from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
+from my_envs.DQN_terrain import ReachingTargetTask, TASK_CFG
 # wrap the environment
 env = wrap_env(env, "omniverse-isaacgym")
 
@@ -123,7 +122,7 @@ device = env.device
 memory = RandomMemory(memory_size=10000, num_envs=1, device=device)
 
 # Instantiate the model
-num_options = 4
+num_options = 5
 model = OptionCriticModel(env.observation_space, env.action_space, num_options).to(device)
 target_model = OptionCriticModel(env.observation_space, env.action_space, num_options).to(device)
 target_model.load_state_dict(model.state_dict())
