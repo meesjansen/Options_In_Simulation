@@ -129,10 +129,11 @@ class ReachingTargetTask(RLTask):
         self.height_points = self.init_height_points()  
         self.measured_heights = None
 
-        self.bounds = torch.tensor([-2.0, 2.0, -2.0, 2.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-2.25, 2.25, -2.25, 2.25], device=self.device, dtype=torch.float)
         self.still_steps = torch.zeros(self.num_envs)
         self.position_buffer = torch.zeros(self.num_envs, 2)  # Assuming 2D position still condition
         self.counter = 0 # still condition counter
+        self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
 
         return
 
@@ -264,6 +265,7 @@ class ReachingTargetTask(RLTask):
 
 
         self.timeout_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
+        self.episode_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
 
         # initialize some data used later on
         self.up_axis_idx = 2
@@ -348,6 +350,7 @@ class ReachingTargetTask(RLTask):
 
         self.last_actions[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
+        self.episode_buf[env_ids] = 0 
         self.reset_buf[env_ids] = 0
         self.rew_buf[env_ids] = 0.0
 
@@ -388,7 +391,7 @@ class ReachingTargetTask(RLTask):
         updated_efforts = torch.zeros_like(current_efforts)
 
         self.actions = actions.clone().to(self.device)
-        print("Action Q-learning:", self.actions)
+        # print("Action Q-learning:", self.actions)
 
         for env_id in range(self.num_envs):
             action_index = int(torch.argmax(self.actions[env_id]).item())  # Get action index for the current environment
@@ -401,7 +404,7 @@ class ReachingTargetTask(RLTask):
             if self.world.is_playing():
                 
                 self._robots.set_joint_efforts(updated_efforts) 
-                print("Applied torques:", updated_efforts)
+                # print("Applied torques:", updated_efforts)
 
                 SimulationContext.step(self.world, render=False)
 
@@ -417,10 +420,13 @@ class ReachingTargetTask(RLTask):
         
     def post_physics_step(self):
         self.progress_buf[:] += 1
-        print(f"ENV0 timesteps/MaxEpisodeLength {self.progress_buf[0]}/{self._max_episode_length}")
-        print(f"ENV1 timesteps/MaxEpisodeLength {self.progress_buf[1]}/{self._max_episode_length}")
-        print(f"ENV2 timesteps/MaxEpisodeLength {self.progress_buf[2]}/{self._max_episode_length}")
-        print(f"ENV3 timesteps/MaxEpisodeLength {self.progress_buf[3]}/{self._max_episode_length}")
+        self.episode_buf[:] += 1
+        ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
+
+        print(f"ENV0 timesteps/MaxEpisodeLength {self.episode_buf[ids]}/{self._max_episode_length}")
+        # print(f"ENV1 timesteps/MaxEpisodeLength {self.progress_buf[1]}/{self._max_episode_length}")
+        # print(f"ENV2 timesteps/MaxEpisodeLength {self.progress_buf[2]}/{self._max_episode_length}")
+        # print(f"ENV3 timesteps/MaxEpisodeLength {self.progress_buf[3]}/{self._max_episode_length}")
 
 
         if self.world.is_playing():
@@ -468,7 +474,7 @@ class ReachingTargetTask(RLTask):
         print("Reset buffer post distance", self.reset_buf)
 
         # max episode length
-        # self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
+        self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
         print("Reset buffer post episode length", self.reset_buf)
 
 
@@ -531,7 +537,6 @@ class ReachingTargetTask(RLTask):
         ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.measured_heights = self.get_heights(ids)
         heights = self.measured_heights * self.terrain.vertical_scale 
-        print("Heights size:", heights.size())
 
         base_pos, _ = self._robots.get_world_poses(clone=False)
         target_pos, _ = self._targets.get_world_poses(clone=False)
@@ -556,7 +561,7 @@ class ReachingTargetTask(RLTask):
             ),
             dim=-1,
         )
-        print("Observation buffer minus heights:", self.obs_buf)
+        print("Observation buffer:", self.obs_buf)
         
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     
@@ -576,7 +581,6 @@ class ReachingTargetTask(RLTask):
 
         # Add terrain border size
         points += self.terrain.border_size
-        print("Points parameter shape:", points.size())
 
         # Convert to terrain grid coordinates (account for terrain scaling)
         points = (points / self.terrain.horizontal_scale).long()
