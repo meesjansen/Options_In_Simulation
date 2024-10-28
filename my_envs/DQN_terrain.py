@@ -44,7 +44,7 @@ TASK_CFG = {"test": False,
                                                 },
                             "dofInitTorques": [0.0, 0.0, 0.0, 0.0],
                             "dofInitVelocities": [0.0, 0.0, 0.0, 0.0],
-                            "TerrainType": "rooms", # rooms, stairs, sloped ,mixed                           
+                            "TerrainType": "stairs", # rooms, stairs, sloped ,mixed                           
 
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
@@ -131,7 +131,7 @@ class ReachingTargetTask(RLTask):
         self.height_points = self.init_height_points()  
         self.measured_heights = None
 
-        self.bounds = torch.tensor([-2.25, 2.25, -2.25, 2.25], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-4.0, 4.0, -4.0, 4.0], device=self.device, dtype=torch.float)
         self.still_steps = torch.zeros(self.num_envs)
         self.position_buffer = torch.zeros(self.num_envs, 2)  # Assuming 2D position still condition
         self.counter = 0 # still condition counter
@@ -304,8 +304,8 @@ class ReachingTargetTask(RLTask):
         indices = env_ids.to(dtype=torch.int32)
 
         # Define square boundary size with some margin to reduce instant resets
-        square_size_x = 4.0  # Total width of the square
-        square_size_y = 4.0  # Total height of the square
+        square_size_x = 7.5  # Total width of the square
+        square_size_y = 7.5  # Total length of the square
 
         edge = random.randint(0, 3)
 
@@ -485,8 +485,8 @@ class ReachingTargetTask(RLTask):
 
         self.out_of_bounds = ((self.base_pos[:, 0] - self.env_origins[:, 0]) < self.bounds[0]) | ((self.base_pos[:, 0] - self.env_origins[:, 0]) > self.bounds[1]) | \
                         ((self.base_pos[:, 1] - self.env_origins[:, 1]) < self.bounds[2]) | ((self.base_pos[:, 1] - self.env_origins[:, 1]) > self.bounds[3])
-        # self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
-        # print("Reset buffer post out of bounds", self.reset_buf)
+        self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
+        print("Reset buffer post out of bounds", self.reset_buf)
 
         # Check standing still condition every still_check_interval timesteps
         self.standing_still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
