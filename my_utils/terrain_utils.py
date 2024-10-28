@@ -176,17 +176,13 @@ def mixed_pyramid_terrain(terrain, num_steps, height_steps, slope, platform_widt
     height = 0
     
 
-    for y in y_slope_1: 
-        # print("y", y)   
-        y2 = (terrain.length - y) -1
-        # print("y2", y2)
-        start_x = int(coef1 * y)
-        stop_x = terrain.width - start_x
-        # print(start_x, stop_x)
-        height = int(y * slope)
-        # print("height slope:", height)
-        terrain.height_field_raw[start_x:stop_x, y] = height
-        terrain.height_field_raw[start_x:stop_x, y2] = height
+    # for y in y_slope_1: 
+    #     y2 = (terrain.length - y) -1
+    #     start_x = int(coef1 * y)
+    #     stop_x = terrain.width - start_x
+    #     height = int(y * slope)
+    #     terrain.height_field_raw[start_x:stop_x, y] = height
+    #     terrain.height_field_raw[start_x:stop_x, y2] = height
  
     x_slope_1 = np.arange(0, int((terrain.width - (platform_width / terrain.horizontal_scale))/2))
     step_width = int(len(x_slope_1) / num_steps)
@@ -195,23 +191,23 @@ def mixed_pyramid_terrain(terrain, num_steps, height_steps, slope, platform_widt
     coef2 = 1 / coef1
     height = 0
 
-    # for x in step_0:
-    #     x2 = (terrain.width - x) -1
-    #     start_y = int(coef2 * x)
-    #     stop_y = terrain.length - start_y
-    #     print(start_y, stop_y)
-    #     terrain.height_field_raw[x, start_y:stop_y] = height
-    #     terrain.height_field_raw[x2, start_y:stop_y] = height
+    for x in step_0:
+        x2 = (terrain.width - x) -1
+        start_y = int(coef2 * x)
+        stop_y = terrain.length - start_y
+        print(start_y, stop_y)
+        terrain.height_field_raw[x, start_y:stop_y] = height
+        terrain.height_field_raw[x2, start_y:stop_y] = height
 
-    # height += int(height_steps / terrain.vertical_scale)
+    height += int(height_steps / terrain.vertical_scale)
 
-    # for x in step_1:
-    #     x2 = (terrain.width - x) -1
-    #     start_y = int(coef2 * x)
-    #     stop_y = terrain.length - start_y
-    #     print("height", height)
-    #     terrain.height_field_raw[x, start_y:stop_y] = height
-    #     terrain.height_field_raw[x2, start_y:stop_y] = height
+    for x in step_1:
+        x2 = (terrain.width - x) -1
+        start_y = int(coef2 * x)
+        stop_y = terrain.length - start_y
+        print("height", height)
+        terrain.height_field_raw[x, start_y:stop_y] = height
+        terrain.height_field_raw[x2, start_y:stop_y] = height
 
     return terrain
 
