@@ -44,7 +44,7 @@ TASK_CFG = {"test": False,
                                                 },
                             "dofInitTorques": [0.0, 0.0, 0.0, 0.0],
                             "dofInitVelocities": [0.0, 0.0, 0.0, 0.0],
-                            "TerrainType": "rooms", # rooms, stairs, sloped ,mixed                           
+                            "TerrainType": "mixed", # rooms, stairs, sloped ,mixed                           
 
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
@@ -120,7 +120,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 16 + 361 # features + height points
+        self._num_observations = 16 + 289 # features + height points
         self._num_actions = 12  # Designed discrete action space see pre_physics_step()
         self.common_step_counter = 0 # Counter for the first two steps
 
@@ -166,12 +166,12 @@ class ReachingTargetTask(RLTask):
         self.decimation = 4
 
     def init_height_points(self):
-        # 4.5mx4.5m rectangle (without center line) 16x16=256 points
-        y = 0.25 * torch.tensor(
-            [-9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9], device=self.device, requires_grad=False
+        # 8mx8m rectangle (without center line) 17x17=289 points
+        y = 0.5 * torch.tensor(
+            [ -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
         )  # 25cm on each side
-        x = 0.25 * torch.tensor(
-            [-9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9], device=self.device, requires_grad=False
+        x = 0.5 * torch.tensor(
+            [ -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
         )  
         grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
 
