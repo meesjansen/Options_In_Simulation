@@ -11,7 +11,7 @@ class Terrain:
         self.vertical_scale = 0.005
         self.border_size = 20
         self.num_per_env = 1
-        self.env_length = 4.5
+        self.env_length = 8.0
         self.env_width = self.env_length
 
         self.env_rows = int(math.sqrt(num_robots))
@@ -63,7 +63,7 @@ class Terrain:
             elif terrain_type == "sloped":
                 pyramid_sloped_terrain(terrain, slope=1, platform_size=1.0)
             elif terrain_type == "mixed":
-                mixed_pyramid_terrain(terrain, num_steps=2, height_steps=0.08, slope=0.1, platform_width=1.5)
+                mixed_pyramid_terrain(terrain, num_steps=2, height_steps=0.08, slope=0.05, platform_width=1.5)
             else:
                 raise ValueError(f"Unknown TerrainType: {terrain_type}")
 
