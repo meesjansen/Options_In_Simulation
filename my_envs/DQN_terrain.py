@@ -328,7 +328,7 @@ class ReachingTargetTask(RLTask):
             quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking up
 
         # Z position is fixed at 0.4
-        z_pos = 0.3
+        z_pos = 0.1
 
         # Store the position in a list
         pos = torch.tensor([x_pos, y_pos, z_pos], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
@@ -336,13 +336,7 @@ class ReachingTargetTask(RLTask):
 
         self.dof_vel[env_ids] = self.dof_init_state[4:8]
         self.dof_efforts[env_ids] = self.dof_init_state[0:4]
-
-
-        # self.base_pos[env_ids] = self.base_init_state[0:3]
-        # self.base_pos[env_ids, 0:3] += self.env_origins[env_ids]
-        # self.base_quat[env_ids] = self.base_init_state[3:7]
-        # self.base_velocities[env_ids] = self.base_init_state[7:13]
-     
+    
         self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
@@ -470,7 +464,7 @@ class ReachingTargetTask(RLTask):
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
         # target reached or lost
-        self.target_reached = self._computed_distance <= 0.035
+        self.target_reached = self._computed_distance <= 0.05
         self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
         print("Reset buffer post distance", self.reset_buf)
 
@@ -501,7 +495,7 @@ class ReachingTargetTask(RLTask):
         if self.counter == 0:
             self.position_buffer = self.base_pos[:,:2].clone()
             self.counter += 1
-        elif self.counter == 20:
+        elif self.counter == 10:
             changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
             print("Changed pos pre standing still", self.reset_buf)
             self.standing_still = changed_pos < 0.05 
@@ -518,7 +512,7 @@ class ReachingTargetTask(RLTask):
     
     def calculate_metrics(self) -> None:
         # computed distance to target as updating reward
-        self.rew_buf[:] = 0.00035/self._computed_distance * 100.0
+        self.rew_buf[:] = 0.05/self._computed_distance * 100.0
 
         self.rew_buf[self.target_reached] += 50 #target reached
 
