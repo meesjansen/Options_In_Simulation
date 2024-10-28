@@ -148,6 +148,7 @@ class ReachingTargetTask(RLTask):
         # env config
         self._num_envs = self._task_cfg["env"]["numEnvs"]
         self._num_envs = torch.tensor(self._num_envs, dtype=torch.int64)
+        self.terrain_type = self._task_cfg["env"]["TerrainType"]
         self._env_spacing = self._task_cfg["env"]["envSpacing"]
         self._max_episode_length = self._task_cfg["env"]["episodeLength"]
 
@@ -181,7 +182,7 @@ class ReachingTargetTask(RLTask):
         return points
 
     def _create_trimesh(self, create_mesh=True):
-        self.terrain = Terrain(num_robots=self.num_envs)
+        self.terrain = Terrain(num_robots=self.num_envs, terrain_type=self.terrain_type)
         vertices = self.terrain.vertices
         triangles = self.terrain.triangles
         position = torch.tensor([-self.terrain.border_size, -self.terrain.border_size, 0.0])

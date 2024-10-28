@@ -4,14 +4,9 @@ import numpy as np
 import torch
 from my_utils.terrain_utils import *
 
-task_cfg = {
-        "env": {
-            "TerrainType": "mixed",
-        }
-    }
 
 class Terrain:
-    def __init__(self, num_robots) -> None:
+    def __init__(self, num_robots, terrain_type) -> None:
         self.horizontal_scale = 0.05
         self.vertical_scale = 0.005
         self.border_size = 20
@@ -35,7 +30,6 @@ class Terrain:
         self.height_field_raw = np.zeros((self.tot_rows, self.tot_cols), dtype=np.int16)
 
         # rooms, stairs, sloped, mixed
-        terrain_type = task_cfg["env"]["TerrainType"]
         self.cr_env(terrain_type)
         
         self.heightsamples = self.height_field_raw
@@ -72,8 +66,6 @@ class Terrain:
                 mixed_pyramid_terrain(terrain, num_steps=2, height_steps=0.08, slope=0.1, platform_width=1.5)
             else:
                 raise ValueError(f"Unknown TerrainType: {terrain_type}")
-
-            rooms_terrain(terrain, wall_height=50, wall_thickness=5, passage_width=20)
 
             self.height_field_raw[start_x:end_x, start_y:end_y] = terrain.height_field_raw
 
