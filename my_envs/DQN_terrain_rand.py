@@ -120,8 +120,8 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 16 + 256 # feuteres^bins 10^6
-        self._num_actions = 12  # Assuming 3 discrete actions per wheel
+        self._num_observations = 16 + 361 # features + height points
+        self._num_actions = 12  # Designed discrete action space see pre_physics_step()
         self.common_step_counter = 0 # Counter for the first two steps
 
         self.update_config(sim_config)
@@ -131,10 +131,11 @@ class ReachingTargetTask(RLTask):
         self.height_points = self.init_height_points()  
         self.measured_heights = None
 
-        self.bounds = torch.tensor([-2.0, 2.0, -2.0, 2.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-2.25, 2.25, -2.25, 2.25], device=self.device, dtype=torch.float)
         self.still_steps = torch.zeros(self.num_envs)
         self.position_buffer = torch.zeros(self.num_envs, 2)  # Assuming 2D position still condition
         self.counter = 0 # still condition counter
+        self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
 
         return
 
@@ -164,12 +165,12 @@ class ReachingTargetTask(RLTask):
         self.decimation = 4
 
     def init_height_points(self):
-        # 4mx4m rectangle (without center line) 32x32=1024 points
+        # 4.5mx4.5m rectangle (without center line) 32x32=1024 points
         y = 0.25 * torch.tensor(
-            [-8, -7, -6 -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
+            [-9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9], device=self.device, requires_grad=False
         )  # 25cm on each side
         x = 0.25 * torch.tensor(
-            [-8, -7, -6 -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
+            [-9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9], device=self.device, requires_grad=False
         )  
         grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
 
@@ -299,8 +300,8 @@ class ReachingTargetTask(RLTask):
         self.base_init_state = torch.tensor(self.base_init_state, dtype=torch.float, device=self.device, requires_grad=False)
         self.dof_init_state = torch.tensor(self.dof_init_state, dtype=torch.float, device=self.device, requires_grad=False)
 
-
         self.timeout_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
+        self.episode_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
 
         # initialize some data used later on
         self.up_axis_idx = 2
@@ -322,8 +323,9 @@ class ReachingTargetTask(RLTask):
         )
         self.num_dof = self._robots.num_dof 
         self.env_origins = self.terrain_origins.view(-1, 3)[:self.num_envs]
-        self.base_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
-        self.base_quat = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device)
+        self.target_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
+        self.target_pos += torch.tensor([0.0, 0.0, 0.3], dtype=torch.float, device=self.device)
+        self.target_pos += self.env_origins
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
         self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
         self.dof_efforts = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
@@ -360,7 +362,7 @@ class ReachingTargetTask(RLTask):
             quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking up
 
         # Z position is fixed at 0.4
-        z_pos = 0.6
+        z_pos = 0.3
 
         # Store the position in a list
         pos = torch.tensor([x_pos, y_pos, z_pos], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
@@ -370,10 +372,10 @@ class ReachingTargetTask(RLTask):
         self.dof_efforts[env_ids] = self.dof_init_state[0:4]
 
 
-        self.base_pos[env_ids] = self.base_init_state[0:3]
-        self.base_pos[env_ids, 0:3] += self.env_origins[env_ids]
-        self.base_quat[env_ids] = self.base_init_state[3:7]
-        self.base_velocities[env_ids] = self.base_init_state[7:13]
+        # self.base_pos[env_ids] = self.base_init_state[0:3]
+        # self.base_pos[env_ids, 0:3] += self.env_origins[env_ids]
+        # self.base_quat[env_ids] = self.base_init_state[3:7]
+        # self.base_velocities[env_ids] = self.base_init_state[7:13]
      
         self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
@@ -382,9 +384,9 @@ class ReachingTargetTask(RLTask):
 
         self._targets.set_world_poses(positions=self.base_pos[env_ids].clone(), indices=indices)
 
-
         self.last_actions[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
+        self.episode_buf[env_ids] = 0 
         self.reset_buf[env_ids] = 0
         self.rew_buf[env_ids] = 0.0
 
@@ -410,7 +412,7 @@ class ReachingTargetTask(RLTask):
             [0.5, 0.5, 0.5, 0.5],
             [-0.5, -0.5, -0.5, -0.5],
             [0.5, 0.0, 0.5, 0.0],
-            [0.0, 1.5, 0.0, 1.5],
+            [0.0, 0.5, 0.0, 0.5],
             [0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 0.5],
             [0.0, 0.0, 0.5, 0.0],
@@ -454,10 +456,11 @@ class ReachingTargetTask(RLTask):
         
     def post_physics_step(self):
         self.progress_buf[:] += 1
-        print(f"ENV0 timesteps/MaxEpisodeLength {self.progress_buf[0]}/{self._max_episode_length}")
-        print(f"ENV1 timesteps/MaxEpisodeLength {self.progress_buf[1]}/{self._max_episode_length}")
-        print(f"ENV2 timesteps/MaxEpisodeLength {self.progress_buf[2]}/{self._max_episode_length}")
-        print(f"ENV3 timesteps/MaxEpisodeLength {self.progress_buf[3]}/{self._max_episode_length}")
+        self.episode_buf[:] += 1
+        ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
+
+        for i in ids:
+            print(f"ENV0 timesteps/MaxEpisodeLength {self.progress_buf[i]}/{self._max_episode_length}")
 
 
         if self.world.is_playing():
@@ -489,7 +492,7 @@ class ReachingTargetTask(RLTask):
 
     def is_done(self):
         self.timeout_buf = torch.where(
-            self.progress_buf >= self._max_episode_length - 1,
+            self.episode_buf >= self._max_episode_length - 1,
             torch.ones_like(self.timeout_buf),
             torch.zeros_like(self.timeout_buf),
         )   
@@ -505,7 +508,7 @@ class ReachingTargetTask(RLTask):
         print("Reset buffer post distance", self.reset_buf)
 
         # max episode length
-        # self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
+        self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
         print("Reset buffer post episode length", self.reset_buf)
 
 
@@ -550,22 +553,25 @@ class ReachingTargetTask(RLTask):
         # computed distance to target as updating reward
         self.rew_buf[:] = 0.00035/self._computed_distance * 100.0
 
-        self.rew_buf[self.target_reached] += 50
+        self.rew_buf[self.target_reached] += 50 #target reached
 
         # Check fallen condition
-        self.rew_buf[self.fallen] += -20.0
+        self.rew_buf[self.fallen] += -20.0 # fallen
 
         # Check out-of-bounds condition
-        self.rew_buf[self.out_of_bounds] += -10.0
+        self.rew_buf[self.out_of_bounds] += -10.0 # out of bounds
 
         # Check standing still condition
-        self.rew_buf[self.standing_still] += -10.0
+        self.rew_buf[self.standing_still] += -10.0 # standing still
+
+        print("Reward buffer:", self.rew_buf)
 
         return self.rew_buf
 
 
     def get_observations(self):
-        self.measured_heights = self.get_heights()
+        ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
+        self.measured_heights = self.get_heights(ids)
         heights = self.measured_heights * self.terrain.vertical_scale 
 
         base_pos, _ = self._robots.get_world_poses(clone=False)
@@ -597,13 +603,7 @@ class ReachingTargetTask(RLTask):
     
 
     def get_heights(self, env_ids=None):
-        
-        if env_ids:
-            # Simply grab height_points for each environment based on the grid position
-            points = self.height_points[env_ids] + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
-        else:
-            # No rotation, just use the stationary grid and base positions
-            points = self.height_points + self.base_pos[:, 0:3].unsqueeze(1)
+        points = self.height_points[env_ids] + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
 
         # Add terrain border size
         points += self.terrain.border_size
@@ -625,6 +625,8 @@ class ReachingTargetTask(RLTask):
         
         # Use the minimum height as a conservative estimate
         heights = torch.min(heights1, heights2)
+
+        print("heights shape:", points.size())
 
         # Return the heights, scaled by the vertical scale
         return heights.view(self.num_envs, -1) * self.terrain.vertical_scale

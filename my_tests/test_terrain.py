@@ -215,8 +215,6 @@ def custom_pyramid_terrain(terrain, num_steps, height_steps, slope, platform_wid
         terrain.height_field_raw[x, start_y:stop_y] = height
         terrain.height_field_raw[x2, start_y:stop_y] = height
 
-    
-    
     return terrain
 
 
@@ -327,6 +325,6 @@ if __name__ == "__main__":
         }
     }
     
-    terrain_generator = Terrain(1)
+    terrain_generator = Terrain(4)
     plotter = TerrainPlotter(terrain_generator)
     plotter.plot_terrain()

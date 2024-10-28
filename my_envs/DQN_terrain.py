@@ -31,7 +31,7 @@ TASK_CFG = {"test": False,
             "seed": 42,
             "task": {"name": "ReachingFood",
                      "physics_engine": "physx",
-                     "env": {"numEnvs": 25, # has to be perfect square
+                     "env": {"numEnvs": 64, # has to be perfect square
                              "envSpacing": 10.0,
                              "episodeLength": 1000,
                              "enableDebugVis": False,
@@ -118,7 +118,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 340 # features + height points
+        self._num_observations = 16 + 361 # features + height points
         self._num_actions = 12  # Designed discrete action space see pre_physics_step()
         self.common_step_counter = 0 # Counter for the first two steps
 
@@ -163,12 +163,12 @@ class ReachingTargetTask(RLTask):
         self.decimation = 4
 
     def init_height_points(self):
-        # 4mx4m rectangle (without center line) 16x16=256 points
+        # 4.5mx4.5m rectangle (without center line) 16x16=256 points
         y = 0.25 * torch.tensor(
-            [-9, -8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9], device=self.device, requires_grad=False
+            [-9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9], device=self.device, requires_grad=False
         )  # 25cm on each side
         x = 0.25 * torch.tensor(
-            [-9, -8, -7, -6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9], device=self.device, requires_grad=False
+            [-9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9], device=self.device, requires_grad=False
         )  
         grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
 
@@ -217,7 +217,7 @@ class ReachingTargetTask(RLTask):
         # for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
         #     robot_prim_path = robot_prim_path.replace("/main_body", "")
         # for wheel_relative_path in wheel_prim_paths:
-        #     wheel_full_path = f"/World/envs/env_1/robot_v10/{wheel_relative_path}"  # Construct full wheel path
+        #     wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
         #     print("Paths to wheels:", wheel_full_path)
         #     wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
         #     wheel_prim.apply_physics_material(self.rubber_material)  # Apply the material
@@ -263,7 +263,6 @@ class ReachingTargetTask(RLTask):
         self.base_init_state = torch.tensor(self.base_init_state, dtype=torch.float, device=self.device, requires_grad=False)
         self.dof_init_state = torch.tensor(self.dof_init_state, dtype=torch.float, device=self.device, requires_grad=False)
 
-
         self.timeout_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
         self.episode_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
 
@@ -301,7 +300,7 @@ class ReachingTargetTask(RLTask):
     def reset_idx(self, env_ids):
         indices = env_ids.to(dtype=torch.int32)
 
-        # Define square boundary size (assuming square extends from -0.5 to 0.5 in both axes)
+        # Define square boundary size with some margin to reduce instant resets
         square_size_x = 4.0  # Total width of the square
         square_size_y = 4.0  # Total height of the square
 
@@ -326,7 +325,7 @@ class ReachingTargetTask(RLTask):
             quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking up
 
         # Z position is fixed at 0.4
-        z_pos = 0.2
+        z_pos = 0.3
 
         # Store the position in a list
         pos = torch.tensor([x_pos, y_pos, z_pos], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
@@ -377,7 +376,7 @@ class ReachingTargetTask(RLTask):
             [0.5, 0.5, 0.5, 0.5],
             [-0.5, -0.5, -0.5, -0.5],
             [0.5, 0.0, 0.5, 0.0],
-            [0.0, 1.5, 0.0, 1.5],
+            [0.0, 0.5, 0.0, 0.5],
             [0.0, 0.0, 0.0, 0.0],
             [0.0, 0.0, 0.0, 0.5],
             [0.0, 0.0, 0.5, 0.0],
@@ -424,10 +423,8 @@ class ReachingTargetTask(RLTask):
         self.episode_buf[:] += 1
         ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
 
-        print(f"ENV0 timesteps/MaxEpisodeLength {self.episode_buf[ids]}/{self._max_episode_length}")
-        # print(f"ENV1 timesteps/MaxEpisodeLength {self.progress_buf[1]}/{self._max_episode_length}")
-        # print(f"ENV2 timesteps/MaxEpisodeLength {self.progress_buf[2]}/{self._max_episode_length}")
-        # print(f"ENV3 timesteps/MaxEpisodeLength {self.progress_buf[3]}/{self._max_episode_length}")
+        for i in ids:
+            print(f"ENV0 timesteps/MaxEpisodeLength {self.episode_buf[i]}/{self._max_episode_length}")
 
 
         if self.world.is_playing():
@@ -459,7 +456,7 @@ class ReachingTargetTask(RLTask):
 
     def is_done(self):
         self.timeout_buf = torch.where(
-            self.progress_buf >= self._max_episode_length - 1,
+            self.episode_buf >= self._max_episode_length - 1,
             torch.ones_like(self.timeout_buf),
             torch.zeros_like(self.timeout_buf),
         )   
@@ -570,17 +567,7 @@ class ReachingTargetTask(RLTask):
     
 
     def get_heights(self, env_ids=None):
-        
-        # if env_ids:
-        #     # Simply grab height_points for each environment based on the grid position
-        #     print("Height points:", self.height_points[env_ids])
-        #     points = self.height_points[env_ids] + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
-        # else:
-        #     # No rotation, just use the stationary grid and base positions
-        #     points = self.height_points + self.base_pos[:, 0:3].unsqueeze(1)
-
         points = self.height_points[env_ids] + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
-
 
         # Add terrain border size
         points += self.terrain.border_size
@@ -602,9 +589,6 @@ class ReachingTargetTask(RLTask):
         
         # Use the minimum height as a conservative estimate
         heights = torch.min(heights1, heights2)
-
-        print("heights shape:", points.size())
-
 
         # Return the heights, scaled by the vertical scale
         return heights.view(self.num_envs, -1) * self.terrain.vertical_scale
