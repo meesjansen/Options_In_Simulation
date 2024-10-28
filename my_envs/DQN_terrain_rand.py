@@ -382,7 +382,7 @@ class ReachingTargetTask(RLTask):
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
         self._robots.set_world_poses(pos[env_ids] + self.env_origins[env_ids].clone(), orientations=quat[env_ids].clone(), indices=indices)
 
-        self._targets.set_world_poses(positions=self.base_pos[env_ids].clone(), indices=indices)
+        self._targets.set_world_poses(positions=self.target_pos[env_ids].clone(), indices=indices)
 
         self.last_actions[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
