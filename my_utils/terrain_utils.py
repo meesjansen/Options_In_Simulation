@@ -195,23 +195,23 @@ def mixed_pyramid_terrain(terrain, num_steps, height_steps, slope, platform_widt
     coef2 = 1 / coef1
     height = 0
 
-    for x in step_0:
-        x2 = (terrain.width - x) -1
-        start_y = int(coef2 * x)
-        stop_y = terrain.length - start_y
-        print(start_y, stop_y)
-        terrain.height_field_raw[x, start_y:stop_y] = height
-        terrain.height_field_raw[x2, start_y:stop_y] = height
+    # for x in step_0:
+    #     x2 = (terrain.width - x) -1
+    #     start_y = int(coef2 * x)
+    #     stop_y = terrain.length - start_y
+    #     print(start_y, stop_y)
+    #     terrain.height_field_raw[x, start_y:stop_y] = height
+    #     terrain.height_field_raw[x2, start_y:stop_y] = height
 
-    height += int(height_steps / terrain.vertical_scale)
+    # height += int(height_steps / terrain.vertical_scale)
 
-    for x in step_1:
-        x2 = (terrain.width - x) -1
-        start_y = int(coef2 * x)
-        stop_y = terrain.length - start_y
-        print("height", height)
-        terrain.height_field_raw[x, start_y:stop_y] = height
-        terrain.height_field_raw[x2, start_y:stop_y] = height
+    # for x in step_1:
+    #     x2 = (terrain.width - x) -1
+    #     start_y = int(coef2 * x)
+    #     stop_y = terrain.length - start_y
+    #     print("height", height)
+    #     terrain.height_field_raw[x, start_y:stop_y] = height
+    #     terrain.height_field_raw[x2, start_y:stop_y] = height
 
     return terrain
 
