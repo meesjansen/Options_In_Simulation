@@ -17,7 +17,7 @@ from my_agents.dqn import DQN
 
 
 # Seed for reproducibility
-seed = set_seed()  # e.g. `set_seed(42)` for fixed seed
+seed = set_seed(42)  # e.g. `set_seed(42)` for fixed seed
    
 
 # instance VecEnvBase and setup task
@@ -29,7 +29,7 @@ from my_envs.DQN_terrain import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 16
+TASK_CFG["task"]["env"]["numEnvs"] = 25
 
 
 sim_config = SimConfig(TASK_CFG)
@@ -123,8 +123,8 @@ cfg["learning_starts"] = 100
 cfg["exploration"]["final_epsilon"] = 0.04
 cfg["exploration"]["timesteps"] = 1500
 # logging to TensorBoard and write checkpoints (in timesteps)
-cfg["experiment"]["write_interval"] = 1000
-cfg["experiment"]["checkpoint_interval"] = 5000
+cfg["experiment"]["write_interval"] = 500
+cfg["experiment"]["checkpoint_interval"] = 1000
 cfg["experiment"]["directory"] = "my_runs"
 cfg["state_preprocessor"] = RunningStandardScaler
 cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}

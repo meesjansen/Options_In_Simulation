@@ -57,7 +57,7 @@ class Terrain:
             )
 
             if terrain_type == "rooms":
-                rooms_terrain(terrain, wall_height=50, wall_thickness=5, passage_width=20)
+                rooms_terrain(terrain, wall_height=200, wall_thickness=5, passage_width=20)
             elif terrain_type == "stairs":
                 pyramid_stairs_terrain(terrain, step_width=1.0, step_height=0.08, platform_size=1.5)
             elif terrain_type == "sloped":
