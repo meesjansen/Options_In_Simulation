@@ -290,7 +290,7 @@ class ReachingTargetTask(RLTask):
         self.num_dof = self._robots.num_dof 
         self.env_origins = self.terrain_origins.view(-1, 3)[:self.num_envs]
         self.target_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
-        self.target_pos += torch.tensor([0.0, 0.0, 0.3], dtype=torch.float, device=self.device)
+        self.target_pos += torch.tensor([0.0, 0.0, 0.05], dtype=torch.float, device=self.device)
         self.target_pos += self.env_origins
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
         self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
@@ -337,13 +337,12 @@ class ReachingTargetTask(RLTask):
         self.dof_vel[env_ids] = self.dof_init_state[4:8]
         self.dof_efforts[env_ids] = self.dof_init_state[0:4]
     
-        self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
-        self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
         self._robots.set_world_poses(pos[env_ids] + self.env_origins[env_ids].clone(), orientations=quat[env_ids].clone(), indices=indices)
+        self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
+        self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
 
         self._targets.set_world_poses(positions=self.target_pos[env_ids].clone(), indices=indices)
-
 
         self.last_actions[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
@@ -486,8 +485,8 @@ class ReachingTargetTask(RLTask):
 
         self.out_of_bounds = ((self.base_pos[:, 0] - self.env_origins[:, 0]) < self.bounds[0]) | ((self.base_pos[:, 0] - self.env_origins[:, 0]) > self.bounds[1]) | \
                         ((self.base_pos[:, 1] - self.env_origins[:, 1]) < self.bounds[2]) | ((self.base_pos[:, 1] - self.env_origins[:, 1]) > self.bounds[3])
-        self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
-        print("Reset buffer post out of bounds", self.reset_buf)
+        # self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
+        # print("Reset buffer post out of bounds", self.reset_buf)
 
         # Check standing still condition every still_check_interval timesteps
         self.standing_still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
