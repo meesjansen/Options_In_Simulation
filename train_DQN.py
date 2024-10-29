@@ -29,7 +29,7 @@ from my_envs.DQN_terrain import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 1
+TASK_CFG["task"]["env"]["numEnvs"] = 4
 
 
 sim_config = SimConfig(TASK_CFG)

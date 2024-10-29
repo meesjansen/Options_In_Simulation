@@ -15,6 +15,8 @@ from omni.isaac.core.utils.stage import get_current_stage, add_reference_to_stag
 from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.materials.physics_material import PhysicsMaterial
 from omni.isaac.core.prims import GeometryPrim
+from omni.isaac.core.prims import GeometryPrimView 
+
 
 
 from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10
@@ -208,6 +210,11 @@ class ReachingTargetTask(RLTask):
             restitution=0.2
         )
 
+
+        dynamic_friction = 0.5
+        static_friction = 0.7
+        restitution = 0.3
+
         # Define the relative wheel paths for each robot instance
         wheel_prim_paths = [
             "left_front_wheel",
@@ -216,19 +223,21 @@ class ReachingTargetTask(RLTask):
             "right_rear_wheel",
         ] 
 
-        # Apply the material to each robot's wheels
-        # for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
-        #     robot_prim_path = robot_prim_path.replace("/main_body", "")
-        # for wheel_relative_path in wheel_prim_paths:
-        #     wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
-        #     print("Paths to wheels:", wheel_full_path)
-        #     wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
-        #     wheel_prim.apply_physics_material(self.rubber_material)  # Apply the material
 
         # robot view
         self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robot_view")
         scene.add(self._robots)
-        
+
+        # Apply the material to each robot's wheels
+        for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
+            robot_prim_path = robot_prim_path.replace("/main_body", "")
+        for wheel_relative_path in wheel_prim_paths:
+            wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
+            print("Paths to wheels:", wheel_full_path)
+            wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
+            wheel_prim.apply_physics_material(physics_material=self.rubber_material, weaker_than_descendants=True)  # Apply the material
+
+                
         # food view
         self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
         scene.add(self._targets)
