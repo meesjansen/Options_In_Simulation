@@ -57,13 +57,15 @@ class Terrain:
             )
 
             if terrain_type == "rooms":
-                rooms_terrain(terrain, wall_height=200, wall_thickness=5, passage_width=20)
+                rooms_terrain(terrain, wall_height=50, wall_thickness=5, passage_width=20)
             elif terrain_type == "stairs":
                 pyramid_stairs_terrain(terrain, step_width=1.0, step_height=0.08, platform_size=1.5)
             elif terrain_type == "sloped":
                 pyramid_sloped_terrain(terrain, slope=1, platform_size=1.0)
-            elif terrain_type == "mixed":
-                mixed_pyramid_terrain(terrain, num_steps=2, height_steps=0.08, slope=0.05, platform_width=1.5)
+            elif terrain_type == "mixed_v1":
+                mixed_pyramid_terrain_v1(terrain, num_steps=2, height_steps=0.08, slope=0.1, platform_width=1.5)
+            elif terrain_type == "mixed_v2":
+                mixed_pyramid_terrain_v2(terrain, num_steps=2, height_steps=0.08, slope=0.06, platform_width=1.5)
             else:
                 raise ValueError(f"Unknown TerrainType: {terrain_type}")
 

@@ -144,7 +144,7 @@ def pyramid_stairs_terrain(terrain, step_width, step_height, platform_size=1.0):
     return terrain
 
 
-def mixed_pyramid_terrain(terrain, num_steps, height_steps, slope, platform_width):
+def mixed_pyramid_terrain_v1(terrain, num_steps, height_steps, slope, platform_width):
     # Calculate the total height of the pyramid
     total_height = num_steps * height_steps
 
@@ -204,6 +204,81 @@ def mixed_pyramid_terrain(terrain, num_steps, height_steps, slope, platform_widt
     for x in step_1:
         x2 = (terrain.width - x) -1
         start_y = int(coef2 * x)
+        stop_y = terrain.length - start_y
+        print("height", height)
+        terrain.height_field_raw[x, start_y:stop_y] = height
+        terrain.height_field_raw[x2, start_y:stop_y] = height
+
+    return terrain
+
+
+def mixed_pyramid_terrain_v2(terrain, num_steps, height_steps, slope, platform_width):
+    # height_steps = int(height_steps / terrain.vertical_scale)
+    # platform_width = int(platform_width / terrain.horizontal_scale)
+
+    # Calculate the total height of the pyramid
+    total_height = num_steps * height_steps
+
+    # Calculate the length of the slope sides
+    length_slope = total_height / slope
+
+    # Calculate the dynamic platform length
+    platform_length = terrain.length - 2 * int(length_slope / terrain.horizontal_scale)
+
+    # Ensure the platform fits within the terrain
+    if platform_length < 0 or platform_width < 0:
+        raise ValueError("The calculated platform dimensions are invalid. Adjust the input parameters.")
+
+    # Calculate the start and stop coordinates for the platform
+    platform_start_x = (terrain.width - int(platform_width / terrain.horizontal_scale)) // 2
+    platform_stop_x = (platform_start_x + int(platform_width / terrain.horizontal_scale))
+    platform_start_y = (terrain.length - platform_length) // 2
+    platform_stop_y = (platform_start_y + platform_length)
+    total_height = int(total_height / terrain.vertical_scale)
+    print("total_height", total_height)
+
+
+    # Fill the platform area
+    terrain.height_field_raw[platform_start_x:platform_stop_x, platform_start_y:platform_stop_y] = total_height
+
+    # creta an array with the values from 0 to terrain.length
+    y_slope_1 = np.arange(0, int(length_slope / terrain.horizontal_scale))
+    coef1 = (((terrain.width * terrain.horizontal_scale) - platform_width)/2) / length_slope
+    height = 0
+    
+
+    for y in y_slope_1: 
+        # print("y", y)   
+        y2 = (terrain.length - y) -1
+        # print("y2", y2)
+        start_x = int((((terrain.width * terrain.horizontal_scale) - platform_width)/2)/terrain.horizontal_scale)
+        stop_x = terrain.width - start_x
+        # print(start_x, stop_x)
+        height = int(y * slope)
+        # print("height slope:", height)
+        terrain.height_field_raw[start_x:stop_x, y] = height
+        terrain.height_field_raw[start_x:stop_x, y2] = height
+ 
+    x_slope_1 = np.arange(0, int((terrain.width - (platform_width / terrain.horizontal_scale))/2))
+    step_width = int(len(x_slope_1) / num_steps)
+    step_0 = x_slope_1[::step_width]
+    step_1 = x_slope_1[step_width:]
+    coef2 = 1 / coef1
+    height = 0
+
+    for x in step_0:
+        x2 = (terrain.width - x) -1
+        start_y = int((((terrain.length * terrain.horizontal_scale) - platform_width)/2)/terrain.horizontal_scale)
+        stop_y = terrain.length - start_y
+        print(start_y, stop_y)
+        terrain.height_field_raw[x, start_y:stop_y] = height
+        terrain.height_field_raw[x2, start_y:stop_y] = height
+
+    height += int(height_steps / terrain.vertical_scale)
+
+    for x in step_1:
+        x2 = (terrain.width - x) -1
+        start_y = int((((terrain.length * terrain.horizontal_scale) - platform_width)/2)/terrain.horizontal_scale)
         stop_y = terrain.length - start_y
         print("height", height)
         terrain.height_field_raw[x, start_y:stop_y] = height

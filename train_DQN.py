@@ -29,7 +29,7 @@ from my_envs.DQN_terrain import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 4
+TASK_CFG["task"]["env"]["numEnvs"] = 1
 
 
 sim_config = SimConfig(TASK_CFG)
@@ -43,7 +43,7 @@ env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
 # instantiate a memory as experience replay
-memory = RandomMemory(memory_size=50000, num_envs=env.num_envs, device=device, replacement=False)
+memory = RandomMemory(memory_size=200_000, num_envs=env.num_envs, device=device, replacement=False)
 
 # instantiate the agent's models (function approximators) using the model instantiator utility.
 # DQN requires 2 models, visit its documentation for more details
@@ -79,28 +79,28 @@ for model in models.values():
 # https://skrl.readthedocs.io/en/latest/api/agents/dqn.html#configuration-and-hyperparameters
 DQN_DEFAULT_CONFIG = {
     "gradient_steps": 1,            # gradient steps
-    "batch_size": 64,               # training batch size
+    "batch_size": 16,               # training batch size
 
     "discount_factor": 0.99,        # discount factor (gamma)
     "polyak": 0.005,                # soft update hyperparameter (tau)
 
-    "learning_rate": 1e-3,          # learning rate
+    "learning_rate": 1e-4,          # learning rate
     "learning_rate_scheduler": None,        # learning rate scheduler class (see torch.optim.lr_scheduler)
     "learning_rate_scheduler_kwargs": {},   # learning rate scheduler's kwargs (e.g. {"step_size": 1e-3})
 
     "state_preprocessor": None,             # state preprocessor class (see skrl.resources.preprocessors)
     "state_preprocessor_kwargs": {},        # state preprocessor's kwargs (e.g. {"size": env.observation_space})
 
-    "random_timesteps": 0,          # random exploration steps
-    "learning_starts": 0,           # learning starts after this many steps
+    "random_timesteps": 1000,          # random exploration steps
+    "learning_starts": 50,           # learning starts after this many steps
 
     "update_interval": 1,           # agent update interval
-    "target_update_interval": 10,   # target network update interval
+    "target_update_interval": 500,   # target network update interval
 
     "exploration": {
         "initial_epsilon": 1.0,       # initial epsilon for epsilon-greedy exploration
         "final_epsilon": 0.05,        # final epsilon for epsilon-greedy exploration
-        "timesteps": 1000,            # timesteps for epsilon-greedy decay
+        "timesteps": 10000,            # timesteps for epsilon-greedy decay
     },
 
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
@@ -119,9 +119,9 @@ DQN_DEFAULT_CONFIG = {
 }
 
 cfg = DQN_DEFAULT_CONFIG.copy()
-cfg["learning_starts"] = 100
+cfg["learning_starts"] = 50
 cfg["exploration"]["final_epsilon"] = 0.04
-cfg["exploration"]["timesteps"] = 1500
+cfg["exploration"]["timesteps"] = 10000
 # logging to TensorBoard and write checkpoints (in timesteps)
 cfg["experiment"]["write_interval"] = 500
 cfg["experiment"]["checkpoint_interval"] = 1000
