@@ -8,7 +8,7 @@ from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.objects import DynamicSphere
 from omni.isaac.core.utils.prims import get_prim_at_path
 
-from robots.iiwa14 import Iiwa14 as Robot
+from my_robots.iiwa14 import Iiwa14 as Robot
 
 from skrl.utils import omniverse_isaacgym_utils
 
