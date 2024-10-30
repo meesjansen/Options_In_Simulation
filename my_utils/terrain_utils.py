@@ -342,9 +342,13 @@ def custom_sloped_terrain(terrain, slope=1.0, platform_size=1.0):
 def custom_mixed_terrain(terrain, num_steps, height_steps, slope, platform_width):
     # generate a very simple terrain that has a slope universal over y going from 0 to max_height
     max_height = num_steps * height_steps
-    horizontal_distance = (max_height / slope) / terrain.horizontal_scale
+    horizontal_distance = int((max_height / slope) / terrain.horizontal_scale)
+
+    print(terrain.height_field_raw.shape)
+    print(horizontal_distance)
+
         
-    x = np.arange(0, int(horizontal_distance))
+    x = np.arange(0, horizontal_distance)
     y = np.arange(0, int(terrain.length))
 
     for i in x:
@@ -352,7 +356,7 @@ def custom_mixed_terrain(terrain, num_steps, height_steps, slope, platform_width
             height_value = int(slope * i )
             terrain.height_field_raw[i, j] = height_value
 
-    x1 = np.arange(int(horizontal_distance), int(int(horizontal_distance) + platform_width/terrain.vertical_scale))
+    x1 = np.arange(int(horizontal_distance), int(horizontal_distance + platform_width/terrain.vertical_scale))
     height_value = int(max_height / terrain.vertical_scale)
 
     print(x1)
