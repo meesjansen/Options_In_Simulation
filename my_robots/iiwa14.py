@@ -60,6 +60,7 @@ class Iiwa14(Robot):
         max_velocity = [85, 85, 100, 75, 130, 135, 135]  # degrees/s
 
         for i, dof in enumerate(dof_paths):
+            print(f"{self.prim_path}/{dof}")
             set_drive(
                 prim_path=f"{self.prim_path}/{dof}",
                 drive_type=drive_type[i],
