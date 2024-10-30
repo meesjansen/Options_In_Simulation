@@ -356,7 +356,7 @@ def custom_mixed_terrain(terrain, num_steps, height_steps, slope, platform_width
             height_value = int(slope * i )
             terrain.height_field_raw[i, j] = height_value
 
-    x1 = np.arange(horizontal_distance, (horizontal_distance + platform_width/terrain.vertical_scale))
+    x1 = np.arange(horizontal_distance, (horizontal_distance + platform_width/terrain.horizontal_scale))
     height_value = int(max_height / terrain.vertical_scale)
 
     print(x1)
