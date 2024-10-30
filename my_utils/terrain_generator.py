@@ -66,6 +66,12 @@ class Terrain:
                 mixed_pyramid_terrain_v1(terrain, num_steps=2, height_steps=0.08, slope=0.1, platform_width=1.5)
             elif terrain_type == "mixed_v2":
                 mixed_pyramid_terrain_v2(terrain, num_steps=2, height_steps=0.08, slope=0.06, platform_width=1.5)
+            elif terrain_type == "mixed_v3":
+                mixed_pyramid_terrain_v3(terrain, slope=0.5, platform_size=1.0)
+            elif terrain_type == "custom":
+                custom_sloped_terrain(terrain, slope=1.0, platform_size=1.0)
+            elif terrain_type == "custom_mixed":
+                custom_mixed_terrain(terrain, num_steps=2, height_steps=0.08, slope=0.06, platform_width=1.5)
             else:
                 raise ValueError(f"Unknown TerrainType: {terrain_type}")
 

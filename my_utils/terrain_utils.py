@@ -176,13 +176,13 @@ def mixed_pyramid_terrain_v1(terrain, num_steps, height_steps, slope, platform_w
     height = 0
     
 
-    # for y in y_slope_1: 
-    #     y2 = (terrain.length - y) -1
-    #     start_x = int(coef1 * y)
-    #     stop_x = terrain.width - start_x
-    #     height = int(y * slope)
-    #     terrain.height_field_raw[start_x:stop_x, y] = height
-    #     terrain.height_field_raw[start_x:stop_x, y2] = height
+    for y in y_slope_1: 
+        y2 = (terrain.length - y) -1
+        start_x = int(coef1 * y)
+        stop_x = terrain.width - start_x
+        height = int(y * slope)
+        terrain.height_field_raw[start_x:stop_x, y] = height
+        terrain.height_field_raw[start_x:stop_x, y2] = height
  
     x_slope_1 = np.arange(0, int((terrain.width - (platform_width / terrain.horizontal_scale))/2))
     step_width = int(len(x_slope_1) / num_steps)
@@ -283,6 +283,91 @@ def mixed_pyramid_terrain_v2(terrain, num_steps, height_steps, slope, platform_w
         print("height", height)
         terrain.height_field_raw[x, start_y:stop_y] = height
         terrain.height_field_raw[x2, start_y:stop_y] = height
+
+    return terrain
+
+
+def mixed_pyramid_terrain_v3(terrain, slope, platform_size):
+
+    x = np.arange(0, terrain.width)
+    y = np.arange(0, terrain.length)
+    center_x = int(terrain.width / 2)
+    center_y = int(terrain.length / 2)
+
+    height_temp = 1
+
+    for i in x:
+        for j in y:
+            if i > (center_x + 1) and j < (center_y - 1):
+                terrain.height_field_raw[i, j] = height_temp
+            elif i < (center_x - 1) and j > (center_y + 1):
+                terrain.height_field_raw[i, j] = height_temp
+
+    max_value = np.max(terrain.height_field_raw)
+    print("Maximum value in terrain.height_field_raw:", max_value)
+
+    xx, yy = np.meshgrid(x, y, sparse=True)
+    xx = (center_x - np.abs(center_x - xx)) / center_x
+    yy = (center_y - np.abs(center_y - yy)) / center_y
+
+    xx1 = xx.reshape(terrain.width, 1)
+    yy1 = yy.reshape(1, terrain.length)
+    max_height = int(slope * (terrain.horizontal_scale / terrain.vertical_scale) * (terrain.width / 2))
+    terrain.height_field_raw[:(center_x + 1), :(center_y)] += (max_height * xx1 * yy1)[:(center_x + 1), :(center_y)].astype(terrain.height_field_raw.dtype)
+    terrain.height_field_raw[(center_x):, (center_y):] += (max_height * xx1 * yy1)[(center_x):, (center_y):].astype(terrain.height_field_raw.dtype)
+
+      
+    platform_size = int(platform_size / terrain.horizontal_scale / 2)
+    x1 = terrain.width // 2 - platform_size
+    x2 = terrain.width // 2 + platform_size
+    y1 = terrain.length // 2 - platform_size
+    y2 = terrain.length // 2 + platform_size
+
+    min_h = min(terrain.height_field_raw[x1, y1], 0)
+    max_h = max(terrain.height_field_raw[x1, y1], 0)
+    terrain.height_field_raw = np.clip(terrain.height_field_raw, min_h, max_h)
+    return terrain
+
+def custom_sloped_terrain(terrain, slope=1.0, platform_size=1.0):
+    # generate a very simple terrain that has a slope universal over y going from 0 to max_height
+    x = np.arange(0, terrain.width)
+    y = np.arange(0, terrain.length)
+
+    for i in x:
+        height_value = int(slope * i )
+        terrain.height_field_raw[i, :] = height_value
+
+    return terrain
+
+def custom_mixed_terrain(terrain, num_steps, height_steps, slope, platform_width):
+    # generate a very simple terrain that has a slope universal over y going from 0 to max_height
+    max_height = num_steps * height_steps
+    horizontal_distance = (max_height / slope) / terrain.horizontal_scale
+        
+    x = np.arange(0, int(horizontal_distance))
+    y = np.arange(0, int(terrain.length))
+
+    for i in x:
+        for j in y:
+            height_value = int(slope * i )
+            terrain.height_field_raw[i, j] = height_value
+
+    x1 = np.arange(int(horizontal_distance), int(int(horizontal_distance) + platform_width/terrain.vertical_scale))
+    height_value = int(max_height / terrain.vertical_scale)
+
+    for i in x1:
+        for j in y:
+            terrain.height_field_raw[i, j] = height_value
+
+    step_width = (((terrain.width - (horizontal_distance + (platform_width/ terrain.horizontal_scale))) / num_steps))
+
+
+    for z in range(num_steps):
+        x2 = np.arange(int(horizontal_distance + (platform_width/ terrain.horizontal_scale) + z * step_width), int(horizontal_distance + (platform_width/ terrain.horizontal_scale) + (z+1)*step_width))
+        for i in x2:
+            for j in y:
+                height_step = int((max_height/terrain.horizontal_scale) / (z+1))
+                terrain.height_field_raw[i, j] = height_step
 
     return terrain
 
