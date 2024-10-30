@@ -43,7 +43,7 @@ class Iiwa14(Robot):
         )
 
         dof_paths = [
-            "world/iiwa_joint_1",
+            "iiwa_joint_1",
             "iiwa_link_1/iiwa_joint_2",
             "iiwa_link_2/iiwa_joint_3",
             "iiwa_link_3/iiwa_joint_4",
