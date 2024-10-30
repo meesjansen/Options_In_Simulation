@@ -61,7 +61,7 @@ class Iiwa14(Robot):
 
         for i, dof in enumerate(dof_paths):
             set_drive(
-                prim_path=f"{prim_path}/{dof}",
+                prim_path=f"{self.prim_path}/{dof}",
                 drive_type=drive_type[i],
                 target_type="position",
                 target_value=default_dof_pos[i],
