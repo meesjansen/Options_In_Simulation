@@ -233,7 +233,7 @@ class ReachingTargetTask(RLTask):
             robot_prim_path = robot_prim_path.replace("/main_body", "")
         for wheel_relative_path in wheel_prim_paths:
             wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
-            print("Paths to wheels:", wheel_full_path)
+            # print("Paths to wheels:", wheel_full_path)
             wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
             wheel_prim.apply_physics_material(physics_material=self.rubber_material, weaker_than_descendants=True)  # Apply the material
 
@@ -371,7 +371,7 @@ class ReachingTargetTask(RLTask):
         
         # If we are still in the first two steps, don't apply any action but advance the simulation
         if self.common_step_counter < 2:
-            print(f"Skipping actions for first {self.common_step_counter + 1} step(s)")
+            # print(f"Skipping actions for first {self.common_step_counter + 1} step(s)")
             self.common_step_counter += 1
             SimulationContext.step(self.world, render=False)  # Advance simulation
             return 
@@ -414,12 +414,12 @@ class ReachingTargetTask(RLTask):
                 SimulationContext.step(self.world, render=False)
 
         # self._dof_indices = torch.tensor([robot.get_dof_index(dof) for dof in robot.dof_names], dtype=torch.int32, device=self.device)
-        print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in [
-                "main_body_left_front_wheel", 
-                "main_body_left_rear_wheel",
-                "main_body_right_front_wheel",
-                "main_body_right_rear_wheel"
-        ]])
+        # print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in [
+        #         "main_body_left_front_wheel", 
+        #         "main_body_left_rear_wheel",
+        #         "main_body_right_front_wheel",
+        #         "main_body_right_rear_wheel"
+        # ]])
 
                 
         
@@ -428,8 +428,8 @@ class ReachingTargetTask(RLTask):
         self.episode_buf[:] += 1
         ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
 
-        for i in ids:
-            print(f"ENV0 timesteps/MaxEpisodeLength {self.episode_buf[i]}/{self._max_episode_length}")
+        # for i in ids:
+        #     print(f"ENV0 timesteps/MaxEpisodeLength {self.episode_buf[i]}/{self._max_episode_length}")
 
 
         if self.world.is_playing():
@@ -474,11 +474,11 @@ class ReachingTargetTask(RLTask):
         # target reached or lost
         self.target_reached = self._computed_distance <= 0.05
         self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
-        print("Reset buffer post distance", self.reset_buf)
+        # print("Reset buffer post distance", self.reset_buf)
 
         # max episode length
         self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
-        print("Reset buffer post episode length", self.reset_buf)
+        # print("Reset buffer post episode length", self.reset_buf)
 
 
         # Calculate the projected gravity in the robot's local frame
@@ -490,22 +490,22 @@ class ReachingTargetTask(RLTask):
         positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
         self.fallen = projected_gravity[:, 2] > positive_gravity_z_threshold
         self.reset_buf = torch.where(self.fallen, torch.ones_like(self.reset_buf), self.reset_buf)
-        print("Reset buffer post gravity", self.reset_buf)
+        # print("Reset buffer post gravity", self.reset_buf)
 
         self.out_of_bounds = ((self.base_pos[:, 0] - self.env_origins[:, 0]) < self.bounds[0]) | ((self.base_pos[:, 0] - self.env_origins[:, 0]) > self.bounds[1]) | \
                         ((self.base_pos[:, 1] - self.env_origins[:, 1]) < self.bounds[2]) | ((self.base_pos[:, 1] - self.env_origins[:, 1]) > self.bounds[3])
         self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
-        print("Reset buffer post out of bounds", self.reset_buf)
+        # print("Reset buffer post out of bounds", self.reset_buf)
 
         # Check standing still condition every still_check_interval timesteps
         self.standing_still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        print("Standing still counter", self.counter)
+        # print("Standing still counter", self.counter)
         if self.counter == 0:
             self.position_buffer = self.base_pos[:,:2].clone()
             self.counter += 1
         elif self.counter == 10:
             changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
-            print("Changed pos pre standing still", self.reset_buf)
+            # print("Changed pos pre standing still", self.reset_buf)
             self.standing_still = changed_pos < 0.05 
             self.counter = 0  # Reset counter
         else:
@@ -513,7 +513,7 @@ class ReachingTargetTask(RLTask):
 
         # Update reset_buf based on standing_still condition
         self.reset_buf = torch.where(self.standing_still, torch.ones_like(self.reset_buf), self.reset_buf)
-        print("Reset buffer post standing still", self.reset_buf)
+        # print("Reset buffer post standing still", self.reset_buf)
 
 
 
@@ -533,7 +533,7 @@ class ReachingTargetTask(RLTask):
         # Check standing still condition
         self.rew_buf[self.standing_still] += -10.0 # standing still
 
-        print("Reward buffer:", self.rew_buf)
+        print("Reward buffer:", self.rew_buf, "Reward shape" , self.rew_buf.shape)
 
         return self.rew_buf
 
@@ -566,7 +566,7 @@ class ReachingTargetTask(RLTask):
             ),
             dim=-1,
         )
-        print("Observation buffer:", self.obs_buf)
+        print("Observation buffer:", self.obs_buf.shape)
         
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     

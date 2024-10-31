@@ -300,10 +300,13 @@ class DQN(Agent):
 
                 target_q_values = torch.max(next_q_values, dim=-1, keepdim=True)[0]
                 target_values = sampled_rewards + self._discount_factor * sampled_dones.logical_not() * target_q_values
+                print("target values:", target_values, target_values.shape)
 
             # compute Q-network loss
             q_values = torch.gather(self.q_network.act({"states": sampled_states}, role="q_network")[0],
                                     dim=1, index=sampled_actions.long())
+
+            print("q values:", q_values, q_values.shape)
 
             q_network_loss = F.mse_loss(q_values, target_values)
 
