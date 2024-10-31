@@ -313,8 +313,8 @@ class ReachingTargetTask(RLTask):
         indices = env_ids.to(dtype=torch.int32)
 
         # Define square boundary size with some margin to reduce instant resets
-        square_size_x = 7.5  # Total width of the square
-        square_size_y = 7.5  # Total length of the square
+        square_size_x = 7.  # Total width of the square
+        square_size_y = 7.  # Total length of the square
 
         edge = random.randint(0, 3)
 
