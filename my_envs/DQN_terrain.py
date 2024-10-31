@@ -27,7 +27,7 @@ from my_utils.terrain_utils import *
 TASK_CFG = {"test": False,
             "device_id": 0,
             "headless": True,
-            "sim_device": "gpu",
+            "sim_device": "cpu",
             "enable_livestream": True,
             "warp": False,
             "seed": 42,
@@ -46,11 +46,11 @@ TASK_CFG = {"test": False,
                                                 },
                             "dofInitTorques": [0.0, 0.0, 0.0, 0.0],
                             "dofInitVelocities": [0.0, 0.0, 0.0, 0.0],
-                            "TerrainType": "custom_mixed", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed                         
+                            "TerrainType": "rooms", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed                         
 
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
-                             "use_gpu_pipeline": True,
+                             "use_gpu_pipeline": False,
                              "gravity": [0.0, 0.0, -9.81],
                              "add_ground_plane": False,
                              "use_flatcache": True,
