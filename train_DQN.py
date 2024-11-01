@@ -11,7 +11,7 @@ from skrl.utils.omniverse_isaacgym_utils import get_env_instance
 from skrl.envs.wrappers.torch import wrap_env
 from skrl.utils import set_seed
 
-from my_agents.dqn import DQN
+from my_agents.dqn2 import DQN
 
 
 
