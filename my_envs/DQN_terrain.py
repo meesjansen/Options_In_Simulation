@@ -393,7 +393,7 @@ class ReachingTargetTask(RLTask):
         updated_efforts = torch.zeros_like(current_efforts)
 
         self.actions = actions.clone().to(self.device)
-        # print("Action Q-learning:", self.actions)
+        print("Action Q-learning:", self.actions)
 
         for env_id in range(self.num_envs):
             action_index = int(torch.argmax(self.actions[env_id]).item())  # Get action index for the current environment
