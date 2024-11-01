@@ -368,7 +368,6 @@ def custom_sloped_terrain(terrain, height_steps=0.5, slope=0.08, platform_size=1
     # Ensure the shape matches the section of terrain.height_field_raw being updated
     height_update = np.full((x4.size, terrain.length), height_update)
     x4 = int(terrain.width - ((terrain.width - (x1 + int(horizontal_slope_distance) + int(platform_size/terrain.horizontal_scale)))/2))
-    print(x3, x4)
     terrain.height_field_raw[x3:x4, np.arange(terrain.length)] += height_update.astype(
         terrain.height_field_raw.dtype
     )

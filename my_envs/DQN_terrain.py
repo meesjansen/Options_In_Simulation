@@ -25,8 +25,8 @@ from my_utils.terrain_utils import *
 TASK_CFG = {"test": False,
             "device_id": 0,
             "headless": True,
-            "sim_device": "cpu",
-            "enable_livestream": False,
+            "sim_device": "gpu",
+            "enable_livestream": True,
             "warp": False,
             "seed": 42,
             "task": {"name": "ReachingFood",
@@ -48,7 +48,7 @@ TASK_CFG = {"test": False,
 
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
-                             "use_gpu_pipeline": False,
+                             "use_gpu_pipeline": True,
                              "gravity": [0.0, 0.0, -9.81],
                              "add_ground_plane": False,
                              "use_flatcache": True,
@@ -59,7 +59,7 @@ TASK_CFG = {"test": False,
                                                          "restitution": 0.0},
                              "physx": {"worker_thread_count": 4,
                                       "solver_type": 1,
-                                      "use_gpu": False,
+                                      "use_gpu": True,
                                       "solver_position_iteration_count": 4,
                                       "solver_velocity_iteration_count": 1,
                                       "contact_offset": 0.005,
@@ -232,7 +232,7 @@ class ReachingTargetTask(RLTask):
         for wheel_relative_path in wheel_prim_paths:
             wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
             # print("Paths to wheels:", wheel_full_path)
-            wheel_prim = RigidPrim(prim_path=wheel_full_path)  # Use RigidPrim to wrap the prim?
+            wheel_prim = GeometryPrimView(prim_path=wheel_full_path)  # Use RigidPrim to wrap the prim?
             wheel_prim.apply_physics_material(physics_material=self.rubber_material, weaker_than_descendants=False)  # Apply the material
 
                 
