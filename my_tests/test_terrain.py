@@ -1,4 +1,5 @@
 import math
+import trimesh 
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -166,7 +167,7 @@ def mixed_pyramid_terrain_v1(terrain, num_steps, height_steps, slope, platform_w
     platform_start_y = (terrain.length - platform_length) // 2
     platform_stop_y = (platform_start_y + platform_length)
     total_height = int(total_height / terrain.vertical_scale)
-    print("total_height", total_height)
+    # print("total_height", total_height)
 
 
     # Fill the platform area
@@ -201,7 +202,7 @@ def mixed_pyramid_terrain_v1(terrain, num_steps, height_steps, slope, platform_w
         x2 = (terrain.width - x) -1
         start_y = int(coef2 * x)
         stop_y = terrain.length - start_y
-        print(start_y, stop_y)
+        # print(start_y, stop_y)
         terrain.height_field_raw[x, start_y:stop_y] = height
         terrain.height_field_raw[x2, start_y:stop_y] = height
 
@@ -211,7 +212,7 @@ def mixed_pyramid_terrain_v1(terrain, num_steps, height_steps, slope, platform_w
         x2 = (terrain.width - x) -1
         start_y = int(coef2 * x)
         stop_y = terrain.length - start_y
-        print("height", height)
+        # print("height", height)
         terrain.height_field_raw[x, start_y:stop_y] = height
         terrain.height_field_raw[x2, start_y:stop_y] = height
 
@@ -241,7 +242,7 @@ def mixed_pyramid_terrain_v2(terrain, num_steps, height_steps, slope, platform_w
     platform_start_y = (terrain.length - platform_length) // 2
     platform_stop_y = (platform_start_y + platform_length)
     total_height = int(total_height / terrain.vertical_scale)
-    print("total_height", total_height)
+    # print("total_height", total_height)
 
 
     # Fill the platform area
@@ -276,7 +277,7 @@ def mixed_pyramid_terrain_v2(terrain, num_steps, height_steps, slope, platform_w
         x2 = (terrain.width - x) -1
         start_y = int((((terrain.length * terrain.horizontal_scale) - platform_width)/2)/terrain.horizontal_scale)
         stop_y = terrain.length - start_y
-        print(start_y, stop_y)
+        # print(start_y, stop_y)
         terrain.height_field_raw[x, start_y:stop_y] = height
         terrain.height_field_raw[x2, start_y:stop_y] = height
 
@@ -286,7 +287,7 @@ def mixed_pyramid_terrain_v2(terrain, num_steps, height_steps, slope, platform_w
         x2 = (terrain.width - x) -1
         start_y = int((((terrain.length * terrain.horizontal_scale) - platform_width)/2)/terrain.horizontal_scale)
         stop_y = terrain.length - start_y
-        print("height", height)
+        # print("height", height)
         terrain.height_field_raw[x, start_y:stop_y] = height
         terrain.height_field_raw[x2, start_y:stop_y] = height
 
@@ -309,7 +310,7 @@ def mixed_pyramid_terrain_v3(terrain, slope, platform_size):
                 terrain.height_field_raw[i, j] = height_temp
 
     max_value = np.max(terrain.height_field_raw)
-    print("Maximum value in terrain.height_field_raw:", max_value)
+    # print("Maximum value in terrain.height_field_raw:", max_value)
 
     xx, yy = np.meshgrid(x, y, sparse=True)
     xx = (center_x - np.abs(center_x - xx)) / center_x
@@ -333,16 +334,54 @@ def mixed_pyramid_terrain_v3(terrain, slope, platform_size):
     terrain.height_field_raw = np.clip(terrain.height_field_raw, min_h, max_h)
     return terrain
 
-def custom_sloped_terrain(terrain, slope=1.0, platform_size=1.0):
+def custom_sloped_terrain(terrain, height_steps=0.5, slope=0.08, platform_size=1.0):
+    num_steps=2
     # generate a very simple terrain that has a slope universal over y going from 0 to max_height
+    max_height = num_steps * height_steps
+    horizontal_slope_distance = int((max_height/terrain.vertical_scale) / (slope * (terrain.horizontal_scale / terrain.vertical_scale)))
+
+    x1 =  int((terrain.width - int(platform_size/terrain.horizontal_scale)) / 2 - horizontal_slope_distance)      # flat before slope   
+    x2 = np.arange(x1, x1 + int(horizontal_slope_distance)) # slope
+    x3 = np.arange(x1 + int(horizontal_slope_distance), x1 + int(horizontal_slope_distance) + int(platform_size/terrain.horizontal_scale))
+    x5 = int(terrain.width - ((terrain.width - (x1 + int(horizontal_slope_distance) + int(platform_size/terrain.horizontal_scale)))/2))
+    x4 = np.arange(x1 + int(horizontal_slope_distance) + int(platform_size/terrain.horizontal_scale), x5) # flat after slope
+
+
+    y = np.arange(0, int(terrain.length))
+
     x = np.arange(0, terrain.width)
     y = np.arange(0, terrain.length)
+    xx, yy = np.meshgrid(x2, y, sparse=True)
+    xx = xx.reshape(x2.size, 1)
+    x2 = x1 + int(horizontal_slope_distance)
+    terrain.height_field_raw[x1:x2, np.arange(terrain.length)] += (slope * (terrain.horizontal_scale / terrain.vertical_scale) * (xx-x1)).astype(
+        terrain.height_field_raw.dtype
+    )
 
-    for i in x:
-        height_value = int(slope * i )
-        terrain.height_field_raw[i, :] = height_value
+    # Calculate the expression
+    height_update = (num_steps * height_steps / terrain.vertical_scale)
+
+    # Ensure the shape matches the section of terrain.height_field_raw being updated
+    height_update = np.full((x3.size, terrain.length), height_update)
+    x3 = (x1 + int(horizontal_slope_distance) + int(platform_size/terrain.horizontal_scale))
+    terrain.height_field_raw[x2:x3, np.arange(terrain.length)] += height_update.astype(
+        terrain.height_field_raw.dtype
+    )
+
+    # Calculate the expression
+    height_update = height_steps / terrain.vertical_scale
+
+    # Ensure the shape matches the section of terrain.height_field_raw being updated
+    height_update = np.full((x4.size, terrain.length), height_update)
+    x4 = int(terrain.width - ((terrain.width - (x1 + int(horizontal_slope_distance) + int(platform_size/terrain.horizontal_scale)))/2))
+    print(x3, x4)
+    terrain.height_field_raw[x3:x4, np.arange(terrain.length)] += height_update.astype(
+        terrain.height_field_raw.dtype
+    )
 
     return terrain
+
+
 
 def custom_mixed_terrain(terrain, num_steps, height_steps, slope, platform_width):
     # generate a very simple terrain that has a slope universal over y going from 0 to max_height
@@ -357,8 +396,13 @@ def custom_mixed_terrain(terrain, num_steps, height_steps, slope, platform_width
             height_value = int(slope * i )
             terrain.height_field_raw[i, j] = height_value
 
-    x1 = np.arange(int(horizontal_distance), int(int(horizontal_distance) + platform_width/terrain.vertical_scale))
+    x1 = np.arange(int(horizontal_distance), int(int(horizontal_distance) + platform_width/terrain.horizontal_scale))
     height_value = int(max_height / terrain.vertical_scale)
+
+    print(height_value)
+    # print(y)
+    # print(terrain.height_field_raw.shape)
+
 
     for i in x1:
         for j in y:
@@ -375,6 +419,76 @@ def custom_mixed_terrain(terrain, num_steps, height_steps, slope, platform_width
                 terrain.height_field_raw[i, j] = height_step
 
     return terrain
+
+def convert_heightfield_to_trimesh(height_field_raw, horizontal_scale, vertical_scale, slope_threshold=None):
+    """
+    Convert a heightfield array to a triangle mesh represented by vertices and triangles.
+    Optionally, corrects vertical surfaces above the provide slope threshold:
+
+        If (y2-y1)/(x2-x1) > slope_threshold -> Move A to A' (set x1 = x2). Do this for all directions.
+                   B(x2,y2)
+                  /|
+                 / |
+                /  |
+        (x1,y1)A---A'(x2',y1)
+
+    Parameters:
+        height_field_raw (np.array): input heightfield
+        horizontal_scale (float): horizontal scale of the heightfield [meters]
+        vertical_scale (float): vertical scale of the heightfield [meters]
+        slope_threshold (float): the slope threshold above which surfaces are made vertical. If None no correction is applied (default: None)
+    Returns:
+        vertices (np.array(float)): array of shape (num_vertices, 3). Each row represents the location of each vertex [meters]
+        triangles (np.array(int)): array of shape (num_triangles, 3). Each row represents the indices of the 3 vertices connected by this triangle.
+    """
+    hf = height_field_raw
+    num_rows = hf.shape[0]
+    num_cols = hf.shape[1]
+
+    y = np.linspace(0, (num_cols - 1) * horizontal_scale, num_cols)
+    x = np.linspace(0, (num_rows - 1) * horizontal_scale, num_rows)
+    yy, xx = np.meshgrid(y, x)
+
+    if slope_threshold is not None:
+
+        slope_threshold *= horizontal_scale / vertical_scale
+        move_x = np.zeros((num_rows, num_cols))
+        move_y = np.zeros((num_rows, num_cols))
+        move_corners = np.zeros((num_rows, num_cols))
+        move_x[: num_rows - 1, :] += hf[1:num_rows, :] - hf[: num_rows - 1, :] > slope_threshold
+        move_x[1:num_rows, :] -= hf[: num_rows - 1, :] - hf[1:num_rows, :] > slope_threshold
+        move_y[:, : num_cols - 1] += hf[:, 1:num_cols] - hf[:, : num_cols - 1] > slope_threshold
+        move_y[:, 1:num_cols] -= hf[:, : num_cols - 1] - hf[:, 1:num_cols] > slope_threshold
+        move_corners[: num_rows - 1, : num_cols - 1] += (
+            hf[1:num_rows, 1:num_cols] - hf[: num_rows - 1, : num_cols - 1] > slope_threshold
+        )
+        move_corners[1:num_rows, 1:num_cols] -= (
+            hf[: num_rows - 1, : num_cols - 1] - hf[1:num_rows, 1:num_cols] > slope_threshold
+        )
+        xx += (move_x + move_corners * (move_x == 0)) * horizontal_scale
+        yy += (move_y + move_corners * (move_y == 0)) * horizontal_scale
+
+    # create triangle mesh vertices and triangles from the heightfield grid
+    vertices = np.zeros((num_rows * num_cols, 3), dtype=np.float32)
+    vertices[:, 0] = xx.flatten()
+    vertices[:, 1] = yy.flatten()
+    vertices[:, 2] = hf.flatten() * vertical_scale
+    triangles = -np.ones((2 * (num_rows - 1) * (num_cols - 1), 3), dtype=np.uint32)
+    for i in range(num_rows - 1):
+        ind0 = np.arange(0, num_cols - 1) + i * num_cols
+        ind1 = ind0 + 1
+        ind2 = ind0 + num_cols
+        ind3 = ind2 + 1
+        start = 2 * i * (num_cols - 1)
+        stop = start + 2 * (num_cols - 1)
+        triangles[start:stop:2, 0] = ind0
+        triangles[start:stop:2, 1] = ind3
+        triangles[start:stop:2, 2] = ind1
+        triangles[start + 1 : stop : 2, 0] = ind0
+        triangles[start + 1 : stop : 2, 1] = ind2
+        triangles[start + 1 : stop : 2, 2] = ind3
+
+    return vertices, triangles
 
 
 
@@ -417,7 +531,11 @@ class Terrain:
         terrain_type = task_cfg["env"]["TerrainType"]
         self.cr_env(terrain_type)
         
-        self.heightsamples = self.height_field_raw
+        self.heightsamples = self.center_terrain
+        print("heightfield shape", self.heightsamples.shape)
+        self.vertices, self.triangles = convert_heightfield_to_trimesh(
+                    self.heightsamples, self.horizontal_scale, self.vertical_scale, slope_threshold=1.5)
+
         
     def cr_env(self, terrain_type):
         for k in range(self.num_maps):
@@ -451,14 +569,15 @@ class Terrain:
             elif terrain_type == "mixed_v3":
                 mixed_pyramid_terrain_v3(terrain, slope=0.5, platform_size=1.0)
             elif terrain_type == "custom":
-                custom_sloped_terrain(terrain, slope=1.0, platform_size=1.0)
+                custom_sloped_terrain(terrain, height_steps=0.5, slope=1.0, platform_size=1.0)
             elif terrain_type == "custom_mixed":
-                custom_mixed_terrain(terrain, num_steps=2, height_steps=0.08, slope=0.06, platform_width=1.5)
+                custom_mixed_terrain(terrain, num_steps=2, height_steps=0.08, slope=0.96, platform_width=1.5)
 
 
             else:
                 raise ValueError(f"Unknown TerrainType: {terrain_type}")
 
+            self.center_terrain = terrain.height_field_raw
 
             self.height_field_raw[start_x:end_x, start_y:end_y] = terrain.height_field_raw
 
@@ -488,13 +607,21 @@ class TerrainPlotter:
         plt.show()
 
 
+
 if __name__ == "__main__":
     task_cfg = {
         "env": {
-            "TerrainType": "custom_mixed", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed
+            "TerrainType": "custom", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed
         }
     }
     
     terrain_generator = Terrain(1)
     plotter = TerrainPlotter(terrain_generator)
     plotter.plot_terrain()
+
+
+    # Create the mesh using trimesh
+    mesh = trimesh.Trimesh(vertices=terrain_generator.vertices, faces=terrain_generator.triangles)
+
+    # Display the mesh
+    mesh.show()
