@@ -232,7 +232,7 @@ class ReachingTargetTask(RLTask):
         for wheel_relative_path in wheel_prim_paths:
             wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
             # print("Paths to wheels:", wheel_full_path)
-            wheel_prim = GeometryPrimView(prim_path=wheel_full_path)  # Use RigidPrim to wrap the prim?
+            wheel_prim = GeometryPrimView(prim_paths_expr=wheel_full_path)  # Use RigidPrim to wrap the prim?
             wheel_prim.apply_physics_material(physics_material=self.rubber_material, weaker_than_descendants=False)  # Apply the material
 
                 
