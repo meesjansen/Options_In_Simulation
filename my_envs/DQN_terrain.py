@@ -210,7 +210,7 @@ class ReachingTargetTask(RLTask):
         )
 
 
-        visual_material = OmniPBR(base_color=[0.8, 0.1, 0.1])
+        visual_material = OmniPBR(prim_path="/World/material/glass", color=np.array([0.8, 0.1, 0.1]))
 
         # Define the relative wheel paths for each robot instance
         wheel_prim_paths = [
