@@ -46,7 +46,7 @@ TASK_CFG = {"test": False,
                                                 },
                             "dofInitTorques": [0.0, 0.0, 0.0, 0.0],
                             "dofInitVelocities": [0.0, 0.0, 0.0, 0.0],
-                            "TerrainType": "rooms", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed                         
+                            "TerrainType": "custom", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed                         
 
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120

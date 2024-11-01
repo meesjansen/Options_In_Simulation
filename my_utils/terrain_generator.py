@@ -34,7 +34,7 @@ class Terrain:
         
         self.heightsamples = self.height_field_raw
         self.vertices, self.triangles = convert_heightfield_to_trimesh(
-                    self.height_field_raw, self.horizontal_scale, self.vertical_scale, slope_threshold=0.9)
+                    self.height_field_raw, self.horizontal_scale, self.vertical_scale, slope_threshold=1.5)
 
 
     def cr_env(self, terrain_type):
