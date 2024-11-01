@@ -14,6 +14,7 @@ from omni.isaac.core.utils.torch.maths import torch_rand_float
 from omni.isaac.core.utils.stage import get_current_stage, add_reference_to_stage, print_stage_prim_paths
 from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.materials.physics_material import PhysicsMaterial
+from omni.isaac.core.materials import OmniPBR
 from omni.isaac.core.prims import GeometryPrim, GeometryPrimView
 
 
@@ -209,9 +210,7 @@ class ReachingTargetTask(RLTask):
         )
 
 
-        dynamic_friction = 0.5
-        static_friction = 0.7
-        restitution = 0.3
+        visual_material = OmniPBR(base_color=[0.8, 0.1, 0.1])
 
         # Define the relative wheel paths for each robot instance
         wheel_prim_paths = [
@@ -233,7 +232,7 @@ class ReachingTargetTask(RLTask):
             wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
             # print("Paths to wheels:", wheel_full_path)
             wheel_prim = GeometryPrimView(prim_paths_expr=wheel_full_path)  # Use RigidPrim to wrap the prim?
-            wheel_prim.apply_physics_materials(physics_materials=self.rubber_material, weaker_than_descendants=False)  # Apply the material
+            wheel_prim.apply_visual_materials(visual_materials=visual_material, weaker_than_descendants=False)  # Apply the material
 
                 
         # food view
@@ -311,8 +310,8 @@ class ReachingTargetTask(RLTask):
         indices = env_ids.to(dtype=torch.int32)
 
         # Define square boundary size with some margin to reduce instant resets
-        square_size_x = 7.  # Total width of the square
-        square_size_y = 7.  # Total length of the square
+        square_size_x = 6.5  # Total width of the square
+        square_size_y = 6.5  # Total length of the square
 
         edge = random.randint(0, 3)
 
@@ -470,7 +469,7 @@ class ReachingTargetTask(RLTask):
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
         # target reached or lost
-        self.target_reached = self._computed_distance <= 0.05
+        self.target_reached = self._computed_distance <= 0.1
         self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
         # print("Reset buffer post distance", self.reset_buf)
 
@@ -518,9 +517,12 @@ class ReachingTargetTask(RLTask):
     
     def calculate_metrics(self) -> None:
         # computed distance to target as updating reward
-        self.rew_buf[:] = 0.05/self._computed_distance * 100.0
+        self.rew_buf[:] = 0.1/self._computed_distance * 100.0
 
         self.rew_buf[self.target_reached] += 50 #target reached
+
+        if self.target_reached.any():
+            print("Success")
 
         # Check fallen condition
         self.rew_buf[self.fallen] += -20.0 # fallen
