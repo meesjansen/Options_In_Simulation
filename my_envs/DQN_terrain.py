@@ -5,7 +5,7 @@ from gym import spaces
 
 from omniisaacgymenvs.tasks.base.rl_task import RLTask
 
-from omni.isaac.core.prims import RigidPrimView
+from omni.isaac.core.prims import RigidPrim, RigidPrimView
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.objects import DynamicSphere
 from omni.isaac.core.utils.torch.rotations import *
@@ -14,9 +14,7 @@ from omni.isaac.core.utils.torch.maths import torch_rand_float
 from omni.isaac.core.utils.stage import get_current_stage, add_reference_to_stage, print_stage_prim_paths
 from omni.isaac.core.simulation_context import SimulationContext
 from omni.isaac.core.materials.physics_material import PhysicsMaterial
-from omni.isaac.core.prims import GeometryPrim
-from omni.isaac.core.prims import GeometryPrimView 
-
+from omni.isaac.core.prims import GeometryPrim, GeometryPrimView
 
 
 from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10
@@ -234,8 +232,8 @@ class ReachingTargetTask(RLTask):
         for wheel_relative_path in wheel_prim_paths:
             wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
             # print("Paths to wheels:", wheel_full_path)
-            wheel_prim = GeometryPrim(prim_path=wheel_full_path)  # Use GeometryPrim to wrap the prim
-            wheel_prim.apply_physics_material(physics_material=self.rubber_material, weaker_than_descendants=True)  # Apply the material
+            wheel_prim = RigidPrim(prim_path=wheel_full_path)  # Use RigidPrim to wrap the prim?
+            wheel_prim.apply_physics_material(physics_material=self.rubber_material, weaker_than_descendants=False)  # Apply the material
 
                 
         # food view

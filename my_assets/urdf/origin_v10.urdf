@@ -2,8 +2,9 @@
 
 <robot name="avular_origin_v10">
 
-
-  <link name='base_link' />
+  <material name="main_body_color">
+    <color rgba="1 0 0 1"/>  <!-- RED -->
+  </material>
 
   <link name='main_body'>
     <inertial>
@@ -21,11 +22,13 @@
       <geometry>
         <box size=".65 .4 .125"/>
       </geometry>
-      <material name="main_body_color">
-        <color rgba="1 0 0 1"/>  <!-- RED -->
-      </material>
+      <material name="main_body_color" />
     </visual>
   </link>
+
+  <material name="wheel_color">
+    <color rgba="0 0 0 1"/>  <!-- Black -->
+  </material>
 
   <link name="left_front_wheel">
     <inertial>
@@ -43,12 +46,9 @@
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
-      <material name="left_front_wheel_color">
-        <color rgba="0 0 0 1"/>  <!-- Black -->
-      </material>
+      <material name="wheel_color"/>
     </visual>
   </link>
-
 
   <link name="right_front_wheel">
     <inertial>
@@ -67,8 +67,6 @@
         <cylinder length=".07" radius=".1175"/>
       </geometry>
       <material name="right_front_wheel_color">
-        <color rgba="0 0 0 1"/>  <!-- Black -->
-      </material>
     </visual>
   </link>
 
@@ -88,9 +86,7 @@
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
-      <material name="left_rear_wheel_color">
-        <color rgba="0 0 0 1"/>  <!-- Black -->
-      </material>
+      <material name="wheel_color">
     </visual>
   </link>
 
@@ -110,13 +106,13 @@
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
-      <material name="right_rear_wheel_color">
-        <color rgba="0 0 0 1"/>  <!-- Black -->
-      </material>
+      <material name="wheel_color">
     </visual>
   </link>
 
-
+  <material name="ouster_base_color">
+    <color rgba="1 1 1 1"/>  <!-- White -->
+  </material>
 
   <link name="ouster_base">
     <inertial>
@@ -128,8 +124,6 @@
         <box size="0.1 0.1 0.1"/>
       </geometry>
       <material name="ouster_base_color">
-        <color rgba="1 1 1 1"/>  <!-- White -->
-      </material>
     </visual>
     <collision name="collision-base">
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
@@ -166,12 +160,6 @@
       </geometry>
     </collision>
   </link>
-
-  <joint type="fixed" name="base_body">
-    <origin xyz="0.0 0 0.064" rpy="0 0 0"/>
-    <child link="main_body" />
-    <parent link="base_link"/>
-  </joint>
 
   <joint type="continuous" name="main_body_left_front_wheel">
     <origin xyz="0.205 0.25 0.056" rpy="-1.5707 0 0"/>
