@@ -7,8 +7,8 @@ from my_utils.terrain_utils import *
 
 class Terrain:
     def __init__(self, num_robots, terrain_type) -> None:
-        self.horizontal_scale = 0.005
-        self.vertical_scale = 0.0005
+        self.horizontal_scale = 0.01
+        self.vertical_scale = 0.001
         self.border_size = 20
         self.num_per_env = 1
         self.env_length = 8.0
