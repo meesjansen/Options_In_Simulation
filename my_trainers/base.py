@@ -168,6 +168,7 @@ class Trainer:
 
         # reset env
         states, infos = self.env.reset()
+        print("states: ", states, states.shape)
 
         for timestep in tqdm.tqdm(range(self.initial_timestep, self.timesteps), disable=self.disable_progressbar, file=sys.stdout):
 

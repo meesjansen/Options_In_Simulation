@@ -186,6 +186,7 @@ class DQN(Agent):
         :rtype: torch.Tensor
         """
         states = self._state_preprocessor(states)
+        print("states:", states)
 
         if not self._exploration_timesteps:
             return torch.argmax(self.q_network.act({"states": states}, role="q_network")[0], dim=1, keepdim=True), None, None
@@ -201,11 +202,13 @@ class DQN(Agent):
                 * math.exp(-1.0 * timestep / self._exploration_timesteps)
 
         indexes = (torch.rand(states.shape[0], device=self.device) >= epsilon).nonzero().view(-1)
+        print("states:", states.shape)
         print("indexes:", indexes)
         if indexes.numel():
             actions[indexes] = torch.argmax(self.q_network.act({"states": states[indexes]}, role="q_network")[0], dim=1, keepdim=True)
+            print("actions epsilon-greedy:", actions)
 
-        print("actions epsilon-greedy:", actions)
+        
 
         # record epsilon
         self.track_data("Exploration / Exploration epsilon", epsilon)
@@ -292,7 +295,11 @@ class DQN(Agent):
         sampled_states, sampled_actions, sampled_rewards, sampled_next_states, sampled_dones = \
             self.memory.sample(names=self.tensors_names, batch_size=self._batch_size)[0]
         
-        print(sampled_states, sampled_actions, sampled_rewards, sampled_next_states, sampled_dones)
+        print("sampled_states", sampled_states)
+        print("sampled_actions", sampled_actions)
+        print("sampled_rewards", sampled_rewards)
+        print("sampled_next_states", sampled_next_states)
+        print("sampled_dones", sampled_dones) 
 
         # gradient steps
         for gradient_step in range(self._gradient_steps):
