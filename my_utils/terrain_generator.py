@@ -7,8 +7,8 @@ from my_utils.terrain_utils import *
 
 class Terrain:
     def __init__(self, num_robots, terrain_type) -> None:
-        self.horizontal_scale = 0.05
-        self.vertical_scale = 0.005
+        self.horizontal_scale = 0.005
+        self.vertical_scale = 0.0005
         self.border_size = 20
         self.num_per_env = 1
         self.env_length = 8.0
@@ -34,7 +34,7 @@ class Terrain:
         
         self.heightsamples = self.height_field_raw
         self.vertices, self.triangles = convert_heightfield_to_trimesh(
-                    self.height_field_raw, self.horizontal_scale, self.vertical_scale, slope_threshold=1.5)
+                    self.height_field_raw, self.horizontal_scale, self.vertical_scale, slope_threshold=None)
 
 
     def cr_env(self, terrain_type):
@@ -69,7 +69,7 @@ class Terrain:
             elif terrain_type == "mixed_v3":
                 mixed_pyramid_terrain_v3(terrain, slope=0.5, platform_size=1.0)
             elif terrain_type == "custom":
-                custom_sloped_terrain(terrain, height_steps=0.5, slope=1.0, platform_size=1.0)
+                custom_sloped_terrain(terrain, height_steps=0.08, slope=.1, platform_size=1.0)
             elif terrain_type == "custom_mixed":
                 custom_mixed_terrain(terrain, num_steps=2, height_steps=0.08, slope=0.06, platform_width=1.5)
             else:

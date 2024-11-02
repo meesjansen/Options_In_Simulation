@@ -192,6 +192,7 @@ class DQN(Agent):
 
         # sample random actions
         actions = self.q_network.random_act({"states": states}, role="q_network")[0]
+        print("actions random:", actions)
         if timestep < self._random_timesteps:
             return actions, None, None
 
@@ -202,6 +203,8 @@ class DQN(Agent):
         indexes = (torch.rand(states.shape[0], device=self.device) >= epsilon).nonzero().view(-1)
         if indexes.numel():
             actions[indexes] = torch.argmax(self.q_network.act({"states": states[indexes]}, role="q_network")[0], dim=1, keepdim=True)
+
+        print("actions epsilon-greedy:", actions)
 
         # record epsilon
         self.track_data("Exploration / Exploration epsilon", epsilon)
@@ -307,7 +310,7 @@ class DQN(Agent):
             q_values = torch.gather(self.q_network.act({"states": sampled_states}, role="q_network")[0],
                                     dim=1, index=sampled_actions.long())
 
-            print("sampled_actions:", sampled_actions.long(), sampled_actions.long().shape)
+            print("sampled_actions:", sampled_actions, sampled_actions.long().shape)
             print("next_q_values:", next_q_values.shape)
             print("sampled_rewards:", sampled_rewards.shape)
             print("targer_q_values:", target_q_values.shape)
