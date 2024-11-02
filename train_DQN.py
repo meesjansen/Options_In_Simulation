@@ -11,7 +11,7 @@ from skrl.envs.wrappers.torch import wrap_env
 from skrl.utils import set_seed
 
 from my_trainers.sequential import SequentialTrainer
-from my_agents.dqn2 import DQN
+from my_agents.dqn import DQN
 
 
 
