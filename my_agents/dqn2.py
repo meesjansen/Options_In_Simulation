@@ -201,6 +201,7 @@ class DQN(Agent):
                 * math.exp(-1.0 * timestep / self._exploration_timesteps)
 
         indexes = (torch.rand(states.shape[0], device=self.device) >= epsilon).nonzero().view(-1)
+        print("indexes:", indexes)
         if indexes.numel():
             actions[indexes] = torch.argmax(self.q_network.act({"states": states[indexes]}, role="q_network")[0], dim=1, keepdim=True)
 

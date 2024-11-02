@@ -334,7 +334,7 @@ class ReachingTargetTask(RLTask):
             quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking up
 
         # Z position is fixed at 0.4
-        z_pos = 0.1
+        z_pos = -0.1
 
         # Store the position in a list
         pos = torch.tensor([x_pos, y_pos, z_pos], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
