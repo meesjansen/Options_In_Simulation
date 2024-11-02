@@ -8,7 +8,7 @@ import torch
 
 from skrl.agents.torch import Agent
 from skrl.envs.wrappers.torch import Wrapper
-from skrl.trainers.torch import Trainer
+from my_trainers.base import Trainer
 
 
 # [start-config-dict-torch]
