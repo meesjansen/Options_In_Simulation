@@ -7,8 +7,8 @@ from my_utils.terrain_utils import *
 
 class Terrain:
     def __init__(self, num_robots, terrain_type) -> None:
-        self.horizontal_scale = 0.01
-        self.vertical_scale = 0.001
+        self.horizontal_scale = 0.025
+        self.vertical_scale = 0.0025
         self.border_size = 20
         self.num_per_env = 1
         self.env_length = 8.0
@@ -57,7 +57,7 @@ class Terrain:
             )
 
             if terrain_type == "rooms":
-                rooms_terrain(terrain, wall_height=50, wall_thickness=5, passage_width=20)
+                rooms_terrain(terrain, wall_height=1.0, wall_thickness=.2, passage_width=1.0)
             elif terrain_type == "stairs":
                 pyramid_stairs_terrain(terrain, step_width=1.0, step_height=0.08, platform_size=1.5)
             elif terrain_type == "sloped":

@@ -8,7 +8,7 @@ from pxr import Gf, PhysxSchema, Sdf, UsdPhysics
 from scipy import interpolate
 
 
-def rooms_terrain(terrain, wall_height=400, wall_thickness=5, passage_width=20):
+def rooms_terrain(terrain, wall_height=1.0, wall_thickness=.2, passage_width=1.0):
     """
     Generate a terrain with two fully enclosed rooms connected by a passage, based on the grid setup provided.
 
@@ -23,8 +23,8 @@ def rooms_terrain(terrain, wall_height=400, wall_thickness=5, passage_width=20):
     # Get the terrain dimensions
     terrain_width = terrain.width
     terrain_length = terrain.length
-    wall_thickness = int(wall_thickness)
-    passage_width = int(passage_width)
+    wall_thickness = int(wall_thickness/terrain.horizontal_scale)
+    passage_width = int(passage_width/terrain.horizontal_scale)
 
     # Determine center points for room division and passage
     center_x = int(terrain_width // 2)
@@ -34,10 +34,10 @@ def rooms_terrain(terrain, wall_height=400, wall_thickness=5, passage_width=20):
     terrain.height_field_raw[:, :] = 0
 
     # Create walls around the perimeter of the terrain
-    terrain.height_field_raw[:, 0:wall_thickness] = wall_height  # Left wall
-    terrain.height_field_raw[:, -wall_thickness:] = wall_height  # Right wall
-    terrain.height_field_raw[0:wall_thickness, :] = wall_height  # Top wall
-    terrain.height_field_raw[-wall_thickness:, :] = wall_height  # Bottom wall
+    terrain.height_field_raw[:, 0:wall_thickness] = wall_height/terrain.vertical_scale  # Left wall
+    terrain.height_field_raw[:, -wall_thickness:] = wall_height/terrain.vertical_scale  # Right wall
+    terrain.height_field_raw[0:wall_thickness, :] = wall_height/terrain.vertical_scale  # Top wall
+    terrain.height_field_raw[-wall_thickness:, :] = wall_height/terrain.vertical_scale  # Bottom wall
 
     # Create the internal wall separating the two rooms (leaving a passage in the middle)
     wall_start = center_y - wall_thickness // 2
@@ -46,8 +46,8 @@ def rooms_terrain(terrain, wall_height=400, wall_thickness=5, passage_width=20):
     passage_end = center_x + passage_width // 2
 
     # Internal wall for the left and right rooms, except for the passage
-    terrain.height_field_raw[wall_start:wall_end, :passage_start] = wall_height  # Left room internal wall
-    terrain.height_field_raw[wall_start:wall_end, passage_end:] = wall_height  # Right room internal wall
+    terrain.height_field_raw[wall_start:wall_end, :passage_start] = wall_height/terrain.vertical_scale  # Left room internal wall
+    terrain.height_field_raw[wall_start:wall_end, passage_end:] = wall_height/terrain.vertical_scale  # Right room internal wall
 
     # Return updated terrain
     return terrain
