@@ -91,7 +91,7 @@ DQN_DEFAULT_CONFIG = {
     "state_preprocessor": None,             # state preprocessor class (see skrl.resources.preprocessors)
     "state_preprocessor_kwargs": {},        # state preprocessor's kwargs (e.g. {"size": env.observation_space})
 
-    "random_timesteps": 1000,          # random exploration steps
+    "random_timesteps": 200,          # random exploration steps
     "learning_starts": 50,           # learning starts after this many steps
 
     "update_interval": 1,           # agent update interval
