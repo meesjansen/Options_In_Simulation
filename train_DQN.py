@@ -11,7 +11,7 @@ from skrl.envs.wrappers.torch import wrap_env
 from skrl.utils import set_seed
 
 from my_trainers.sequential import SequentialTrainer
-from my_agents.dqn import DQN
+from my_agents.dqn2 import DQN
 
 
 
@@ -140,7 +140,7 @@ agent = DQN(models=models,
 
 # configure and instantiate the RL trainer
 cfg_trainer = {"timesteps": 50000, "headless": True}
-trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=[agent])
+trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # start training
 trainer.train()
