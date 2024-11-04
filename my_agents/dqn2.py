@@ -210,7 +210,7 @@ class DQN(Agent):
         indexes = (torch.rand(states.shape[0], device=self.device) >= epsilon).nonzero().view(-1)
         print("indexes:", indexes, "expected: num_env v (4,) as observation space size is 4")
         if indexes.numel():
-            torch.argmax(self.q_network.act({"states": states[indexes]}, role="q_network")[0], dim=1, keepdim=True)
+            print("actions pre indexes used: ", torch.argmax(self.q_network.act({"states": states[indexes]}, role="q_network")[0], dim=1, keepdim=True))
             actions[indexes] = torch.argmax(self.q_network.act({"states": states[indexes]}, role="q_network")[0], dim=1, keepdim=True)
             print("actions epsilon-greedy used:", actions)
 
@@ -325,6 +325,8 @@ class DQN(Agent):
                                     dim=1, index=sampled_actions.long())
 
 
+            print("next_q_values:", next_q_values, next_q_values.shape)
+            print("target q values, check impact [0]:", target_q_values, target_q_values.shape)
             print("target values:", target_values.shape)
             print("q values:", q_values.shape)
             
