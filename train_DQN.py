@@ -48,6 +48,11 @@ memory = RandomMemory(memory_size=200_000, num_envs=env.num_envs, device=device,
 # instantiate the agent's models (function approximators) using the model instantiator utility.
 # DQN requires 2 models, visit its documentation for more details
 # https://skrl.readthedocs.io/en/latest/api/agents/dqn.html#models
+print("Observation Space: ", env.observation_space, env.action_space, env.observation_space.type)
+print("Action Space: ", env.action_space, env.action_space.shape, env.action_space.type)
+
+
+
 models = {}
 models["q_network"] = deterministic_model(observation_space=env.observation_space,
                                           action_space=env.action_space,
