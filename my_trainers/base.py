@@ -168,7 +168,7 @@ class Trainer:
 
         # reset env
         states, infos = self.env.reset()
-        print("states: ", states, states.shape)
+        print("states inside single_agent_trainer, from env.reset --> env.step(actions): ", states, states.shape, "expected shape (4,) while step returns als0 rewards, dones, info")
 
         for timestep in tqdm.tqdm(range(self.initial_timestep, self.timesteps), disable=self.disable_progressbar, file=sys.stdout):
 
@@ -178,10 +178,9 @@ class Trainer:
             # compute actions
             with torch.no_grad():
                 actions = self.agents.act(states, timestep=timestep, timesteps=self.timesteps)
-                print("actions: ", actions)
 
                 actions = actions[0] 
-                print("actions: ", actions, actions.shape)
+                print("actions used post index: ", actions, actions.shape)
 
                 # step the environments
                 next_states, rewards, terminated, truncated, infos = self.env.step(actions)

@@ -366,6 +366,8 @@ class ReachingTargetTask(RLTask):
         if not self.world.is_playing():
             return
         
+        print("actions post env.step going into pre_physics_step", actions)
+
         # If we are still in the first two steps, don't apply any action but advance the simulation
         if self.common_step_counter < 2:
             # print(f"Skipping actions for first {self.common_step_counter + 1} step(s)")
