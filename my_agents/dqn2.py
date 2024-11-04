@@ -195,8 +195,9 @@ class DQN(Agent):
             return torch.argmax(self.q_network.act({"states": states}, role="q_network")[0], dim=1, keepdim=True), None, None
 
         # sample random actions
-        actions = self.q_network.random_act({"states": states}, role="q_network")[0]
+        actions = self.q_network.random_act({"states": states}, role="q_network")
         print("NN random actions:", actions)
+        actions = actions[0]
         if timestep < self._random_timesteps:
             print("NN random actions used:", actions)
 
