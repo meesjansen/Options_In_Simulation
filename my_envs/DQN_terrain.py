@@ -123,7 +123,14 @@ class ReachingTargetTask(RLTask):
         # observation and action space DQN
         self._num_observations = 16 # + 289  features + height points
         self._num_actions = 12  # Designed discrete action space see pre_physics_step()
-        self._action_space = spaces.Discrete(self._num_actions)
+
+        self.observation_space = spaces.Box(
+            low=float("-inf"),  # Replace with a specific lower bound if needed
+            high=float("inf"),  # Replace with a specific upper bound if needed
+            shape=(self.num_observations,),
+            dtype=torch.float32  # Ensure data type is consistent
+        )
+        self.action_space = spaces.Discrete(self._num_actions)
 
         self.common_step_counter = 0 # Counter for the first two steps
 
