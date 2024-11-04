@@ -4,13 +4,12 @@ import torch.nn as nn
 # Import the skrl components to build the RL system
 from skrl.memories.torch import RandomMemory
 from skrl.agents.torch.dqn import DQN_DEFAULT_CONFIG
-from skrl.utils.model_instantiators.torch import Shape 
-from my_models.deterministic import deterministic_model
 from skrl.resources.preprocessors.torch import RunningStandardScaler
 from skrl.utils.omniverse_isaacgym_utils import get_env_instance
 from skrl.envs.wrappers.torch import wrap_env
 from skrl.utils import set_seed
 
+from my_models.deterministic import Shape, deterministic_model
 from my_trainers.sequential import SequentialTrainer
 from my_agents.dqn2 import DQN
 
