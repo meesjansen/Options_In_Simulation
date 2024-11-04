@@ -128,7 +128,7 @@ class ReachingTargetTask(RLTask):
             low=float("-inf"),  # Replace with a specific lower bound if needed
             high=float("inf"),  # Replace with a specific upper bound if needed
             shape=(self.num_observations,),
-            dtype=torch.float32  # Ensure data type is consistent
+            dtype=np.float32  # Ensure data type is consistent
         )
         self.action_space = spaces.Discrete(self._num_actions)
 
