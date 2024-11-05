@@ -394,8 +394,6 @@ def deterministic_model(observation_space: Optional[Union[int, Tuple[int], gym.S
                 output = self.net(torch.cat((inputs["states"], inputs["taken_actions"]), dim=1))
 
 
-            print("output", output)
-
             return output * self.instantiator_output_scale, {}
 
     metadata = {"input_shape": input_shape,

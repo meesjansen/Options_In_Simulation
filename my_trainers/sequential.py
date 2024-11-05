@@ -98,8 +98,6 @@ class SequentialTrainer(Trainer):
                 actions = torch.vstack([agent.act(states[scope[0]:scope[1]], timestep=timestep, timesteps=self.timesteps)[0] \
                                         for agent, scope in zip(self.agents, self.agents_scope)])
 
-                print("actions inside Trainer: ", actions, actions.shape)
-
                 # step the environments
                 next_states, rewards, terminated, truncated, infos = self.env.step(actions)
 
@@ -109,7 +107,6 @@ class SequentialTrainer(Trainer):
 
                 # record the environments' transitions
                 for agent, scope in zip(self.agents, self.agents_scope):
-                    print("recorded actions: ", actions[scope[0]:scope[1]])
                     agent.record_transition(states=states[scope[0]:scope[1]],
                                             actions=actions[scope[0]:scope[1]],
                                             rewards=rewards[scope[0]:scope[1]],

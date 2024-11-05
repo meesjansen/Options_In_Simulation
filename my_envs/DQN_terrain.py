@@ -122,7 +122,7 @@ class ReachingTargetTask(RLTask):
 
         # observation and action space DQN
         self._num_observations = 16 # + 289  features + height points
-        self._num_actions = 12  # Designed discrete action space see pre_physics_step()
+        self._num_actions = 11  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
             low=float("-inf"),  # Replace with a specific lower bound if needed
@@ -375,8 +375,6 @@ class ReachingTargetTask(RLTask):
         if not self.world.is_playing():
             return
         
-        print("actions post env.step going into pre_physics_step", actions)
-
         # If we are still in the first two steps, don't apply any action but advance the simulation
         if self.common_step_counter < 2:
             # print(f"Skipping actions for first {self.common_step_counter + 1} step(s)")
@@ -390,21 +388,20 @@ class ReachingTargetTask(RLTask):
             [-0.5, -0.5, -0.5, -0.5],
             [0.5, 0.0, 0.5, 0.0],
             [0.0, 0.5, 0.0, 0.5],
-            [0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0, 0.5],
-            [0.0, 0.0, 0.5, 0.0],
-            [0.0, 0.5, 0.0, 0.0],
-            [0.5, 0.0, 0.0, 0.0],
+            [-0.5, 0.0, -0.5, 0.0],
+            [0.0, -0.5, 0.0, -0.5],
             [0.5, 0.5, 0.0, 0.0],
             [0.0, 0.0, 0.5, 0.5],
-            [-0.5, -0.5, 0.5, 0.5]
+            [-0.5, -0.5, 0.0, 0.0],
+            [0.0, 0.0, -0.5, -0.5],
+            [0.0, 0.0, 0.0, 0.0],
         ], device=self.device)
 
         current_efforts = self._robots.get_applied_joint_efforts(clone=True) # [:, np.array([1,2,4,5])]
         updated_efforts = torch.zeros_like(current_efforts)
 
         self.actions = actions.clone().to(self.device)
-        print("Action Q-learning:", self.actions)
+        print("Actions from pre_physics_step:", self.actions)
 
         for env_id in range(self.num_envs):
             action_index = int(torch.argmax(self.actions[env_id]).item())  # Get action index for the current environment
@@ -490,9 +487,7 @@ class ReachingTargetTask(RLTask):
 
 
         # Calculate the projected gravity in the robot's local frame
-        # print("Gravity vector", self.gravity_vec)
         projected_gravity = quat_apply(base_quat, self.gravity_vec)
-        # print("Projected gravity vector", projected_gravity)
 
         # Detect if the robot is on its back based on positive Z-axis component of the projected gravity
         positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
@@ -507,7 +502,6 @@ class ReachingTargetTask(RLTask):
 
         # Check standing still condition every still_check_interval timesteps
         self.standing_still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        # print("Standing still counter", self.counter)
         if self.counter == 0:
             self.position_buffer = self.base_pos[:,:2].clone()
             self.counter += 1
@@ -577,7 +571,7 @@ class ReachingTargetTask(RLTask):
             ),
             dim=-1,
         )
-        print("Observation buffer:", self.obs_buf.shape)
+        # print("Observation buffer:", self.obs_buf.shape)
         
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     

@@ -48,9 +48,6 @@ memory = RandomMemory(memory_size=200_000, num_envs=env.num_envs, device=device,
 # instantiate the agent's models (function approximators) using the model instantiator utility.
 # DQN requires 2 models, visit its documentation for more details
 # https://skrl.readthedocs.io/en/latest/api/agents/dqn.html#models
-print("Observation Space: ", env.observation_space, env.action_space, env.observation_space.dtype)
-print("Action Space: ", env.action_space, env.action_space.shape, env.action_space.dtype)
-
 
 
 models = {}
@@ -84,7 +81,7 @@ for model in models.values():
 # https://skrl.readthedocs.io/en/latest/api/agents/dqn.html#configuration-and-hyperparameters
 DQN_DEFAULT_CONFIG = {
     "gradient_steps": 1,            # gradient steps
-    "batch_size": 16,               # training batch size
+    "batch_size": 32,               # training batch size
 
     "discount_factor": 0.99,        # discount factor (gamma)
     "polyak": 0.005,                # soft update hyperparameter (tau)
@@ -103,7 +100,7 @@ DQN_DEFAULT_CONFIG = {
     "target_update_interval": 500,   # target network update interval
 
     "exploration": {
-        "initial_epsilon": 1.0,       # initial epsilon for epsilon-greedy exploration
+        "initial_epsilon": 0.9,       # initial epsilon for epsilon-greedy exploration
         "final_epsilon": 0.05,        # final epsilon for epsilon-greedy exploration
         "timesteps": 10000,            # timesteps for epsilon-greedy decay
     },

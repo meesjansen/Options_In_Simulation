@@ -185,35 +185,26 @@ class DQN(Agent):
         :return: Actions
         :rtype: torch.Tensor
         """
-        print("states pre pre-processor:", states)
         
         states = self._state_preprocessor(states)
-        print("states post pre-processor:", states, states.shape)
 
         if not self._exploration_timesteps:
-            print("if not exploration timesteps NN.act returns:", torch.argmax(self.q_network.act({"states": states}, role="q_network")[0], dim=1, keepdim=True))
             return torch.argmax(self.q_network.act({"states": states}, role="q_network")[0], dim=1, keepdim=True), None, None
 
         # sample random actions
-        actions = self.q_network.random_act({"states": states}, role="q_network")
-        print("NN random actions:", actions)
-        actions = actions[0]
+        actions = self.q_network.random_act({"states": states}, role="q_network")[0]
         if timestep < self._random_timesteps:
-            print("NN random actions used:", actions)
+            # print("NN random actions used:", actions)
 
             return actions, None, None
 
         # sample actions with epsilon-greedy policy
         epsilon = self._exploration_final_epsilon + (self._exploration_initial_epsilon - self._exploration_final_epsilon) \
                 * math.exp(-1.0 * timestep / self._exploration_timesteps)
-        print("epsilon:", epsilon)
 
         indexes = (torch.rand(states.shape[0], device=self.device) >= epsilon).nonzero().view(-1)
-        print("indexes:", indexes, "expected: num_env v (4,) as observation space size is 4")
         if indexes.numel():
-            print("actions pre indexes used: ", torch.argmax(self.q_network.act({"states": states[indexes]}, role="q_network")[0], dim=1, keepdim=True))
             actions[indexes] = torch.argmax(self.q_network.act({"states": states[indexes]}, role="q_network")[0], dim=1, keepdim=True)
-            print("actions epsilon-greedy used:", actions)
 
         
 
@@ -302,12 +293,7 @@ class DQN(Agent):
         sampled_states, sampled_actions, sampled_rewards, sampled_next_states, sampled_dones = \
             self.memory.sample(names=self.tensors_names, batch_size=self._batch_size)[0]
         
-        print("sampled_states from batch", sampled_states)
-        print("sampled_actions from batch", sampled_actions)
-        print("sampled_rewards from batch", sampled_rewards)
-        print("sampled_next_states from batch", sampled_next_states)
-        print("sampled_dones from batch", sampled_dones) 
-
+        
         # gradient steps
         for gradient_step in range(self._gradient_steps):
 
@@ -326,10 +312,8 @@ class DQN(Agent):
                                     dim=1, index=sampled_actions.long())
 
 
-            print("next_q_values:", next_q_values, next_q_values.shape)
-            print("target q values, check impact [0]:", target_q_values, target_q_values.shape)
-            print("target values:", target_values.shape)
-            print("q values:", q_values.shape)
+            print("target values:", target_values)
+            print("q values:", q_values)
             
             q_network_loss = F.mse_loss(q_values, target_values)
 
