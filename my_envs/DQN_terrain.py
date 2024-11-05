@@ -121,7 +121,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 16 # + 289  features + height points
+        self._num_observations = 16 + 289  # features + height points
         self._num_actions = 11  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
@@ -343,7 +343,7 @@ class ReachingTargetTask(RLTask):
             quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking up
 
         # Z position is fixed at 0.4
-        z_pos = -0.1
+        z_pos = 0.15
 
         # Store the position in a list
         pos = torch.tensor([x_pos, y_pos, z_pos], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
@@ -352,7 +352,9 @@ class ReachingTargetTask(RLTask):
         self.dof_vel[env_ids] = self.dof_init_state[4:8]
         self.dof_efforts[env_ids] = self.dof_init_state[0:4]
     
-        self._robots.set_world_poses(pos[env_ids] + self.env_origins[env_ids].clone(), orientations=quat[env_ids].clone(), indices=indices)
+        pos[env_ids, :2] += self.env_origins[env_ids, :2].clone()  # Add only x and y entries from env_origins
+        self._robots.set_world_poses(pos[env_ids].clone(), orientations=quat[env_ids].clone(), indices=indices)
+        self._robots.set_angular_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
         self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
@@ -405,16 +407,17 @@ class ReachingTargetTask(RLTask):
 
         for env_id in range(self.num_envs):
             action_index = int(torch.argmax(self.actions[env_id]).item())  # Get action index for the current environment
+            print("Action index:", action_index)
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
-        updated_efforts = torch.clip(updated_efforts, -40.0, 40.0)
+        updated_efforts = torch.clip(updated_efforts, -20.0, 20.0)
           
         for i in range(self.decimation):
             if self.world.is_playing():
                 
                 self._robots.set_joint_efforts(updated_efforts) 
-                # print("Applied torques:", updated_efforts)
+                print("Applied torques:", updated_efforts)
 
                 SimulationContext.step(self.world, render=False)
 
@@ -433,8 +436,8 @@ class ReachingTargetTask(RLTask):
         self.episode_buf[:] += 1
         ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
 
-        # for i in ids:
-        #     print(f"ENV0 timesteps/MaxEpisodeLength {self.episode_buf[i]}/{self._max_episode_length}")
+        for i in ids:
+            print(f"ENV0 timesteps/MaxEpisodeLength {self.episode_buf[i]}/{self._max_episode_length}")
 
 
         if self.world.is_playing():
@@ -479,7 +482,9 @@ class ReachingTargetTask(RLTask):
         # target reached or lost
         self.target_reached = self._computed_distance <= 0.1
         self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
-        # print("Reset buffer post distance", self.reset_buf)
+        print("self.compute_distance", self._computed_distance)
+        print("Target reached", self.target_reached)
+        print("Reset buffer post distance", self.reset_buf)
 
         # max episode length
         self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
@@ -566,7 +571,7 @@ class ReachingTargetTask(RLTask):
                 self.base_ang_vel,
                 self.projected_gravity,
                 delta_pos,
-                #heights,
+                heights,
                 current_efforts 
             ),
             dim=-1,

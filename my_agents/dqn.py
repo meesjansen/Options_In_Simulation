@@ -17,7 +17,7 @@ from skrl.models.torch import Model
 # [start-config-dict-torch]
 DQN_DEFAULT_CONFIG = {
     "gradient_steps": 1,            # gradient steps
-    "batch_size": 64,               # training batch size
+    "batch_size": 32,               # training batch size
 
     "discount_factor": 0.99,        # discount factor (gamma)
     "polyak": 0.005,                # soft update hyperparameter (tau)
@@ -55,7 +55,6 @@ DQN_DEFAULT_CONFIG = {
         "wandb_kwargs": {}          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
     }
 }
-# [end-config-dict-torch]
 
 
 class DQN(Agent):
@@ -185,6 +184,7 @@ class DQN(Agent):
         :return: Actions
         :rtype: torch.Tensor
         """
+        
         states = self._state_preprocessor(states)
 
         if not self._exploration_timesteps:
@@ -201,7 +201,9 @@ class DQN(Agent):
 
         indexes = (torch.rand(states.shape[0], device=self.device) >= epsilon).nonzero().view(-1)
         if indexes.numel():
-            actions[indexes] = self.q_network.act({"states": states[indexes]}, role="q_network")[0]
+            actions[indexes] = torch.argmax(self.q_network.act({"states": states[indexes]}, role="q_network")[0], dim=1, keepdim=True)
+
+        
 
         # record epsilon
         self.track_data("Exploration / Exploration epsilon", epsilon)
@@ -287,7 +289,8 @@ class DQN(Agent):
         # sample a batch from memory
         sampled_states, sampled_actions, sampled_rewards, sampled_next_states, sampled_dones = \
             self.memory.sample(names=self.tensors_names, batch_size=self._batch_size)[0]
-
+        
+        
         # gradient steps
         for gradient_step in range(self._gradient_steps):
 
@@ -300,20 +303,15 @@ class DQN(Agent):
 
                 target_q_values = torch.max(next_q_values, dim=-1, keepdim=True)[0]
                 target_values = sampled_rewards + self._discount_factor * sampled_dones.logical_not() * target_q_values
-                
 
             # compute Q-network loss
             q_values = torch.gather(self.q_network.act({"states": sampled_states}, role="q_network")[0],
                                     dim=1, index=sampled_actions.long())
+
+
+            print("target values:", target_values)
+            print("q values:", q_values)
             
-            print("sampled_actions:", sampled_actions.long(), sampled_actions.long().shape)
-            print("next_q_values:", next_q_values.shape)
-            print("sampled_rewards:", sampled_rewards.shape)
-            print("targer_q_values:", target_q_values.shape)
-            print("target values:", target_values.shape)
-            print("q values:", q_values.shape)
-
-
             q_network_loss = F.mse_loss(q_values, target_values)
 
             # optimize Q-network
