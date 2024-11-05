@@ -11,7 +11,7 @@ from skrl.utils import set_seed
 
 from my_models.deterministic import Shape, deterministic_model
 from my_trainers.sequential import SequentialTrainer
-from my_agents.dqn2 import DQN
+from my_agents.dqn import DQN
 
 
 
@@ -29,7 +29,7 @@ from my_envs.DQN_terrain import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 4
+TASK_CFG["task"]["env"]["numEnvs"] = 25
 
 
 sim_config = SimConfig(TASK_CFG)
