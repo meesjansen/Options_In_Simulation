@@ -221,7 +221,6 @@ class ReachingTargetTask(RLTask):
             restitution=0.2
         )
 
-
         visual_material = OmniPBR(prim_path="/World/material/glass", color=np.array([0.8, 0.1, 0.1]))
 
         # Define the relative wheel paths for each robot instance
@@ -238,24 +237,28 @@ class ReachingTargetTask(RLTask):
         scene.add(self._robots)
 
         material_path = "/World/PhysicsMaterials/WheelMaterial"
-        material_prim = self._stage.DefinePrim(material_path, "PhysicsMaterial")
+        material_prim = self._stage.DefinePrim(material_path)
+
+        # Apply the PhysxMaterialAPI to the material prim
+        PhysxSchema.PhysxMaterialAPI.Apply(material_prim)
+
 
         # Set material properties if creating a new material
-        material_prim.GetAttribute("physicsMaterial:staticFriction").Set(0.9)
-        material_prim.GetAttribute("physicsMaterial:dynamicFriction").Set(0.8)
-        material_prim.GetAttribute("physicsMaterial:restitution").Set(0.5)
+        material_prim.GetAttribute("physics:staticFriction").Set(0.9)
+        material_prim.GetAttribute("physics:dynamicFriction").Set(0.8)
+        material_prim.GetAttribute("physics:restitution").Set(0.5)
 
         # Apply the material to each robot's wheels
         for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
             robot_prim_path = robot_prim_path.replace("/main_body", "")
-        for wheel_relative_path in wheel_prim_paths:
-            wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
-            print("Paths to wheels:", wheel_full_path)
-            wheel_prim = self._stage.GetPrimAtPath(wheel_full_path)
-            # Apply PhysX Material API to the prim
-            PhysxSchema.PhysxMaterialAPI.Apply(wheel_prim) 
-            # Set the material relationship on the wheel prim
-            wheel_prim.GetRelationship("physxMaterial:physicsMaterial").AddTarget(material_prim.GetPath())
+            for wheel_relative_path in wheel_prim_paths:
+                wheel_full_path = f"{robot_prim_path}/{wheel_relative_path}"  # Construct full wheel path
+                print("Paths to wheels:", wheel_full_path)
+                wheel_prim = self._stage.GetPrimAtPath(wheel_full_path)
+                # Apply PhysX Material API to the prim
+                PhysxSchema.PhysxMaterialAPI.Apply(wheel_prim) 
+                # Set the material relationship on the wheel prim
+                wheel_prim.GetRelationship("physics:physicsMaterial").AddTarget(material_prim.GetPath())
 
 
 
