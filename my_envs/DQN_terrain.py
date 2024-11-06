@@ -238,12 +238,12 @@ class ReachingTargetTask(RLTask):
         scene.add(self._robots)
 
         material_path = "/World/PhysicsMaterials/WheelMaterial"
-        material_prim = self._stage.DefinePrim(material_path, "PhysxMaterial")
+        material_prim = self._stage.DefinePrim(material_path, "PhysicsMaterial")
 
         # Set material properties if creating a new material
-        material_prim.GetAttribute("physxMaterial:staticFriction").Set(0.9)
-        material_prim.GetAttribute("physxMaterial:dynamicFriction").Set(0.8)
-        material_prim.GetAttribute("physxMaterial:restitution").Set(0.5)
+        material_prim.GetAttribute("physicsMaterial:staticFriction").Set(0.9)
+        material_prim.GetAttribute("physicsMaterial:dynamicFriction").Set(0.8)
+        material_prim.GetAttribute("physicsMaterial:restitution").Set(0.5)
 
         # Apply the material to each robot's wheels
         for robot_prim_path in self._robots.prim_paths:  # Get each robot's prim path
