@@ -237,7 +237,7 @@ class ReachingTargetTask(RLTask):
         scene.add(self._robots)
 
         material_path = "/World/PhysicsMaterials/WheelMaterial"
-        material_prim = self._stage.DefinePrim(material_path)
+        material_prim = self._stage.DefinePrim(material_path, "Material")
 
         # Apply the PhysxMaterialAPI to the material prim
         PhysxSchema.PhysxMaterialAPI.Apply(material_prim)
