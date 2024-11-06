@@ -205,7 +205,7 @@ class DQN(Agent):
 
         
 
-        # record epsilon
+        # record epsilonup
         self.track_data("Exploration / Exploration epsilon", epsilon)
 
         return actions, None, None

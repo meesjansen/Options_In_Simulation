@@ -161,6 +161,7 @@ class ReachingTargetTask(RLTask):
         self.terrain_type = self._task_cfg["env"]["TerrainType"]
         self._env_spacing = self._task_cfg["env"]["envSpacing"]
         self._max_episode_length = self._task_cfg["env"]["episodeLength"]
+        self.dt = self._task_cfg["sim"]["dt"]
 
         # base init state
         pos = self._task_cfg["env"]["baseInitState"]["pos"]
@@ -354,7 +355,6 @@ class ReachingTargetTask(RLTask):
     
         pos[env_ids, :2] += self.env_origins[env_ids, :2].clone()  # Add only x and y entries from env_origins
         self._robots.set_world_poses(pos[env_ids].clone(), orientations=quat[env_ids].clone(), indices=indices)
-        self._robots.set_angular_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
         self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
@@ -370,7 +370,33 @@ class ReachingTargetTask(RLTask):
 
     def refresh_body_state_tensors(self):
         self.base_pos, self.base_quat = self._robots.get_world_poses(clone=False)
-        self.base_velocities = self._robots.get_velocities(clone=False)
+        self.base_vel = self._robots.get_velocities(clone=False)
+
+        self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_vel[:, 0:3])
+        self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_vel[:, 3:6])
+
+        return self.base_lin_vel, self.base_ang_vel
+
+
+    def calculate_acceleration(self, dt):
+        # Get current velocities
+        current_linear_velocity, current_angular_velocity = self.refresh_body_state_tensors()
+
+        # Calculate accelerations if previous velocities are available
+        if self.previous_linear_velocity is not None:
+            linear_acceleration = (current_linear_velocity - self.previous_linear_velocity) / dt
+            angular_acceleration = (current_angular_velocity - self.previous_angular_velocity) / dt
+        else:
+            # Set accelerations to zero if it's the first frame
+            linear_acceleration = np.zeros(3)
+            angular_acceleration = np.zeros(3)
+
+        # Update previous velocities
+        self.previous_linear_velocity = current_linear_velocity
+        self.previous_angular_velocity = current_angular_velocity
+
+        return linear_acceleration, angular_acceleration
+
         
 
     def pre_physics_step(self, actions):
@@ -408,10 +434,23 @@ class ReachingTargetTask(RLTask):
         for env_id in range(self.num_envs):
             action_index = int(torch.argmax(self.actions[env_id]).item())  # Get action index for the current environment
             print("Action index:", action_index)
+            action_index = int(self.actions[env_id].item())
+            print("Action index:", action_index)
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
-        updated_efforts = torch.clip(updated_efforts, -20.0, 20.0)
+        updated_efforts = torch.clip(updated_efforts, -10.0, 10.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
+        print("max velocities dof: ", self._robots.get_joint_max_velocities())
+
+        if self.world.is_playing():
+            self._robots.set_joint_efforts(updated_efforts) 
+            print("Applied torques:", updated_efforts)
+
+            SimulationContext.step(self.world, render=False)
+
+        self.linear_acceleration, self.angular_acceleration = self.calculate_acceleration(self, self.dt)
+        print("Linear acceleration:", self.linear_acceleration)
+        print("Angular acceleration:", self.angular_acceleration)
           
         for i in range(self.decimation):
             if self.world.is_playing():
@@ -444,15 +483,13 @@ class ReachingTargetTask(RLTask):
 
             self.refresh_body_state_tensors()
 
-            # prepare quantities
-            self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 0:3])
-            self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 3:6])
+            # prepare quantities            
             self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
                         
             # if self.add_noise:
             #     self.obs_buf += (2 * torch.rand_like(self.obs_buf) - 1) * self.noise_scale_vec
             self.is_done()
-            self.get_states()
+            # self.get_states()
             self.calculate_metrics()
             
             env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
@@ -529,7 +566,7 @@ class ReachingTargetTask(RLTask):
         # computed distance to target as updating reward
         self.rew_buf[:] = 0.1/self._computed_distance * 100.0
 
-        self.rew_buf[self.target_reached] += 50 #target reached
+        self.rew_buf[self.target_reached] += 100 #target reached
 
         if self.target_reached.any():
             print("Success")
@@ -542,6 +579,17 @@ class ReachingTargetTask(RLTask):
 
         # Check standing still condition
         self.rew_buf[self.standing_still] += -10.0 # standing still
+
+        # Define the allowed range for angular acceleration
+        allowed_angular_acceleration = 2.0  # rad/s^2
+        # Calculate the excess angular acceleration
+        excess_angular_acceleration = torch.clamp(self.angular_acceleration - allowed_angular_acceleration, min=0.0)
+        self.rew_buf[:] += -excess_angular_acceleration * 10.0  # Example scaling factor
+
+        # Define the allowed range for linear velocity and create a similar reward term for self.base_lin_vel not exceeding a certain threshold or result in negative reward
+        allowed_linear_velocity = 2.0  # m/s
+        excess_linear_velocity = torch.clamp(self.base_lin_vel[:, 0] - allowed_linear_velocity, min=0.0)
+        self.rew_buf[:] += -excess_linear_velocity * 10.0  
 
         print("Reward buffer:", self.rew_buf, "Reward shape" , self.rew_buf.shape)
 
@@ -567,8 +615,8 @@ class ReachingTargetTask(RLTask):
         # Print the observation buffer
         self.obs_buf = torch.cat(
             (
-                self.base_lin_vel,
-                self.base_ang_vel,
+                self.base_vel[:, 0:3],
+                self.base_vel[:, 3:6],
                 self.projected_gravity,
                 delta_pos,
                 heights,
