@@ -142,12 +142,17 @@ class ReachingTargetTask(RLTask):
 
         self.height_points = self.init_height_points()  
         self.measured_heights = None
-
         self.bounds = torch.tensor([-4.0, 4.0, -4.0, 4.0], device=self.device, dtype=torch.float)
+
+
+
         self.still_steps = torch.zeros(self.num_envs)
         self.position_buffer = torch.zeros(self.num_envs, 2)  # Assuming 2D position still condition
         self.counter = 0 # still condition counter
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
+
+        self.linear_acceleration = torch.zeros((self.num_envs, 3), device=self.device)
+        self.angular_acceleration = torch.zeros((self.num_envs, 3), device=self.device)
 
         return
 
