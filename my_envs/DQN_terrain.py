@@ -589,7 +589,7 @@ class ReachingTargetTask(RLTask):
     
     def calculate_metrics(self) -> None:
         # computed distance to target as updating reward
-        self.rew_buf[:] = 0.1/self._computed_distance * 100.0
+        self.rew_buf[:] = 0.1/self._computed_distance * 1000.0
 
         self.rew_buf[self.target_reached] += 100 #target reached
 
