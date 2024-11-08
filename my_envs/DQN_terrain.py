@@ -471,7 +471,7 @@ class ReachingTargetTask(RLTask):
 
             SimulationContext.step(self.world, render=False)
 
-        self.linear_acceleration, self.angular_acceleration = self.calculate_acceleration(self, self.dt)
+        self.linear_acceleration, self.angular_acceleration = self.calculate_acceleration(self.dt)
         print("Linear acceleration:", self.linear_acceleration)
         print("Angular acceleration:", self.angular_acceleration)
           
