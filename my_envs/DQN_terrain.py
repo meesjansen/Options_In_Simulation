@@ -618,7 +618,8 @@ class ReachingTargetTask(RLTask):
         # Define the allowed range for linear velocity and create a similar reward term for self.base_lin_vel not exceeding a certain threshold or result in negative reward
         allowed_linear_velocity = 2.0  # m/s
         excess_linear_velocity = torch.clamp(self.base_lin_vel[:, 0] - allowed_linear_velocity, min=0.0)
-        self.rew_buf[:] += -excess_linear_velocity * 10.0  
+        print("excess_linear_velocity", excess_linear_velocity)
+        self.rew_buf[:] += -excess_linear_velocity  
 
         print("Reward buffer:", self.rew_buf, "Reward shape" , self.rew_buf.shape)
 
