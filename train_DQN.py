@@ -29,7 +29,7 @@ from my_envs.DQN_terrain import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 25
+TASK_CFG["task"]["env"]["numEnvs"] = 9
 
 
 sim_config = SimConfig(TASK_CFG)
@@ -43,7 +43,7 @@ env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
 # instantiate a memory as experience replay
-memory = RandomMemory(memory_size=200_000, num_envs=env.num_envs, device=device, replacement=False)
+memory = RandomMemory(memory_size=305_000, num_envs=env.num_envs, device=device, replacement=False)
 
 # instantiate the agent's models (function approximators) using the model instantiator utility.
 # DQN requires 2 models, visit its documentation for more details
