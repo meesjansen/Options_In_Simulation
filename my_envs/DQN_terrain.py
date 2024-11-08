@@ -153,7 +153,9 @@ class ReachingTargetTask(RLTask):
 
         self.linear_acceleration = torch.zeros((self.num_envs, 3), device=self.device)
         self.angular_acceleration = torch.zeros((self.num_envs, 3), device=self.device)
-
+        self.previous_linear_velocity = torch.zeros((self.num_envs, 3), device=self.device)
+        self.previous_angular_velocity = torch.zeros((self.num_envs, 3), device=self.device)
+        
         return
 
 
