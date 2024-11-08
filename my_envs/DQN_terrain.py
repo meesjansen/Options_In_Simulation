@@ -607,7 +607,11 @@ class ReachingTargetTask(RLTask):
         allowed_angular_acceleration = 2.0  # rad/s^2
         # Calculate the excess angular acceleration
         excess_angular_acceleration = torch.clamp(self.angular_acceleration - allowed_angular_acceleration, min=0.0)
-        self.rew_buf[:] += -excess_angular_acceleration * 10.0  # Example scaling factor
+        self.rew_buf[:] += -excess_angular_acceleration[:, 0] * 10.0  # Example scaling factor
+        self.rew_buf[:] += -excess_angular_acceleration[:, 1] * 10.0  # Example scaling factor
+        self.rew_buf[:] += -excess_angular_acceleration[:, 2] * 10.0  # Example scaling factor
+
+
 
         # Define the allowed range for linear velocity and create a similar reward term for self.base_lin_vel not exceeding a certain threshold or result in negative reward
         allowed_linear_velocity = 2.0  # m/s
