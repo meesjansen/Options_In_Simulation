@@ -124,7 +124,7 @@ class ReachingTargetTask(RLTask):
 
         # observation and action space DQN
         self._num_observations = 16 + 289  # features + height points
-        self._num_actions = 11  # Designed discrete action space see pre_physics_step()
+        self._num_actions = 2  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
             low=float("-inf"),  # Replace with a specific lower bound if needed
@@ -396,25 +396,25 @@ class ReachingTargetTask(RLTask):
             return
         
         # # If we are still in the first two steps, don't apply any action but advance the simulation
-        # if self.common_step_counter < 2:
-        #     # print(f"Skipping actions for first {self.common_step_counter + 1} step(s)")
-        #     self.common_step_counter += 1
-        #     SimulationContext.step(self.world, render=False)  # Advance simulation
-        #     return 
+        if self.common_step_counter < 2:
+            # print(f"Skipping actions for first {self.common_step_counter + 1} step(s)")
+            self.common_step_counter += 1
+            SimulationContext.step(self.world, render=False)  # Advance simulation
+            return 
 
         # There are 12 possible actions
         action_torque_vectors = torch.tensor([
             [100.0, 100.0, 100.0, 100.0],
             [-100.0, -100.0, -100.0, -100.0],
-            [100.0, 0.0, 100.0, 0.0],
-            [0.0, 100.0, 0.0, 100.0],
-            [-100.0, 0.0, -100.0, 0.0],
-            [0.0, -100.0, 0.0, -100.0],
-            [100.0, 100.0, 0.0, 0.0],
-            [0.0, 0.0, 100.0, 100.0],
-            [-100.0, -100.0, 0.0, 0.0],
-            [0.0, 0.0, -100.0, -100.0],
-            [0.0, 0.0, 0.0, 0.0],
+            # [100.0, 0.0, 100.0, 0.0],
+            # [0.0, 100.0, 0.0, 100.0],
+            # [-100.0, 0.0, -100.0, 0.0],
+            # [0.0, -100.0, 0.0, -100.0],
+            # [100.0, 100.0, 0.0, 0.0],
+            # [0.0, 0.0, 100.0, 100.0],
+            # [-100.0, -100.0, 0.0, 0.0],
+            # [0.0, 0.0, -100.0, -100.0],
+            # [0.0, 0.0, 0.0, 0.0],
         ], device=self.device)
 
         current_efforts = self._robots.get_applied_joint_efforts(clone=True) # [:, np.array([1,2,4,5])]
@@ -559,7 +559,6 @@ class ReachingTargetTask(RLTask):
         excess_forward_linear_velocity = torch.clamp(self.base_lin_vel[:, 0] - allowed_forward_linear_velocity, min=0.0)
         print("excess_linear_velocity", excess_forward_linear_velocity)
           
-
         # Reward forward movement
         backward_velocity = torch.clamp(self.base_lin_vel[:, 0], max=0.0)
 
@@ -584,6 +583,9 @@ class ReachingTargetTask(RLTask):
 
         if self.target_reached.any():
             print("Success")
+
+        # Ensure rewards are always larger than zero
+        self.rew_buf = torch.clamp(self.rew_buf, min=0.0)
 
         print("Reward buffer:", self.rew_buf)
         
