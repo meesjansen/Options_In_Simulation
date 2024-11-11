@@ -599,16 +599,13 @@ class ReachingTargetTask(RLTask):
         # Reward forward movement
         backward_velocity = torch.clamp(self.base_lin_vel[:, 0], max=0.0)
 
-        # computed distance to target as updating reward
-        self.rew_buf[:] = 0.1/self._computed_distance * 100.0 + backward_velocity * 10.0
-
-        # Define the allowed range for angular acceleration
+         # Define the allowed range for angular acceleration
         allowed_angular_acceleration = 5.0  # rad/s^2
         # Calculate the excess angular acceleration
         excess_angular_acceleration = torch.clamp(self.angular_acceleration - allowed_angular_acceleration, min=0.0)
-        self.rew_buf[:] += -excess_angular_acceleration[:, 0] * 10.0
-        self.rew_buf[:] += -excess_angular_acceleration[:, 1] * 10.0
-        self.rew_buf[:] += -excess_angular_acceleration[:, 2] * 10.0
+
+        # computed distance to target as updating reward
+        self.rew_buf[:] = 0.1/self._computed_distance * 100.0 + 10.0 * (backward_velocity - excess_angular_acceleration[:, 0] - excess_angular_acceleration[:, 1] - excess_angular_acceleration[:, 2])
 
         # Check fallen condition
         self.rew_buf[self.fallen] += -200.0 # fallen
@@ -619,7 +616,7 @@ class ReachingTargetTask(RLTask):
         # Check standing still condition
         self.rew_buf[self.standing_still] += -200.0 # standing still
 
-        self.rew_buf[self.target_reached] += 100 #target reached
+        self.rew_buf[self.target_reached] += 100.0 #target reached
 
         if self.target_reached.any():
             print("Success")
