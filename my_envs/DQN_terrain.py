@@ -487,13 +487,13 @@ class ReachingTargetTask(RLTask):
 
                 SimulationContext.step(self.world, render=False)
 
-        self._dof_indices = torch.tensor([self._robots.get_dof_index(dof) for dof in self.robot_v101.dof_names], dtype=torch.int32, device=self.device)
-        print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in [
-                "main_body_left_front_wheel", 
-                "main_body_left_rear_wheel",
-                "main_body_right_front_wheel",
-                "main_body_right_rear_wheel"
-        ]])
+        # self._dof_indices = torch.tensor([self._robots.get_dof_index(dof) for dof in self.robot_v101.dof_names], dtype=torch.int32, device=self.device)
+        # print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in [
+        #         "main_body_left_front_wheel", 
+        #         "main_body_left_rear_wheel",
+        #         "main_body_right_front_wheel",
+        #         "main_body_right_rear_wheel"
+        # ]])
 
                 
         
