@@ -437,16 +437,16 @@ class ReachingTargetTask(RLTask):
 
         # There are 12 possible actions
         action_torque_vectors = torch.tensor([
-            [0.5, 0.5, 0.5, 0.5],
-            [-0.5, -0.5, -0.5, -0.5],
-            [0.5, 0.0, 0.5, 0.0],
-            [0.0, 0.5, 0.0, 0.5],
-            [-0.5, 0.0, -0.5, 0.0],
-            [0.0, -0.5, 0.0, -0.5],
-            [0.5, 0.5, 0.0, 0.0],
-            [0.0, 0.0, 0.5, 0.5],
-            [-0.5, -0.5, 0.0, 0.0],
-            [0.0, 0.0, -0.5, -0.5],
+            [5.0, 5.0, 5.0, 5.0],
+            [-5.0, -5.0, -5.0, -5.0],
+            [5.0, 0.0, 5.0, 0.0],
+            [0.0, 5.0, 0.0, 5.0],
+            [-5.0, 0.0, -5.0, 0.0],
+            [0.0, -5.0, 0.0, -5.0],
+            [5.0, 5.0, 0.0, 0.0],
+            [0.0, 0.0, 5.0, 5.0],
+            [-5.0, -5.0, 0.0, 0.0],
+            [0.0, 0.0, -5.0, -5.0],
             [0.0, 0.0, 0.0, 0.0],
         ], device=self.device)
 
@@ -457,10 +457,7 @@ class ReachingTargetTask(RLTask):
         # print("Actions from pre_physics_step:", self.actions)
 
         for env_id in range(self.num_envs):
-            action_index = int(torch.argmax(self.actions[env_id]).item())  # Get action index for the current environment
-            print("Action index of an index?:", action_index)
             action_index = int(self.actions[env_id].item())
-            print("Correct Action index?:", action_index)
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
@@ -503,7 +500,7 @@ class ReachingTargetTask(RLTask):
         ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
 
         for i in ids:
-            print(f"ENV0 timesteps/MaxEpisodeLength {self.episode_buf[i]}/{self._max_episode_length}")
+            print(f"ENV{i} timesteps/MaxEpisodeLength {self.episode_buf[i]}/{self._max_episode_length}")
 
 
         if self.world.is_playing():
@@ -594,7 +591,7 @@ class ReachingTargetTask(RLTask):
         allowed_forward_linear_velocity = 2.0  # m/s
         excess_forward_linear_velocity = torch.clamp(self.base_lin_vel[:, 0] - allowed_forward_linear_velocity, min=0.0)
         print("excess_linear_velocity", excess_forward_linear_velocity)
-        self.rew_buf[:] += -excess_forward_linear_velocity  
+          
 
         # Reward forward movement
         backward_velocity = torch.clamp(self.base_lin_vel[:, 0], max=0.0)
@@ -606,6 +603,7 @@ class ReachingTargetTask(RLTask):
 
         # computed distance to target as updating reward
         self.rew_buf[:] = 0.1/self._computed_distance * 100.0 + 10.0 * (backward_velocity - excess_angular_acceleration[:, 0] - excess_angular_acceleration[:, 1] - excess_angular_acceleration[:, 2])
+        self.rew_buf[:] += -excess_forward_linear_velocity
 
         # Check fallen condition
         self.rew_buf[self.fallen] += -200.0 # fallen
