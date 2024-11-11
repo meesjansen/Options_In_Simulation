@@ -57,14 +57,14 @@ TASK_CFG = {"test": False,
                              "use_flatcache": True,
                              "enable_scene_query_support": False,
                              "enable_cameras": False,
-                             "default_physics_material": {"static_friction": 1.0,
-                                                         "dynamic_friction": 1.0,
+                             "default_physics_material": {"static_friction": 2.0,
+                                                         "dynamic_friction": 2.0,
                                                          "restitution": 0.0},
                              "physx": {"worker_thread_count": 4,
                                       "solver_type": 1,
                                       "use_gpu": True,
                                       "solver_position_iteration_count": 4,
-                                      "solver_velocity_iteration_count": 1,
+                                      "solver_velocity_iteration_count": 4,
                                       "contact_offset": 0.005,
                                       "rest_offset": 0.0,
                                       "bounce_threshold_velocity": 0.2,
@@ -88,7 +88,7 @@ TASK_CFG = {"test": False,
                                        "enable_self_collisions": False,
                                        "enable_gyroscopic_forces": True,
                                        "solver_position_iteration_count": 4,
-                                       "solver_velocity_iteration_count": 1,
+                                       "solver_velocity_iteration_count": 4,
                                        "sleep_threshold": 0.005,
                                        "stabilization_threshold": 0.001,
                                        "density": -1,
@@ -100,7 +100,7 @@ TASK_CFG = {"test": False,
                                         "make_kinematic": True,
                                         "enable_self_collisions": False,
                                         "enable_gyroscopic_forces": True,
-                                        "solver_position_iteration_count": 4,
+                                        "solver_position_iteration_count": 1,
                                         "solver_velocity_iteration_count": 1,
                                         "sleep_threshold": 0.005,
                                         "stabilization_threshold": 0.001,
@@ -562,10 +562,18 @@ class ReachingTargetTask(RLTask):
         # Reward forward movement
         backward_velocity = torch.clamp(self.base_lin_vel[:, 0], max=0.0)
 
-         # Define the allowed range for angular acceleration
+        # Define the allowed range for angular acceleration
         allowed_angular_acceleration = 5.0  # rad/s^2
-        # Calculate the excess angular acceleration
-        excess_angular_acceleration = torch.clamp(self.angular_acceleration - allowed_angular_acceleration, min=0.0)
+        max_excess = 3.0  # rad/s^2
+
+        # Compute the absolute angular acceleration to account for both directions
+        abs_angular_acceleration = torch.abs(self.angular_acceleration)
+
+        # Calculate the excess angular acceleration beyond the allowed range
+        excess_angular_acceleration = abs_angular_acceleration - allowed_angular_acceleration
+
+        # Clamp the excess to be between 0.0 and max_excess
+        excess_angular_acceleration = torch.clamp(excess_angular_acceleration, min=0.0, max=max_excess)
 
         # computed distance to target as updating reward
         self.rew_buf = 0.1/self._computed_distance * 100.0 + 10.0 * (backward_velocity - excess_forward_linear_velocity - excess_angular_acceleration[:, 0] - excess_angular_acceleration[:, 1] - excess_angular_acceleration[:, 2])
