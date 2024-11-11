@@ -590,40 +590,42 @@ class ReachingTargetTask(RLTask):
 
     
     def calculate_metrics(self) -> None:
+        # Define the allowed range for linear velocity and create a similar reward term for self.base_lin_vel not exceeding a certain threshold or result in negative reward
+        allowed_forward_linear_velocity = 2.0  # m/s
+        excess_forward_linear_velocity = torch.clamp(self.base_lin_vel[:, 0] - allowed_forward_linear_velocity, min=0.0)
+        print("excess_linear_velocity", excess_forward_linear_velocity)
+        self.rew_buf[:] += -excess_forward_linear_velocity  
+
+        # Reward forward movement
+        backward_velocity = torch.clamp(self.base_lin_vel[:, 0], max=0.0)
+
         # computed distance to target as updating reward
-        self.rew_buf[:] = 0.1/self._computed_distance * 1000.0
+        self.rew_buf[:] = 0.1/self._computed_distance * 100.0 + backward_velocity * 10.0
+
+        # Define the allowed range for angular acceleration
+        allowed_angular_acceleration = 5.0  # rad/s^2
+        # Calculate the excess angular acceleration
+        excess_angular_acceleration = torch.clamp(self.angular_acceleration - allowed_angular_acceleration, min=0.0)
+        self.rew_buf[:] += -excess_angular_acceleration[:, 0] * 10.0
+        self.rew_buf[:] += -excess_angular_acceleration[:, 1] * 10.0
+        self.rew_buf[:] += -excess_angular_acceleration[:, 2] * 10.0
+
+        # Check fallen condition
+        self.rew_buf[self.fallen] += -200.0 # fallen
+
+        # Check out-of-bounds condition
+        self.rew_buf[self.out_of_bounds] += -200.0 # out of bounds
+
+        # Check standing still condition
+        self.rew_buf[self.standing_still] += -200.0 # standing still
 
         self.rew_buf[self.target_reached] += 100 #target reached
 
         if self.target_reached.any():
             print("Success")
 
-        # Check fallen condition
-        self.rew_buf[self.fallen] += -20.0 # fallen
-
-        # Check out-of-bounds condition
-        self.rew_buf[self.out_of_bounds] += -10.0 # out of bounds
-
-        # Check standing still condition
-        self.rew_buf[self.standing_still] += -10.0 # standing still
-
-        # Define the allowed range for angular acceleration
-        allowed_angular_acceleration = 2.0  # rad/s^2
-        # Calculate the excess angular acceleration
-        excess_angular_acceleration = torch.clamp(self.angular_acceleration - allowed_angular_acceleration, min=0.0)
-        self.rew_buf[:] += -excess_angular_acceleration[:, 0] # Example scaling factor
-        self.rew_buf[:] += -excess_angular_acceleration[:, 1] # Example scaling factor
-        self.rew_buf[:] += -excess_angular_acceleration[:, 2] # Example scaling factor
-
-
-
-        # Define the allowed range for linear velocity and create a similar reward term for self.base_lin_vel not exceeding a certain threshold or result in negative reward
-        allowed_linear_velocity = 2.0  # m/s
-        excess_linear_velocity = torch.clamp(self.base_lin_vel[:, 0] - allowed_linear_velocity, min=0.0)
-        print("excess_linear_velocity", excess_linear_velocity)
-        self.rew_buf[:] += -excess_linear_velocity  
-
         print("Reward buffer:", self.rew_buf)
+        
 
         return self.rew_buf
 
