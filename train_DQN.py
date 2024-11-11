@@ -29,7 +29,7 @@ from my_envs.DQN_terrain import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 9
+TASK_CFG["task"]["env"]["numEnvs"] = 16
 
 
 sim_config = SimConfig(TASK_CFG)
@@ -81,9 +81,9 @@ for model in models.values():
 # https://skrl.readthedocs.io/en/latest/api/agents/dqn.html#configuration-and-hyperparameters
 DQN_DEFAULT_CONFIG = {
     "gradient_steps": 1,            # gradient steps
-    "batch_size": 32,               # training batch size
+    "batch_size": 64,               # training batch size
 
-    "discount_factor": 0.99,        # discount factor (gamma)
+    "discount_factor": 0.995,        # discount factor (gamma)
     "polyak": 0.005,                # soft update hyperparameter (tau)
 
     "learning_rate": 1e-4,          # learning rate
@@ -93,16 +93,16 @@ DQN_DEFAULT_CONFIG = {
     "state_preprocessor": None,             # state preprocessor class (see skrl.resources.preprocessors)
     "state_preprocessor_kwargs": {},        # state preprocessor's kwargs (e.g. {"size": env.observation_space})
 
-    "random_timesteps": 200,          # random exploration steps
-    "learning_starts": 50,           # learning starts after this many steps
+    "random_timesteps": 10000,          # random exploration steps
+    "learning_starts": 1000,           # learning starts after this many steps
 
     "update_interval": 1,           # agent update interval
-    "target_update_interval": 500,   # target network update interval
+    "target_update_interval": 1000,   # target network update interval
 
     "exploration": {
-        "initial_epsilon": 0.9,       # initial epsilon for epsilon-greedy exploration
-        "final_epsilon": 0.05,        # final epsilon for epsilon-greedy exploration
-        "timesteps": 10000,            # timesteps for epsilon-greedy decay
+        "initial_epsilon": 1.0,       # initial epsilon for epsilon-greedy exploration
+        "final_epsilon": 0.1,        # final epsilon for epsilon-greedy exploration
+        "timesteps": 50000,            # timesteps for epsilon-greedy decay
     },
 
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
@@ -121,9 +121,7 @@ DQN_DEFAULT_CONFIG = {
 }
 
 cfg = DQN_DEFAULT_CONFIG.copy()
-cfg["learning_starts"] = 50
-cfg["exploration"]["final_epsilon"] = 0.04
-cfg["exploration"]["timesteps"] = 10000
+
 # logging to TensorBoard and write checkpoints (in timesteps)
 cfg["experiment"]["write_interval"] = 500
 cfg["experiment"]["checkpoint_interval"] = 1000

@@ -243,7 +243,7 @@ class ReachingTargetTask(RLTask):
         self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robot_view")
         scene.add(self._robots)
 
-        # material_path = "/World/PhysicsMaterials/WheelMaterial"
+        # material_path = "/World/PhysicsMaterials"
         # material_prim = self._stage.DefinePrim(material_path, "Material")
 
         # # Apply the PhysxMaterialAPI to the material prim
@@ -454,13 +454,13 @@ class ReachingTargetTask(RLTask):
         updated_efforts = torch.zeros_like(current_efforts)
 
         self.actions = actions.clone().to(self.device)
-        print("Actions from pre_physics_step:", self.actions)
+        # print("Actions from pre_physics_step:", self.actions)
 
         for env_id in range(self.num_envs):
             action_index = int(torch.argmax(self.actions[env_id]).item())  # Get action index for the current environment
-            print("Action index:", action_index)
+            print("Action index of an index?:", action_index)
             action_index = int(self.actions[env_id].item())
-            print("Action index:", action_index)
+            print("Correct Action index?:", action_index)
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
@@ -474,6 +474,8 @@ class ReachingTargetTask(RLTask):
             SimulationContext.step(self.world, render=False)
 
         self.linear_acceleration, self.angular_acceleration = self.calculate_acceleration(self.dt)
+        print("Linear velocities:", self.previous_linear_velocity)
+        print("Angular velocities:", self.previous_angular_velocity)
         print("Linear acceleration:", self.linear_acceleration)
         print("Angular acceleration:", self.angular_acceleration)
           
@@ -481,17 +483,17 @@ class ReachingTargetTask(RLTask):
             if self.world.is_playing():
                 
                 self._robots.set_joint_efforts(updated_efforts) 
-                print("Applied torques:", updated_efforts)
+                # print("Applied torques:", updated_efforts)
 
                 SimulationContext.step(self.world, render=False)
 
-        # self._dof_indices = torch.tensor([robot.get_dof_index(dof) for dof in robot.dof_names], dtype=torch.int32, device=self.device)
-        # print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in [
-        #         "main_body_left_front_wheel", 
-        #         "main_body_left_rear_wheel",
-        #         "main_body_right_front_wheel",
-        #         "main_body_right_rear_wheel"
-        # ]])
+        self._dof_indices = torch.tensor([self._robots.get_dof_index(dof) for dof in self.robot_v101.dof_names], dtype=torch.int32, device=self.device)
+        print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in [
+                "main_body_left_front_wheel", 
+                "main_body_left_rear_wheel",
+                "main_body_right_front_wheel",
+                "main_body_right_rear_wheel"
+        ]])
 
                 
         
@@ -545,7 +547,7 @@ class ReachingTargetTask(RLTask):
         self.target_reached = self._computed_distance <= 0.1
         self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
         print("self.compute_distance", self._computed_distance)
-        print("Target reached", self.target_reached)
+        print("Target reached? <= 0.1", self.target_reached)
         print("Reset buffer post distance", self.reset_buf)
 
         # max episode length
@@ -621,7 +623,7 @@ class ReachingTargetTask(RLTask):
         print("excess_linear_velocity", excess_linear_velocity)
         self.rew_buf[:] += -excess_linear_velocity  
 
-        print("Reward buffer:", self.rew_buf, "Reward shape" , self.rew_buf.shape)
+        print("Reward buffer:", self.rew_buf)
 
         return self.rew_buf
 
