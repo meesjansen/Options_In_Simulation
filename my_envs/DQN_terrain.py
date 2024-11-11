@@ -461,7 +461,7 @@ class ReachingTargetTask(RLTask):
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
-        updated_efforts = torch.clip(updated_efforts, -10.0, 10.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
+        updated_efforts = torch.clip(updated_efforts, -100.0, 100.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
         print("max velocities dof: ", self._robots.get_joint_max_velocities())
 
         if self.world.is_playing():
