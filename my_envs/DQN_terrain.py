@@ -57,8 +57,8 @@ TASK_CFG = {"test": False,
                              "use_flatcache": True,
                              "enable_scene_query_support": False,
                              "enable_cameras": False,
-                             "default_physics_material": {"static_friction": 2.0,
-                                                         "dynamic_friction": 2.0,
+                             "default_physics_material": {"static_friction": 1.0,
+                                                         "dynamic_friction": 1.0,
                                                          "restitution": 0.0},
                              "physx": {"worker_thread_count": 4,
                                       "solver_type": 1,
@@ -124,7 +124,7 @@ class ReachingTargetTask(RLTask):
 
         # observation and action space DQN
         self._num_observations = 16 + 289  # features + height points
-        self._num_actions = 2  # Designed discrete action space see pre_physics_step()
+        self._num_actions = 11  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
             low=float("-inf"),  # Replace with a specific lower bound if needed
@@ -406,15 +406,15 @@ class ReachingTargetTask(RLTask):
         action_torque_vectors = torch.tensor([
             [0.5, 0.5, 0.5, 0.5],
             [-0.5, -0.5, -0.5, -0.5],
-            # [0.5, 0.0, 0.5, 0.0],
-            # [0.0, 0.5, 0.0, 0.5],
-            # [-0.5, 0.0, -0.5, 0.0],
-            # [0.0, -0.5, 0.0, -0.5],
-            # [0.5, 0.5, 0.0, 0.0],
-            # [0.0, 0.0, 0.5, 0.5],
-            # [-0.5, -0.5, 0.0, 0.0],
-            # [0.0, 0.0, -0.5, -0.5],
-            # [0.0, 0.0, 0.0, 0.0],
+            [0.5, 0.0, 0.5, 0.0],
+            [0.0, 0.5, 0.0, 0.5],
+            [-0.5, 0.0, -0.5, 0.0],
+            [0.0, -0.5, 0.0, -0.5],
+            [0.5, 0.5, 0.0, 0.0],
+            [0.0, 0.0, 0.5, 0.5],
+            [-0.5, -0.5, 0.0, 0.0],
+            [0.0, 0.0, -0.5, -0.5],
+            [0.0, 0.0, 0.0, 0.0],
         ], device=self.device)
 
         current_efforts = self._robots.get_applied_joint_efforts(clone=True) # [:, np.array([1,2,4,5])]
@@ -429,7 +429,7 @@ class ReachingTargetTask(RLTask):
             delta_torque = action_torque_vectors[action_index]  # Get the torque change vector for this action
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
-        updated_efforts = torch.clip(updated_efforts, -50.0, 50.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
+        updated_efforts = torch.clip(updated_efforts, -20.0, 20.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
         print("max velocities dof: ", self._robots.get_joint_max_velocities())
 
         if self.world.is_playing():
