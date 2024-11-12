@@ -459,8 +459,10 @@ class ReachingTargetTask(RLTask):
 
         updated_efforts = torch.clip(updated_efforts, -20.0, 20.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
 
+        joint_indices = torch.tensor([1, 2, 4, 5], dtype=torch.int32, device=self.device)
+
         if self.world.is_playing():
-            self._robots.set_joint_efforts(updated_efforts, joint_indices=np.array([1,2,4,5])) 
+            self._robots.set_joint_efforts(updated_efforts, joint_indices=joint_indices) 
             print("Applied torques:", updated_efforts)
 
             SimulationContext.step(self.world, render=False)
@@ -471,7 +473,7 @@ class ReachingTargetTask(RLTask):
           
         for i in range(self.decimation):
             if self.world.is_playing():
-                self._robots.set_joint_efforts(updated_efforts, joint_indices=np.array([1,2,4,5])) 
+                self._robots.set_joint_efforts(updated_efforts, joint_indices=joint_indices) 
                 SimulationContext.step(self.world, render=False)
 
         # self._dof_indices = torch.tensor([self._robots.get_dof_index(dof) for dof in self.robot_v101.dof_names], dtype=torch.int32, device=self.device)
