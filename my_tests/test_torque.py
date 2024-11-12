@@ -46,24 +46,24 @@ material = PhysicsMaterial(prim_path="/World/PhysicsMaterials", static_friction=
 GroundPlane(prim_path="/World/groundPlane", size=10, color=np.array([0.5, 0.5, 0.5])).apply_physics_material(material)
 
 # Load the custom USD file for the robot
-usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_assets", "origin_v10.usd"))
+usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_assets", "origin_elevated.usd"))
 prim_path = "/World/Robot"
 add_reference_to_stage(usd_path, prim_path)
 
-# Define the physics material for the wheels (rubber material)
-rubber_material = PhysicsMaterial(
-    prim_path="/World/PhysicsMaterials/RubberMaterial",
-    static_friction=0.9,  # Rubber has high static friction
-    dynamic_friction=0.8,  # Slightly lower dynamic friction
-    restitution=0.2  # Low restitution
-)
+# # Define the physics material for the wheels (rubber material)
+# rubber_material = PhysicsMaterial(
+#     prim_path="/World/PhysicsMaterials/RubberMaterial",
+#     static_friction=0.9,  # Rubber has high static friction
+#     dynamic_friction=0.8,  # Slightly lower dynamic friction
+#     restitution=0.2  # Low restitution
+# )
 
 # List of wheel prim paths
 wheel_prim_paths = [
-    "/World/Robot/left_front_wheel",
-    "/World/Robot/left_rear_wheel",
-    "/World/Robot/right_front_wheel",
-    "/World/Robot/right_rear_wheel",
+    "/World/Robot/main_body/main_body_left_front_wheel",
+    "/World/Robot/main_body/main_body_left_rear_wheel",
+    "/World/Robot/main_body/main_body_right_front_wheel",
+    "/World/Robot/main_body/main_body_right_rear_wheel",
 ]
 
 # Print prim paths to debug
@@ -75,10 +75,10 @@ world.scene.add(robot_articulations)
 world.reset()
 robot_articulations.initialize()
 
-# Apply physics material to each wheel
-for wheel_path in wheel_prim_paths:
-    wheel_prim = GeometryPrim(prim_path=wheel_path)
-    wheel_prim.apply_physics_material(rubber_material)
+# # Apply physics material to each wheel
+# for wheel_path in wheel_prim_paths:
+#     wheel_prim = GeometryPrim(prim_path=wheel_path)
+#     wheel_prim.apply_physics_material(rubber_material)
 
 # Retrieve and print the DOF names
 dof_names = robot_articulations.dof_names
@@ -98,7 +98,7 @@ wheel_torques = torch.tensor([100.0, 100.0, 100.0, 100.0])
 while simulation_app._app.is_running() and not simulation_app.is_exiting():
     # Run in realtime mode, we don't specify the step size
     # Apply torques to the wheels
-    robot_articulations.set_joint_efforts(wheel_torques)
+    robot_articulations.set_joint_efforts(wheel_torques, joint_indices=np.array([1,2,4,5]))
     simulation_app.update()
 
 simulation_app.close()
