@@ -445,7 +445,7 @@ class ReachingTargetTask(RLTask):
             [0.0, 0.0, 0.0, 0.0],
         ], device=self.device)
 
-        current_efforts = self._robots.get_applied_joint_efforts(clone=True, joint_indices=np.array([1,2,4,5])) # [:, np.array([1,2,4,5])]
+        current_efforts = self._robots.get_applied_joint_efforts(clone=True)[:, np.array([1,2,4,5])]
         print("Current torques:", current_efforts)
         updated_efforts = torch.zeros_like(current_efforts)
 
@@ -631,7 +631,7 @@ class ReachingTargetTask(RLTask):
         delta_pos = target_pos - base_pos
 
         # Get current joint efforts (torques)
-        _efforts = self._robots.get_applied_joint_efforts(clone=True, joint_indices=np.array([1,2,4,5]))
+        _efforts = self._robots.get_applied_joint_efforts(clone=True)[:, np.array([1,2,4,5])]
         current_efforts = _efforts #[:, np.array([1,2,4,5])]
 
         # compute distance for calculate_metrics() and is_done()
