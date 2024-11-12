@@ -476,13 +476,13 @@ class ReachingTargetTask(RLTask):
                 self._robots.set_joint_efforts(updated_efforts, joint_indices=joint_indices) 
                 SimulationContext.step(self.world, render=False)
 
-        # self._dof_indices = torch.tensor([self._robots.get_dof_index(dof) for dof in self.robot_v101.dof_names], dtype=torch.int32, device=self.device)
-        print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in [
-                "left_front_wheel", 
-                "left_rear_wheel",
-                "ight_front_wheel",
-                "right_rear_wheel"
-        ]])
+        dof_names = self._robots.dof_names
+        print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in dof_names])
+        #         "left_front_wheel", 
+        #         "left_rear_wheel",
+        #         "ight_front_wheel",
+        #         "right_rear_wheel"
+        # ]])
 
                 
         
