@@ -459,7 +459,7 @@ class ReachingTargetTask(RLTask):
 
         updated_efforts = torch.clip(updated_efforts, -20.0, 20.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
 
-        joint_indices = torch.tensor([1, 2, 4, 5], dtype=torch.int32, device=self.device)
+        joint_indices = torch.tensor([4, 5, 6, 7], dtype=torch.int32, device=self.device)
 
         if self.world.is_playing():
             self._robots.set_joint_efforts(updated_efforts, joint_indices=joint_indices) 
@@ -479,11 +479,7 @@ class ReachingTargetTask(RLTask):
         dof_names = self._robots.dof_names
         print("DOF Names:", dof_names)
         print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in dof_names])
-        #         "left_front_wheel", 
-        #         "left_rear_wheel",
-        #         "ight_front_wheel",
-        #         "right_rear_wheel"
-        # ]])
+        
 
                 
         
