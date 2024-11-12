@@ -371,8 +371,8 @@ class ReachingTargetTask(RLTask):
         pos = torch.tensor([x_pos, y_pos, z_pos], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
         quat = quat.repeat(self.num_envs, 1)
 
-        self.dof_vel[env_ids] = self.dof_init_state[4:8]
-        self.dof_efforts[env_ids] = self.dof_init_state[0:4]
+        self.dof_vel[env_ids] = self.dof_init_state[8:16]
+        self.dof_efforts[env_ids] = self.dof_init_state[0:8]
     
         pos[env_ids, :2] += self.env_origins[env_ids, :2].clone()  # Add only x and y entries from env_origins
         self._robots.set_world_poses(pos[env_ids].clone(), orientations=quat[env_ids].clone(), indices=indices)
