@@ -477,6 +477,7 @@ class ReachingTargetTask(RLTask):
                 SimulationContext.step(self.world, render=False)
 
         dof_names = self._robots.dof_names
+        print("DOF Names:", dof_names)
         print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in dof_names])
         #         "left_front_wheel", 
         #         "left_rear_wheel",
