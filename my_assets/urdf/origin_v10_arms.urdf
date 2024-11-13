@@ -30,7 +30,7 @@
 
     <!-- Main Body to Left Front Passive Arm -->
     <joint type="revolute" name="main_body_left_front_passive_arm_joint">
-        <origin xyz="0.205 0.2 0.0" rpy="0 0 0"/>
+        <origin xyz="0.205 0.2 0.3175" rpy="0 0 0"/>
         <parent link="main_body"/>
         <child link="left_front_passive_arm"/>
         <axis xyz="0 1 0"/>
@@ -52,7 +52,7 @@
             </geometry>
         </collision>
         <visual name="left_front_passive_arm_visual">
-            <origin xyz="0.205 0.2 -0.1" rpy="0 0.1 0"/>
+            <origin xyz="0.205 0.02 -0.1" rpy="0 0.1 0"/>
             <geometry>
                 <box size="0.1 0.04 0.3"/>
             </geometry>
