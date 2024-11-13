@@ -77,13 +77,13 @@
             <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
         </inertial>
         <collision name="left_front_wheel_collision">
-            <origin xyz="0 0.0 0.075" rpy="0 0 0"/>
+            <origin xyz="0.035 0.0 0.0" rpy="0 0 0"/>
             <geometry>
                 <cylinder length=".07" radius=".1175"/>
             </geometry>
         </collision>
         <visual name="left_front_wheel_visual">
-            <origin xyz="0.0 0.0 0.075" rpy="0.0 0.0 0.0"/>
+            <origin xyz="0.035 0.0 0.0" rpy="0.0 0.0 0.0"/>
             <geometry>
                 <cylinder length=".07" radius=".1175"/>
             </geometry>
