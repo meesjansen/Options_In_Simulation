@@ -9,13 +9,13 @@
       <inertia ixx="0.4" ixy="0.0" ixz="0.0" iyy="0.77" iyz="0.0" izz="1.01"/>
     </inertial>
     <collision name='main_body_collision'>
-      <origin xyz="0 0 0.15" rpy="0 0 0.0"/> <!-- Raised slightly to avoid spawning in the floor -->
+      <origin xyz="0 0 0.3" rpy="0 0 0.0"/> <!-- Lifted slightly to avoid collision with the ground -->
       <geometry>
         <box size=".65 .4 .125"/>
       </geometry>
     </collision>
     <visual name='main_body_visual'>
-      <origin xyz="0 0 0.15" rpy="0 0 0.0"/>
+      <origin xyz="0 0 0.3" rpy="0 0 0.0"/>
       <geometry>
         <box size=".65 .4 .125"/>
       </geometry>
@@ -30,7 +30,7 @@
       <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
     </inertial>
     <collision name="left_front_passive_arm_collision">
-      <origin xyz="0 0 -0.15" rpy="0 0 0"/> <!-- Pointing straight down -->
+      <origin xyz="0 0 -0.15" rpy="0 0 0"/> <!-- Positioned directly downward -->
       <geometry>
         <box size="0.3 0.1 0.04"/>
       </geometry>
@@ -50,7 +50,7 @@
       <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
     </inertial>
     <collision name="right_front_passive_arm_collision">
-      <origin xyz="0 0 -0.15" rpy="0 0 0"/> <!-- Pointing straight down -->
+      <origin xyz="0 0 -0.15" rpy="0 0 0"/> <!-- Positioned directly downward -->
       <geometry>
         <box size="0.3 0.1 0.04"/>
       </geometry>
@@ -70,7 +70,7 @@
       <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
     </inertial>
     <collision name="left_rear_passive_arm_collision">
-      <origin xyz="0 0 -0.15" rpy="0 0 0"/> <!-- Pointing straight down -->
+      <origin xyz="0 0 -0.15" rpy="0 0 0"/> <!-- Positioned directly downward -->
       <geometry>
         <box size="0.3 0.1 0.04"/>
       </geometry>
@@ -90,7 +90,7 @@
       <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
     </inertial>
     <collision name="right_rear_passive_arm_collision">
-      <origin xyz="0 0 -0.15" rpy="0 0 0"/> <!-- Pointing straight down -->
+      <origin xyz="0 0 -0.15" rpy="0 0 0"/> <!-- Positioned directly downward -->
       <geometry>
         <box size="0.3 0.1 0.04"/>
       </geometry>
@@ -110,7 +110,7 @@
       <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
     </inertial>
     <collision name="left_front_wheel_collision">
-      <origin xyz="0 0 -0.3" rpy="0 0 0"/> <!-- Placed at the end of the arm -->
+      <origin xyz="0 0 -0.3" rpy="0 0 0"/> <!-- Positioned at the bottom of the passive arm -->
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
@@ -129,7 +129,7 @@
       <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
     </inertial>
     <collision name="right_front_wheel_collision">
-      <origin xyz="0 0 -0.3" rpy="0 0 0"/> <!-- Placed at the end of the arm -->
+      <origin xyz="0 0 -0.3" rpy="0 0 0"/> <!-- Positioned at the bottom of the passive arm -->
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
@@ -148,7 +148,7 @@
       <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
     </inertial>
     <collision name="left_rear_wheel_collision">
-      <origin xyz="0 0 -0.3" rpy="0 0 0"/> <!-- Placed at the end of the arm -->
+      <origin xyz="0 0 -0.3" rpy="0 0 0"/> <!-- Positioned at the bottom of the passive arm -->
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
@@ -167,7 +167,7 @@
       <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
     </inertial>
     <collision name="right_rear_wheel_collision">
-      <origin xyz="0 0 -0.3" rpy="0 0 0"/> <!-- Placed at the end of the arm -->
+      <origin xyz="0 0 -0.3" rpy="0 0 0"/> <!-- Positioned at the bottom of the passive arm -->
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
@@ -183,7 +183,7 @@
   <!-- Joints -->
   <!-- Main Body to Left Front Passive Arm -->
   <joint type="revolute" name="main_body_left_front_passive_arm_joint">
-    <origin xyz="0.205 0.25 0.056" rpy="0 0 0"/> <!-- Pointing straight down -->
+    <origin xyz="0.205 0.25 0.1" rpy="0 0 0"/> <!-- Positioned downward without tilt -->
     <parent link="main_body"/>
     <child link="left_front_passive_arm"/>
     <axis xyz="0 1 0"/>
@@ -203,7 +203,7 @@
 
   <!-- Main Body to Right Front Passive Arm -->
   <joint type="revolute" name="main_body_right_front_passive_arm_joint">
-    <origin xyz="0.205 -0.25 0.056" rpy="0 0 0"/> <!-- Pointing straight down -->
+    <origin xyz="0.205 -0.25 0.1" rpy="0 0 0"/> <!-- Positioned downward without tilt -->
     <parent link="main_body"/>
     <child link="right_front_passive_arm"/>
     <axis xyz="0 1 0"/>
@@ -223,7 +223,7 @@
 
   <!-- Main Body to Left Rear Passive Arm -->
   <joint type="revolute" name="main_body_left_rear_passive_arm_joint">
-    <origin xyz="-0.205 0.25 0.056" rpy="0 0 0"/> <!-- Pointing straight down -->
+    <origin xyz="-0.205 0.25 0.1" rpy="0 0 0"/> <!-- Positioned downward without tilt -->
     <parent link="main_body"/>
     <child link="left_rear_passive_arm"/>
     <axis xyz="0 1 0"/>
@@ -243,7 +243,7 @@
 
   <!-- Main Body to Right Rear Passive Arm -->
   <joint type="revolute" name="main_body_right_rear_passive_arm_joint">
-    <origin xyz="-0.205 -0.25 0.056" rpy="0 0 0"/> <!-- Pointing straight down -->
+    <origin xyz="-0.205 -0.25 0.1" rpy="0 0 0"/> <!-- Positioned downward without tilt -->
     <parent link="main_body"/>
     <child link="right_rear_passive_arm"/>
     <axis xyz="0 1 0"/>
