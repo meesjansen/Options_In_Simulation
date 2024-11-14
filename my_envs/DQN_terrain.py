@@ -330,10 +330,18 @@ class ReachingTargetTask(RLTask):
         elif edge == 2:  # Top edge
             y_pos = square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
+            if x_pos < 0:
+                x_pos = -0.25
+            else:
+                x_pos = 0.25
             quat = torch.tensor([0.7071, 0.0, 0.0, -0.7071], device=self.device)  # Looking down
         else:  # Bottom edge
             y_pos = -square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
+            if x_pos < 0:
+                x_pos = -0.25
+            else:
+                x_pos = 0.25
             quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking up
 
         # Z position is fixed at 0.4
@@ -508,7 +516,7 @@ class ReachingTargetTask(RLTask):
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
         # target reached or lost
-        self.target_reached = self._computed_distance <= 0.1
+        self.target_reached = self._computed_distance <= 0.5
         self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
         print("self.compute_distance", self._computed_distance)
         print("Target reached? <= 0.1", self.target_reached)
@@ -576,7 +584,7 @@ class ReachingTargetTask(RLTask):
         excess_angular_acceleration = torch.clamp(excess_angular_acceleration, min=0.0, max=max_excess)
 
         # computed distance to target as updating reward
-        self.rew_buf = 0.1/self._computed_distance * 100.0 + 10.0 * (backward_velocity - excess_forward_linear_velocity - excess_angular_acceleration[:, 0] - excess_angular_acceleration[:, 1] - excess_angular_acceleration[:, 2])
+        self.rew_buf = 0.1/self._computed_distance * 100.0 + 10.0 * (backward_velocity - excess_forward_linear_velocity) # - excess_angular_acceleration[:, 0] - excess_angular_acceleration[:, 1] - excess_angular_acceleration[:, 2])
         
         # Check fallen condition
         self.rew_buf[self.fallen] += -200.0 # fallen

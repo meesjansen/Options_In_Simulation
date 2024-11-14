@@ -93,8 +93,8 @@ DQN_DEFAULT_CONFIG = {
     "state_preprocessor": None,             # state preprocessor class (see skrl.resources.preprocessors)
     "state_preprocessor_kwargs": {},        # state preprocessor's kwargs (e.g. {"size": env.observation_space})
 
-    "random_timesteps": 5000,          # random exploration steps
-    "learning_starts": 1000,           # learning starts after this many steps
+    "random_timesteps": 0,          # random exploration steps
+    "learning_starts": 0,           # learning starts after this many steps
 
     "update_interval": 1,           # agent update interval
     "target_update_interval": 1000,   # target network update interval
@@ -123,8 +123,8 @@ DQN_DEFAULT_CONFIG = {
 cfg = DQN_DEFAULT_CONFIG.copy()
 
 # logging to TensorBoard and write checkpoints (in timesteps)
-cfg["experiment"]["write_interval"] = 500
-cfg["experiment"]["checkpoint_interval"] = 10000
+cfg["experiment"]["write_interval"] = 100
+cfg["experiment"]["checkpoint_interval"] = 0
 cfg["experiment"]["directory"] = "my_runs"
 cfg["state_preprocessor"] = RunningStandardScaler
 cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
@@ -137,10 +137,12 @@ agent = DQN(models=models,
             action_space=env.action_space,
             device=device)
 
+agent.load("./my_runs/Terrains_Env_DQN/checkpoints/agent_50000.pt")
+
 
 # configure and instantiate the RL trainer
-cfg_trainer = {"timesteps": 50000, "headless": True}
+cfg_trainer = {"timesteps": 5000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # start training
-trainer.train()
+trainer.eval()
