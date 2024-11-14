@@ -331,17 +331,17 @@ class ReachingTargetTask(RLTask):
             y_pos = square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
             if x_pos < 0:
-                x_pos = -0.25
+                x_pos = -0.35
             else:
-                x_pos = 0.25
+                x_pos = 0.35
             quat = torch.tensor([0.7071, 0.0, 0.0, -0.7071], device=self.device)  # Looking down
         else:  # Bottom edge
             y_pos = -square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
             if x_pos < 0:
-                x_pos = -0.25
+                x_pos = -0.35
             else:
-                x_pos = 0.25
+                x_pos = 0.35
             quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking up
 
         # Z position is fixed at 0.4
