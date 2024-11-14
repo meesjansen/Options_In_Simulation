@@ -29,7 +29,7 @@ from my_envs.DQN_terrain import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 16
+TASK_CFG["task"]["env"]["numEnvs"] = 25
 
 
 sim_config = SimConfig(TASK_CFG)
@@ -102,7 +102,7 @@ DQN_DEFAULT_CONFIG = {
     "exploration": {
         "initial_epsilon": 1.0,       # initial epsilon for epsilon-greedy exploration
         "final_epsilon": 0.1,        # final epsilon for epsilon-greedy exploration
-        "timesteps": 50000,            # timesteps for epsilon-greedy decay
+        "timesteps": 100000,            # timesteps for epsilon-greedy decay
     },
 
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
@@ -124,7 +124,7 @@ cfg = DQN_DEFAULT_CONFIG.copy()
 
 # logging to TensorBoard and write checkpoints (in timesteps)
 cfg["experiment"]["write_interval"] = 500
-cfg["experiment"]["checkpoint_interval"] = 1000
+cfg["experiment"]["checkpoint_interval"] = 10000
 cfg["experiment"]["directory"] = "my_runs"
 cfg["state_preprocessor"] = RunningStandardScaler
 cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
@@ -139,7 +139,7 @@ agent = DQN(models=models,
 
 
 # configure and instantiate the RL trainer
-cfg_trainer = {"timesteps": 50000, "headless": True}
+cfg_trainer = {"timesteps": 250000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # start training
