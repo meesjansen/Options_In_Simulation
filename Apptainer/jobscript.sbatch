@@ -10,7 +10,7 @@
 #SBATCH --output=isaac-sim-output_%j.log
 #SBATCH --error=isaac-sim-error_%j.log # Set name of error log. %j is the Slurm jobId
 
-#SBATCH --gres=gpu:1 # Request 1 GPU
+#SBATCH --gres=gpu:A40:1 # Request 1 GPU
 
 /usr/bin/scontrol show job -d "$SLURM_JOB_ID"  # check sbatch directives are working
 
