@@ -22,7 +22,7 @@ seed = set_seed(42)  # e.g. `set_seed(42)` for fixed seed
 
 # instance VecEnvBase and setup task
 headless = True  # set headless to False for rendering
-env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
+env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
 from my_envs.DQN_terrain import ReachingTargetTask, TASK_CFG

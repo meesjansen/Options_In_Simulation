@@ -405,7 +405,6 @@ class ReachingTargetTask(RLTask):
         
         # # If we are still in the first two steps, don't apply any action but advance the simulation
         if self.common_step_counter < 2:
-            # print(f"Skipping actions for first {self.common_step_counter + 1} step(s)")
             self.common_step_counter += 1
             SimulationContext.step(self.world, render=False)  # Advance simulation
             return 
@@ -426,11 +425,9 @@ class ReachingTargetTask(RLTask):
         ], device=self.device)
 
         current_efforts = self._robots.get_applied_joint_efforts(clone=True) # [:, np.array([1,2,4,5])]
-        print("Current torques:", current_efforts)
         updated_efforts = torch.zeros_like(current_efforts)
 
         self.actions = actions.clone().to(self.device)
-        # print("Actions from pre_physics_step:", self.actions)
 
         for env_id in range(self.num_envs):
             action_index = int(self.actions[env_id].item())
@@ -438,38 +435,19 @@ class ReachingTargetTask(RLTask):
             updated_efforts[env_id] = current_efforts[env_id] + delta_torque  # Update the torque for this environment
 
         updated_efforts = torch.clip(updated_efforts, -20.0, 20.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
-        print("max velocities dof: ", self._robots.get_joint_max_velocities())
 
         if self.world.is_playing():
             self._robots.set_joint_efforts(updated_efforts) 
-            print("Applied torques:", updated_efforts)
-
             SimulationContext.step(self.world, render=False)
 
         self.linear_acceleration, self.angular_acceleration = self.calculate_acceleration(self.dt)
         joint_velocities = self._robots.get_joint_velocities(clone=True)
-        print("Joint velocities:", joint_velocities)
-        print("Linear velocities:", self.previous_linear_velocity)
-        print("Angular velocities:", self.previous_angular_velocity)
-        print("Linear acceleration:", self.linear_acceleration)
-        print("Angular acceleration:", self.angular_acceleration)
+
           
         for i in range(self.decimation):
             if self.world.is_playing():
-                
                 self._robots.set_joint_efforts(updated_efforts) 
-                # print("Applied torques:", updated_efforts)
-
                 SimulationContext.step(self.world, render=False)
-
-        # self._dof_indices = torch.tensor([self._robots.get_dof_index(dof) for dof in self.robot_v101.dof_names], dtype=torch.int32, device=self.device)
-        # print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in [
-        #         "main_body_left_front_wheel", 
-        #         "main_body_left_rear_wheel",
-        #         "main_body_right_front_wheel",
-        #         "main_body_right_rear_wheel"
-        # ]])
-
                 
         
     def post_physics_step(self):
@@ -477,8 +455,8 @@ class ReachingTargetTask(RLTask):
         self.episode_buf[:] += 1
         ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
 
-        for i in ids:
-            print(f"ENV{i} timesteps/MaxEpisodeLength {self.episode_buf[i]}/{self._max_episode_length}")
+        # for i in ids:
+        #     print(f"ENV{i} timesteps/MaxEpisodeLength {self.episode_buf[i]}/{self._max_episode_length}")
 
 
         if self.world.is_playing():
@@ -518,14 +496,9 @@ class ReachingTargetTask(RLTask):
         # target reached or lost
         self.target_reached = self._computed_distance <= 0.5
         self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
-        print("self.compute_distance", self._computed_distance)
-        print("Target reached? <= 0.1", self.target_reached)
-        print("Reset buffer post distance", self.reset_buf)
 
         # max episode length
         self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
-        # print("Reset buffer post episode length", self.reset_buf)
-
 
         # Calculate the projected gravity in the robot's local frame
         projected_gravity = quat_apply(base_quat, self.gravity_vec)
@@ -534,12 +507,10 @@ class ReachingTargetTask(RLTask):
         positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
         self.fallen = projected_gravity[:, 2] > positive_gravity_z_threshold
         self.reset_buf = torch.where(self.fallen, torch.ones_like(self.reset_buf), self.reset_buf)
-        # print("Reset buffer post gravity", self.reset_buf)
 
         self.out_of_bounds = ((self.base_pos[:, 0] - self.env_origins[:, 0]) < self.bounds[0]) | ((self.base_pos[:, 0] - self.env_origins[:, 0]) > self.bounds[1]) | \
                         ((self.base_pos[:, 1] - self.env_origins[:, 1]) < self.bounds[2]) | ((self.base_pos[:, 1] - self.env_origins[:, 1]) > self.bounds[3])
         self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
-        # print("Reset buffer post out of bounds", self.reset_buf)
 
         # Check standing still condition every still_check_interval timesteps
         self.standing_still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
@@ -548,7 +519,6 @@ class ReachingTargetTask(RLTask):
             self.counter += 1
         elif self.counter == 20:
             changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
-            # print("Changed pos pre standing still", self.reset_buf)
             self.standing_still = changed_pos < 0.05 
             self.counter = 0  # Reset counter
         else:
@@ -556,16 +526,12 @@ class ReachingTargetTask(RLTask):
 
         # Update reset_buf based on standing_still condition
         self.reset_buf = torch.where(self.standing_still, torch.ones_like(self.reset_buf), self.reset_buf)
-        # print("Reset buffer post standing still", self.reset_buf)
-
-
 
     
     def calculate_metrics(self) -> None:
         # Define the allowed range for linear velocity and create a similar reward term for self.base_lin_vel not exceeding a certain threshold or result in negative reward
         allowed_forward_linear_velocity = 2.0  # m/s
         excess_forward_linear_velocity = torch.clamp(self.base_lin_vel[:, 0] - allowed_forward_linear_velocity, min=0.0)
-        print("excess_linear_velocity", excess_forward_linear_velocity)
           
         # Reward forward movement
         backward_velocity = torch.clamp(self.base_lin_vel[:, 0], max=0.0)
@@ -597,14 +563,11 @@ class ReachingTargetTask(RLTask):
 
         self.rew_buf[self.target_reached] += 100.0 #target reached
 
-        if self.target_reached.any():
-            print("Success")
+        # if self.target_reached.any():
+        #     print("Success")
 
         # Ensure rewards are always larger than zero
         self.rew_buf = torch.clamp(self.rew_buf, min=0.0)
-
-        print("Reward buffer:", self.rew_buf)
-        
 
         return self.rew_buf
 
@@ -625,7 +588,6 @@ class ReachingTargetTask(RLTask):
         # compute distance for calculate_metrics() and is_done()
         self._computed_distance = torch.norm(delta_pos, dim=-1)
 
-        # Print the observation buffer
         self.obs_buf = torch.cat(
             (
                 self.base_vel[:, 0:3],
@@ -637,7 +599,6 @@ class ReachingTargetTask(RLTask):
             ),
             dim=-1,
         )
-        # print("Observation buffer:", self.obs_buf.shape)
         
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     

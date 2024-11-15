@@ -50,14 +50,6 @@ usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_ass
 prim_path = "/World/Robot"
 add_reference_to_stage(usd_path, prim_path)
 
-# # Define the physics material for the wheels (rubber material)
-# rubber_material = PhysicsMaterial(
-#     prim_path="/World/PhysicsMaterials/RubberMaterial",
-#     static_friction=0.9,  # Rubber has high static friction
-#     dynamic_friction=0.8,  # Slightly lower dynamic friction
-#     restitution=0.2  # Low restitution
-# )
-
 # List of wheel prim paths
 wheel_prim_paths = [
     "/World/Robot/main_body/main_body_left_front_wheel",
@@ -74,11 +66,6 @@ robot_articulations = ArticulationView(prim_paths_expr=prim_path, name="robot_vi
 world.scene.add(robot_articulations)
 world.reset()
 robot_articulations.initialize()
-
-# # Apply physics material to each wheel
-# for wheel_path in wheel_prim_paths:
-#     wheel_prim = GeometryPrim(prim_path=wheel_path)
-#     wheel_prim.apply_physics_material(rubber_material)
 
 # Retrieve and print the DOF names
 dof_names = robot_articulations.dof_names
@@ -103,32 +90,4 @@ while simulation_app._app.is_running() and not simulation_app.is_exiting():
 
 simulation_app.close()
 
-#         # Apply torques to the wheels
-#         # wheel_torques = [100.0, 100.0, 100.0, 100.0]
-#         wheel_torques = torch.tensor([100.0, 100.0, 100.0, 100.0])
-#         robot_articulations.set_joint_efforts(wheel_torques) #, joint_indices=joint_indices)
-#         world.step(render=True)
-
-    # steps = 100  # Run for 100 steps
-    # for _ in range(steps):
-    #     await asyncio.sleep(0)  # Yield control to allow async event loop to continue
-    #     robot_articulations.set_joint_efforts(wheel_torques)
-    #     world.step(render=True)
-
-
-
-
-# Run the simulation asynchronously
-# asyncio.run(run_simulation())
-
-# Close the simulation app when done
-# simulation_app.close()
-
-# for i in range(500):
-#     # Apply torques to the wheels
-#     wheel_torques = torch.tensor([100.0, 100.0, 100.0, 100.0])
-#     robot_articulations.set_joint_efforts(wheel_torques)
-#     world.step(render=True)
-# # https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/Documentation/Isaac-Sim-Docs_2021.2.1/app_isaacsim/app_isaacsim/tutorial_required_hello_world.html
-# simulation_app.close()
 
