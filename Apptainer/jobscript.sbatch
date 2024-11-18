@@ -10,7 +10,7 @@
 #SBATCH --output=isaac-sim-output_%j.log
 #SBATCH --error=isaac-sim-error_%j.log # Set name of error log. %j is the Slurm jobId
 
-#SBATCH --gres=gpu:A40:1 # Request 1 GPU
+#SBATCH --gres=gpu:a40:1 # Request 1 GPU
 
 /usr/bin/scontrol show job -d "$SLURM_JOB_ID"  # check sbatch directives are working
 
@@ -33,7 +33,7 @@ export ISAACSIM_PYTHON_EXE="/isaac-sim/python.sh"
 
 # Set environment variables for the container
 export data=/winhome/meesjansen/isaac-sim  # Replace with your HOST data directory
-export HOME=/workspace  # Replace with your CONTAINER home directory path
+export HOME=/root  # Replace with your CONTAINER home directory path
 
 
 # Run script
@@ -41,6 +41,7 @@ srun apptainer exec \
     --nv -C \
     --env "ACCEPT_EULA=Y" \
     --env "PRIVACY_CONSENT=Y" \
+    -B "/winhome/meesjansen/Options_In_Simulation:/workspace/Options_In_Simulation" \
     -B "$data/cache/kit:/isaac-sim/kit/cache" \
 # -B "$data/kit/exts/omni.gpu_foundation/cache:/isaac-sim/kit/exts/omni.gpu_foundation/cache" \
     -B "$data/cache/ov:$HOME/.cache/ov" \
@@ -51,7 +52,7 @@ srun apptainer exec \
     -B "$data/data:$HOME/.local/share/ov/data" \
     -B "$data/documents:$HOME/Documents" \
     $APPTAINER_ROOT/$APPTAINER_NAME    # Path to the container to run
-
+    /isaac-sim/python.sh train_DQN.py
 
 
 # Measure GPU usage of your job (result)
