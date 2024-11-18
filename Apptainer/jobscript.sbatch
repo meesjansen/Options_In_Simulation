@@ -42,7 +42,7 @@ srun apptainer exec \
     --env "ACCEPT_EULA=Y" \
     --env "PRIVACY_CONSENT=Y" \
     -B "$data/cache/kit:/isaac-sim/kit/cache" \
-    -B "$data/kit/exts/omni.gpu_foundation/cache:/isaac-sim/kit/exts/omni.gpu_foundation/cache" \
+# -B "$data/kit/exts/omni.gpu_foundation/cache:/isaac-sim/kit/exts/omni.gpu_foundation/cache" \
     -B "$data/cache/ov:$HOME/.cache/ov" \
     -B "$data/cache/pip:$HOME/.cache/pip" \
     -B "$data/cache/glcache:$HOME/.cache/nvidia/GLCache" \
