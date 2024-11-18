@@ -33,7 +33,7 @@ export ISAACSIM_PYTHON_EXE="/isaac-sim/python.sh"
 
 # Set environment variables for the container
 export data=/winhome/meesjansen/isaac-sim  # Replace with your HOST data directory
-export HOME=/root  # Replace with your CONTAINER home directory path
+export HOME=/workspace  # Replace with your CONTAINER home directory path
 
 
 # Run script
