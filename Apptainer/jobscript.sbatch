@@ -37,13 +37,12 @@ export HOME=/root  # Replace with your CONTAINER home directory path
 
 
 # Run script
-srun apptainer exec \
-    --nv -C \
+srun apptainer exec --nv \
+    -C \
     --env "ACCEPT_EULA=Y" \
     --env "PRIVACY_CONSENT=Y" \
     -B "/winhome/meesjansen/Options_In_Simulation:/workspace/Options_In_Simulation" \
     -B "$data/cache/kit:/isaac-sim/kit/cache" \
-# -B "$data/kit/exts/omni.gpu_foundation/cache:/isaac-sim/kit/exts/omni.gpu_foundation/cache" \
     -B "$data/cache/ov:$HOME/.cache/ov" \
     -B "$data/cache/pip:$HOME/.cache/pip" \
     -B "$data/cache/glcache:$HOME/.cache/nvidia/GLCache" \
@@ -51,8 +50,8 @@ srun apptainer exec \
     -B "$data/logs:$HOME/.nvidia-omniverse/logs" \
     -B "$data/data:$HOME/.local/share/ov/data" \
     -B "$data/documents:$HOME/Documents" \
-    $APPTAINER_ROOT/$APPTAINER_NAME    # Path to the container to run
-    /isaac-sim/python.sh train_DQN.py
+    $APPTAINER_ROOT/$APPTAINER_NAME \  
+    /isaac-sim/python.sh /workspace/Options_In_Simulation/train_DQN.py
 
 
 # Measure GPU usage of your job (result)
