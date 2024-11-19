@@ -23,16 +23,15 @@ previous=$(/usr/bin/nvidia-smi --query-accounted-apps='gpu_utilization,mem_utili
 
 # Load necessary modules
 module use /opt/insy/modulefiles # Use DAIC INSY software collection
-module load cuda/12.1  # Adjust the CUDA version as needed
 
-export APPTAINER_ROOT="/winhome/meesjansen"
+export APPTAINER_ROOT="/home/nfs/meesjansen/containers"
 export APPTAINER_NAME="isaac-sim-custom.sif"
 
 export ISAACSIM_PATH="/isaac-sim"
 export ISAACSIM_PYTHON_EXE="/isaac-sim/python.sh"
 
 # Set environment variables for the container
-export data=/winhome/meesjansen/isaac-sim  # Replace with your HOST data directory
+export data=/home/nfs/meesjansen/isaac-sim  # Replace with your HOST data directory
 export HOME=/root  # Replace with your CONTAINER home directory path
 
 
@@ -41,7 +40,7 @@ srun apptainer exec --nv \
     -C \
     --env "ACCEPT_EULA=Y" \
     --env "PRIVACY_CONSENT=Y" \
-    -B "/winhome/meesjansen/Options_In_Simulation:/workspace/Options_In_Simulation" \
+    -B "/home/nfs/meesjansen/Options_In_Simulation:/workspace/Options_In_Simulation" \
     -B "$data/cache/kit:/isaac-sim/kit/cache" \
     -B "$data/cache/ov:$HOME/.cache/ov" \
     -B "$data/cache/pip:$HOME/.cache/pip" \
@@ -50,8 +49,7 @@ srun apptainer exec --nv \
     -B "$data/logs:$HOME/.nvidia-omniverse/logs" \
     -B "$data/data:$HOME/.local/share/ov/data" \
     -B "$data/documents:$HOME/Documents" \
-    /winhome/meesjansen/isaac-sim-custom.sif \  
-    /isaac-sim/python.sh /workspace/Options_In_Simulation/train_DQN.py
+    $APPTAINER_ROOT/$APPTAINER_NAME /isaac-sim/python.sh /workspace/Options_In_Simulation/train_DQN.py
 
 
 # Measure GPU usage of your job (result)
