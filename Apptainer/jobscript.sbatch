@@ -50,7 +50,7 @@ srun apptainer exec --nv \
     -B "$data/logs:$HOME/.nvidia-omniverse/logs" \
     -B "$data/data:$HOME/.local/share/ov/data" \
     -B "$data/documents:$HOME/Documents" \
-    $APPTAINER_ROOT/$APPTAINER_NAME \  
+    /winhome/meesjansen/isaac-sim-custom.sif \  
     /isaac-sim/python.sh /workspace/Options_In_Simulation/train_DQN.py
 
 
