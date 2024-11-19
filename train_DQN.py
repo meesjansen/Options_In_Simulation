@@ -93,16 +93,16 @@ DQN_DEFAULT_CONFIG = {
     "state_preprocessor": None,             # state preprocessor class (see skrl.resources.preprocessors)
     "state_preprocessor_kwargs": {},        # state preprocessor's kwargs (e.g. {"size": env.observation_space})
 
-    "random_timesteps": 5000,          # random exploration steps
-    "learning_starts": 1000,           # learning starts after this many steps
+    "random_timesteps": 500,          # random exploration steps
+    "learning_starts": 100,           # learning starts after this many steps
 
     "update_interval": 1,           # agent update interval
-    "target_update_interval": 1000,   # target network update interval
+    "target_update_interval": 100,   # target network update interval
 
     "exploration": {
         "initial_epsilon": 1.0,       # initial epsilon for epsilon-greedy exploration
         "final_epsilon": 0.1,        # final epsilon for epsilon-greedy exploration
-        "timesteps": 45000,            # timesteps for epsilon-greedy decay
+        "timesteps": 9500,            # timesteps for epsilon-greedy decay
     },
 
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
@@ -139,7 +139,7 @@ agent = DQN(models=models,
 
 
 # configure and instantiate the RL trainer
-cfg_trainer = {"timesteps": 50000, "headless": True}
+cfg_trainer = {"timesteps": 10000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # start training
