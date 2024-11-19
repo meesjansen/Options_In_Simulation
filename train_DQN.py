@@ -125,7 +125,7 @@ cfg = DQN_DEFAULT_CONFIG.copy()
 # logging to TensorBoard and write checkpoints (in timesteps)
 cfg["experiment"]["write_interval"] = 500
 cfg["experiment"]["checkpoint_interval"] = 10000
-cfg["experiment"]["directory"] = "my_runs"
+cfg["experiment"]["directory"] = "/workspace/Options_In_Simulation/my_runs"
 cfg["state_preprocessor"] = RunningStandardScaler
 cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
 
