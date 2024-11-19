@@ -563,8 +563,8 @@ class ReachingTargetTask(RLTask):
 
         self.rew_buf[self.target_reached] += 100.0 #target reached
 
-        # if self.target_reached.any():
-        #     print("Success")
+        if self.target_reached.any():
+            print("Success")
 
         # Ensure rewards are always larger than zero
         self.rew_buf = torch.clamp(self.rew_buf, min=0.0)
