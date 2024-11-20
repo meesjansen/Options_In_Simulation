@@ -93,8 +93,8 @@ DQN_DEFAULT_CONFIG = {
     "state_preprocessor": None,             # state preprocessor class (see skrl.resources.preprocessors)
     "state_preprocessor_kwargs": {},        # state preprocessor's kwargs (e.g. {"size": env.observation_space})
 
-    "random_timesteps": 500,          # random exploration steps
-    "learning_starts": 100,           # learning starts after this many steps
+    "random_timesteps": 10_000,          # random exploration steps
+    "learning_starts": 1000,           # learning starts after this many steps
 
     "update_interval": 1,           # agent update interval
     "target_update_interval": 100,   # target network update interval
@@ -102,7 +102,7 @@ DQN_DEFAULT_CONFIG = {
     "exploration": {
         "initial_epsilon": 1.0,       # initial epsilon for epsilon-greedy exploration
         "final_epsilon": 0.1,        # final epsilon for epsilon-greedy exploration
-        "timesteps": 9500,            # timesteps for epsilon-greedy decay
+        "timesteps": 230_000,            # timesteps for epsilon-greedy decay
     },
 
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
@@ -118,9 +118,9 @@ DQN_DEFAULT_CONFIG = {
         "wandb": True,             # whether to use Weights & Biases
         "wandb_kwargs": {"project":     "RL-Terrain-Simulation",
                         "entity":       "meesjansen-Delft Technical University",
-                        "name":         "DQN_Terrain_Rooms_r1",
+                        "name":         "DQN_Terrain_Rooms_r1_long",
                         "tags":         ["DQN", "Rooms"],
-                        "dir":          "/workspace/Options_In_Simulation/my_runs"}          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
+                        "dir":          "/workspace/Options_In_Simulation/my_runs"}    # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
     }
 }
 
@@ -128,7 +128,7 @@ cfg = DQN_DEFAULT_CONFIG.copy()
 
 # logging to TensorBoard and write checkpoints (in timesteps)
 cfg["experiment"]["write_interval"] = 500
-cfg["experiment"]["checkpoint_interval"] = 10000
+cfg["experiment"]["checkpoint_interval"] = 50_000
 cfg["experiment"]["directory"] = "/workspace/Options_In_Simulation/my_runs"
 cfg["state_preprocessor"] = RunningStandardScaler
 cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
@@ -143,7 +143,7 @@ agent = DQN(models=models,
 
 
 # configure and instantiate the RL trainer
-cfg_trainer = {"timesteps": 10000, "headless": True}
+cfg_trainer = {"timesteps": 250_000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # start training

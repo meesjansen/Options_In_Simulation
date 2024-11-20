@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=isaac-sim-job
 #SBATCH --partition=general  # Request partition. Default is 'general' 
-#SBATCH --qos=short         # Request Quality of Service. Default is 'short' (maximum run time: 4 hours)
-#SBATCH --time=01:00:00
+#SBATCH --qos=medium         # Request Quality of Service. Default is 'short' (maximum run time: 4 hours)
+#SBATCH --time=15:00:00
 #SBATCH --ntasks=1          # Request number of parallel tasks per job. Default is 1
 #SBATCH --cpus-per-task=2   # Request number of CPUs (threads) per task. Default is 1 (note: CPUs are always allocated to jobs per 2).
 #SBATCH --mem=16GB
@@ -24,7 +24,7 @@ previous=$(/usr/bin/nvidia-smi --query-accounted-apps='gpu_utilization,mem_utili
 # Load necessary modules
 module use /opt/insy/modulefiles # Use DAIC INSY software collection
 
-export APPTAINER_ROOT="/home/nfs/meesjansen/containers"
+export APPTAINER_ROOT="/winhome/meesjansen"
 export APPTAINER_NAME="isaac-sim-custom.sif"
 
 export ISAACSIM_PATH="/isaac-sim"
