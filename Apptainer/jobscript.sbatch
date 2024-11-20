@@ -12,6 +12,8 @@
 
 #SBATCH --gres=gpu:a40:1 # Request 1 GPU
 
+export WANDB_API_KEY="***REDACTED***"
+
 /usr/bin/scontrol show job -d "$SLURM_JOB_ID"  # check sbatch directives are working
 
 set -x
