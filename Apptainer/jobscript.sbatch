@@ -5,7 +5,7 @@
 #SBATCH --time=15:00:00
 #SBATCH --ntasks=1          # Request number of parallel tasks per job. Default is 1
 #SBATCH --cpus-per-task=2   # Request number of CPUs (threads) per task. Default is 1 (note: CPUs are always allocated to jobs per 2).
-#SBATCH --mem=16GB
+#SBATCH --mem=24GB
 #SBATCH --mail-type=END     # Set mail type to 'END' to receive a mail when the job finishes. 
 #SBATCH --output=isaac-sim-output_%j.log
 #SBATCH --error=isaac-sim-error_%j.log # Set name of error log. %j is the Slurm jobId
@@ -42,6 +42,7 @@ srun apptainer exec --nv \
     -C \
     --env "ACCEPT_EULA=Y" \
     --env "PRIVACY_CONSENT=Y" \
+    --env WANDB_API_KEY=$WANDB_API_KEY
     -B "/home/nfs/meesjansen/Options_In_Simulation:/workspace/Options_In_Simulation" \
     -B "$data/cache/kit:/isaac-sim/kit/cache" \
     -B "$data/cache/ov:$HOME/.cache/ov" \

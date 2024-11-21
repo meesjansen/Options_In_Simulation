@@ -308,9 +308,6 @@ class DQN(Agent):
             q_values = torch.gather(self.q_network.act({"states": sampled_states}, role="q_network")[0],
                                     dim=1, index=sampled_actions.long())
 
-
-            print("target values:", target_values)
-            print("q values:", q_values)
             
             q_network_loss = F.mse_loss(q_values, target_values)
 

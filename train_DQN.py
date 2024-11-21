@@ -81,7 +81,7 @@ for model in models.values():
 # https://skrl.readthedocs.io/en/latest/api/agents/dqn.html#configuration-and-hyperparameters
 DQN_DEFAULT_CONFIG = {
     "gradient_steps": 1,            # gradient steps
-    "batch_size": 64,               # training batch size
+    "batch_size": 32,               # training batch size
 
     "discount_factor": 0.995,        # discount factor (gamma)
     "polyak": 0.005,                # soft update hyperparameter (tau)
@@ -118,7 +118,7 @@ DQN_DEFAULT_CONFIG = {
         "wandb": True,             # whether to use Weights & Biases
         "wandb_kwargs": {"project":     "RL-Terrain-Simulation",
                         "entity":       "meesjansen-Delft Technical University",
-                        "name":         "DQN_Terrain_Rooms_r1_long",
+                        "name":         "DQN_Terrain_Rooms_r2_long",
                         "tags":         ["DQN", "Rooms"],
                         "dir":          "/workspace/Options_In_Simulation/my_runs"}    # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
     }
