@@ -189,7 +189,7 @@ class ReachingTargetTask(RLTask):
         # 8mx8m rectangle (without center line) 17x17=289 points
         y = 0.5 * torch.tensor(
             [ -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
-        )  # 25cm on each side
+        )  # 50cm on each side
         x = 0.5 * torch.tensor(
             [ -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
         )  
@@ -306,6 +306,9 @@ class ReachingTargetTask(RLTask):
       
         indices = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.reset_idx(indices)
+        base_pos, base_quat = self._robots.get_world_poses(clone=False)
+        self.last_distance_to_target = torch.norm(base_pos - self.target_pos, dim=-1)
+
         self.init_done = True
 
 
@@ -453,8 +456,8 @@ class ReachingTargetTask(RLTask):
     def post_physics_step(self):
         self.progress_buf[:] += 1
         self.episode_buf[:] += 1
+        
         ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
-
         # for i in ids:
         #     print(f"ENV{i} timesteps/MaxEpisodeLength {self.episode_buf[i]}/{self._max_episode_length}")
 
