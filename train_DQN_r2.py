@@ -25,7 +25,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.DQN_terrain import ReachingTargetTask, TASK_CFG
+from my_envs.DQN_terrain_r2 import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
@@ -109,7 +109,7 @@ DQN_DEFAULT_CONFIG = {
 
     "experiment": {
         "directory": "",            # experiment's parent directory
-        "experiment_name": "DQN_Terrain_Rooms_r1_long",      # experiment name
+        "experiment_name": "Terrains_Env_DQN_HPC",      # experiment name
         "write_interval": "auto",   # TensorBoard writing interval (timesteps)
 
         "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
@@ -118,7 +118,7 @@ DQN_DEFAULT_CONFIG = {
         "wandb": True,             # whether to use Weights & Biases
         "wandb_kwargs": {"project":     "RL-Terrain-Simulation",
                         "entity":       "meesjansen-Delft Technical University",
-                        "name":         "DQN_Terrain_Rooms_r1_long",
+                        "name":         "DQN_Terrain_Rooms_r2_long",
                         "tags":         ["DQN", "Rooms"],
                         "dir":          "/workspace/Options_In_Simulation/my_runs"}    # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
     }
