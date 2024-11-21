@@ -529,45 +529,42 @@ class ReachingTargetTask(RLTask):
 
     
     def calculate_metrics(self) -> None:
-        # Define the allowed range for linear velocity and create a similar reward term for self.base_lin_vel not exceeding a certain threshold or result in negative reward
-        allowed_forward_linear_velocity = 2.0  # m/s
-        excess_forward_linear_velocity = torch.clamp(self.base_lin_vel[:, 0] - allowed_forward_linear_velocity, min=0.0)
-          
-        # Reward forward movement
-        backward_velocity = torch.clamp(self.base_lin_vel[:, 0], max=0.0)
+        # Refresh state tensors
+        base_pos, base_quat = self._robots.get_world_poses(clone=False)
+        target_pos, _ = self._targets.get_world_poses(clone=False)
+        base_lin_vel, _ = self.refresh_body_state_tensors()
 
-        # Define the allowed range for angular acceleration
-        allowed_angular_acceleration = 5.0  # rad/s^2
-        max_excess = 3.0  # rad/s^2
+        # Compute distance to target
+        distance_to_target = torch.norm(base_pos - target_pos, dim=-1)
 
-        # Compute the absolute angular acceleration to account for both directions
-        abs_angular_acceleration = torch.abs(self.angular_acceleration)
+        # Progress reward: Negative of the change in distance
+        progress_reward = self.last_distance_to_target - distance_to_target
+        self.last_distance_to_target = distance_to_target.clone()  # Save for next step
 
-        # Calculate the excess angular acceleration beyond the allowed range
-        excess_angular_acceleration = abs_angular_acceleration - allowed_angular_acceleration
+        # Alignment reward: Align velocity with the target direction
+        target_direction = (target_pos - base_pos)
+        target_direction = target_direction / torch.norm(target_direction, dim=-1, keepdim=True)
+        velocity_alignment = torch.sum(base_lin_vel * target_direction, dim=-1)
+        alignment_reward = velocity_alignment.clamp(min=0.0)  # Only positive alignment contributes
 
-        # Clamp the excess to be between 0.0 and max_excess
-        excess_angular_acceleration = torch.clamp(excess_angular_acceleration, min=0.0, max=max_excess)
+        # Efficiency penalty: Penalize large torques
+        current_efforts = self._robots.get_applied_joint_efforts(clone=True)
+        torque_penalty = torch.sum(current_efforts**2, dim=-1)
 
-        # computed distance to target as updating reward
-        self.rew_buf = 0.1/self._computed_distance * 100.0 + 10.0 * (backward_velocity - excess_forward_linear_velocity) # - excess_angular_acceleration[:, 0] - excess_angular_acceleration[:, 1] - excess_angular_acceleration[:, 2])
-        
-        # Check fallen condition
-        self.rew_buf[self.fallen] += -200.0 # fallen
+        # Bonus for reaching the target
+        target_reached_bonus = self.target_reached.float() * 50.0
 
-        # Check out-of-bounds condition
-        self.rew_buf[self.out_of_bounds] += -200.0 # out of bounds
+        # Combine rewards and penalties
+        reward = (
+            10.0 * progress_reward +   # Scale progress
+            5.0 * alignment_reward +   # Scale alignment
+            target_reached_bonus -     # Completion bonus
+            0.01 * torque_penalty      # Small penalty for torque
+        )
 
-        # Check standing still condition
-        self.rew_buf[self.standing_still] += -200.0 # standing still
-
-        self.rew_buf[self.target_reached] += 100.0 #target reached
-
-        if self.target_reached.any():
-            print("Success")
-
-        # Ensure rewards are always larger than zero
-        self.rew_buf = torch.clamp(self.rew_buf, min=0.0)
+        # Normalize and handle resets
+        reward = torch.clip(reward, -100.0, 100.0)  # Clip rewards to avoid large gradients
+        self.rew_buf[:] = reward
 
         return self.rew_buf
 

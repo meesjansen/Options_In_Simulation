@@ -185,8 +185,6 @@ class Trainer:
                 if not self.headless:
                     self.env.render()
 
-                print("states: ", states,"actions: ", actions, "rewards: ", rewards, "next_states: ", next_states, "terminated: ", terminated, "truncated: ", truncated, "infos: ", infos)
-
                 # record the environments' transitions
                 self.agents.record_transition(states=states,
                                               actions=actions,
