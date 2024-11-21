@@ -42,7 +42,7 @@ srun apptainer exec --nv \
     -C \
     --env "ACCEPT_EULA=Y" \
     --env "PRIVACY_CONSENT=Y" \
-    --env WANDB_API_KEY=$WANDB_API_KEY
+    --env WANDB_API_KEY=$WANDB_API_KEY \
     -B "/home/nfs/meesjansen/Options_In_Simulation:/workspace/Options_In_Simulation" \
     -B "$data/cache/kit:/isaac-sim/kit/cache" \
     -B "$data/cache/ov:$HOME/.cache/ov" \
