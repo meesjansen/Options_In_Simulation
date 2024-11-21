@@ -325,11 +325,9 @@ class ReachingTargetTask(RLTask):
         if edge == 0:  # Left edge
             x_pos = -square_size_x / 2
             y_pos = random.uniform(-square_size_y / 2, square_size_y / 2)
-            quat = torch.tensor([1.0, 0.0, 0.0, 0.0], device=self.device)  # Looking right
         elif edge == 1:  # Right edge
             x_pos = square_size_x / 2
             y_pos = random.uniform(-square_size_y / 2, square_size_y / 2)
-            quat = torch.tensor([0.0, 0.0, 0.0, 1.0], device=self.device)  # Looking left
         elif edge == 2:  # Top edge
             y_pos = square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
@@ -337,7 +335,6 @@ class ReachingTargetTask(RLTask):
                 x_pos = -0.35
             else:
                 x_pos = 0.35
-            quat = torch.tensor([0.7071, 0.0, 0.0, -0.7071], device=self.device)  # Looking down
         else:  # Bottom edge
             y_pos = -square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
@@ -345,14 +342,27 @@ class ReachingTargetTask(RLTask):
                 x_pos = -0.35
             else:
                 x_pos = 0.35
-            quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking up
 
         # Z position is fixed at 0.4
         z_pos = 0.15
 
         # Store the position in a list
         pos = torch.tensor([x_pos, y_pos, z_pos], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
-        quat = quat.repeat(self.num_envs, 1)
+
+        # Generate a random rotation angle around the Z-axis
+        theta = random.uniform(-math.pi, math.pi)  # Angle between -π and π
+        half_theta = theta / 2.0
+        cos_half_theta = math.cos(half_theta)
+        sin_half_theta = math.sin(half_theta)
+
+        # Quaternion components in [w, x, y, z] format
+        w = cos_half_theta
+        x = 0.0
+        y = 0.0
+        z = sin_half_theta
+
+        # Create the quaternion tensor
+        quat = torch.tensor([w, x, y, z], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
 
         self.dof_vel[env_ids] = self.dof_init_state[4:8]
         self.dof_efforts[env_ids] = self.dof_init_state[0:4]
@@ -532,44 +542,49 @@ class ReachingTargetTask(RLTask):
 
     
     def calculate_metrics(self) -> None:
-        # Define the allowed range for linear velocity and create a similar reward term for self.base_lin_vel not exceeding a certain threshold or result in negative reward
-        allowed_forward_linear_velocity = 2.0  # m/s
-        excess_forward_linear_velocity = torch.clamp(self.base_lin_vel[:, 0] - allowed_forward_linear_velocity, min=0.0)
-          
-        # Reward forward movement
-        backward_velocity = torch.clamp(self.base_lin_vel[:, 0], max=0.0)
-
-        # Define the allowed range for angular acceleration
-        allowed_angular_acceleration = 5.0  # rad/s^2
-        max_excess = 3.0  # rad/s^2
-
-        # Compute the absolute angular acceleration to account for both directions
-        abs_angular_acceleration = torch.abs(self.angular_acceleration)
-
-        # Calculate the excess angular acceleration beyond the allowed range
-        excess_angular_acceleration = abs_angular_acceleration - allowed_angular_acceleration
-
-        # Clamp the excess to be between 0.0 and max_excess
-        excess_angular_acceleration = torch.clamp(excess_angular_acceleration, min=0.0, max=max_excess)
-
-        # computed distance to target as updating reward
-        self.rew_buf = 0.1/self._computed_distance * 100.0 + 10.0 * (backward_velocity - excess_forward_linear_velocity) # - excess_angular_acceleration[:, 0] - excess_angular_acceleration[:, 1] - excess_angular_acceleration[:, 2])
+        # Refresh state tensors
+        base_pos, base_quat = self._robots.get_world_poses(clone=False)
+        target_pos, _ = self._targets.get_world_poses(clone=False)
+        self.refresh_body_state_tensors()
         
-        # Check fallen condition
-        self.rew_buf[self.fallen] += -200.0 # fallen
 
-        # Check out-of-bounds condition
-        self.rew_buf[self.out_of_bounds] += -200.0 # out of bounds
+        # Compute distance to target
+        distance_to_target = torch.norm(base_pos - target_pos, dim=-1)
 
-        # Check standing still condition
-        self.rew_buf[self.standing_still] += -200.0 # standing still
+        # Progress reward: Negative of the change in distance
+        progress_reward = self.last_distance_to_target - distance_to_target
+        self.last_distance_to_target = distance_to_target.clone()  # Save for next step
 
-        self.rew_buf[self.target_reached] += 100.0 #target reached
+        # Alignment reward: Align velocity with the target direction
+        target_direction = (target_pos - base_pos)
+        target_direction = target_direction / torch.norm(target_direction, dim=-1, keepdim=True)
+        velocity_alignment = torch.sum(self.base_vel[:, 0:3] * target_direction, dim=-1)
+        alignment_reward = velocity_alignment.clamp(min=0.0)  # Only positive alignment contributes
 
-        if self.target_reached.any():
-            print("Success")
+        # Efficiency penalty: Penalize large torques
+        current_efforts = self._robots.get_applied_joint_efforts(clone=True)
+        torque_penalty = torch.sum(current_efforts**2, dim=-1)
 
-        
+        # Bonus for reaching the target
+        target_reached_bonus = self.target_reached.float() * 50.0
+
+        # Combine rewards and penalties
+        reward = (
+            10.0 * progress_reward +   # Scale progress
+            5.0 * alignment_reward +   # Scale alignment
+            target_reached_bonus -     # Completion bonus
+            0.01 * torque_penalty -     # Small penalty for torque
+            20.0 * self.fallen -        # Big penalty for falling
+            15.0 * self.standing_still -  # Penalty for standing still
+            10.0 * self.out_of_bounds   # Big penalty for going out of bounds
+          )
+
+        # Normalize and handle resets
+        reward = torch.clip(reward, -100.0, 100.0)  # Clip rewards to avoid large gradients
+        self.rew_buf[:] = reward
+        # Ensure rewards are always larger than zero
+        self.rew_buf = torch.clamp(self.rew_buf, min=0.0)
+
         return self.rew_buf
 
 
