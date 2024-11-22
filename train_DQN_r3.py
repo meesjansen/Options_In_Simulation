@@ -102,7 +102,7 @@ DQN_DEFAULT_CONFIG = {
     "exploration": {
         "initial_epsilon": 1.0,       # initial epsilon for epsilon-greedy exploration
         "final_epsilon": 0.1,        # final epsilon for epsilon-greedy exploration
-        "timesteps": 230_000,            # timesteps for epsilon-greedy decay
+        "timesteps": 100_000,            # timesteps for epsilon-greedy decay
     },
 
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
