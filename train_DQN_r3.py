@@ -108,7 +108,7 @@ DQN_DEFAULT_CONFIG = {
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
 
     "experiment": {
-        "directory": "/home/nfs/meesjansen/Options_In_Simulation/my_runs/r3",            # experiment's parent directory
+        "directory": "/workspace/Options_In_Simulation/my_runs/r3",            # experiment's parent directory
         "experiment_name": "DQN_Terrain_Rooms_r3_long",      # experiment name
         "write_interval": "auto",   # TensorBoard writing interval (timesteps)
 
@@ -129,7 +129,6 @@ cfg = DQN_DEFAULT_CONFIG.copy()
 # logging to TensorBoard and write checkpoints (in timesteps)
 cfg["experiment"]["write_interval"] = 500
 cfg["experiment"]["checkpoint_interval"] = 50_000
-cfg["experiment"]["directory"] = "/workspace/Options_In_Simulation/my_runs"
 cfg["state_preprocessor"] = RunningStandardScaler
 cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
 
