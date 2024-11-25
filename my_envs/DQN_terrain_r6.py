@@ -548,12 +548,10 @@ class ReachingTargetTask(RLTask):
         self.refresh_body_state_tensors()
         
         # Define parameters
-        gamma = 0.5  # Decay rate for the exponential reward
-        # Compute dense reward based on distance
-        if self._computed_distance < 0.4:  # Check if the target is reached
-            dense_reward = torch.zeros_like(self.target_reached)
-        else:
-            dense_reward = 1.0 - torch.exp(gamma * self._computed_distance)  # Exponential decay otherwise
+        gamma = 0.65  # Decay rate for the exponential reward
+        dense_reward = 1.0 - torch.exp(gamma * self._computed_distance)  # Exponential decay otherwise
+        dense_reward = torch.where(self.target_reached, torch.zeros_like(dense_reward), dense_reward)  # Set dense_reward to zero where target is reached
+
 
         # Alignment reward: Align velocity with the target direction
         target_direction = (target_pos - base_pos)
