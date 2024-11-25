@@ -100,7 +100,7 @@ DQN_DEFAULT_CONFIG = {
     "target_update_interval": 100,   # target network update interval
 
     "exploration": {
-        "initial_epsilon": 1.0,       # initial epsilon for epsilon-greedy exploration
+        "initial_epsilon": .9,       # initial epsilon for epsilon-greedy exploration
         "final_epsilon": 0.1,        # final epsilon for epsilon-greedy exploration
         "timesteps": 100_000,            # timesteps for epsilon-greedy decay
     },
@@ -142,7 +142,7 @@ agent = DQN(models=models,
 
 
 # configure and instantiate the RL trainer
-cfg_trainer = {"timesteps": 350_000, "headless": True}
+cfg_trainer = {"timesteps": 300_000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # start training
