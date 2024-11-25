@@ -43,7 +43,7 @@ env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
 # instantiate a memory as experience replay
-memory = RandomMemory(memory_size=350_000, num_envs=env.num_envs, device=device, replacement=False)
+memory = RandomMemory(memory_size=300_000, num_envs=env.num_envs, device=device, replacement=False)
 
 # instantiate the agent's models (function approximators) using the model instantiator utility.
 # DQN requires 2 models, visit its documentation for more details
