@@ -11,7 +11,7 @@ class Terrain:
         self.vertical_scale = 0.0025
         self.border_size = 20
         self.num_per_env = 1
-        self.env_length = 6.0
+        self.env_length = 8.0
         self.env_width = self.env_length
 
         self.env_rows = int(math.sqrt(num_robots))
