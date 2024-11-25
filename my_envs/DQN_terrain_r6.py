@@ -507,7 +507,7 @@ class ReachingTargetTask(RLTask):
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
         # target reached or lost
-        self.target_reached = self._computed_distance <= 0.5
+        self.target_reached = self._computed_distance <= 0.4
         self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
 
         # max episode length
@@ -547,17 +547,13 @@ class ReachingTargetTask(RLTask):
         target_pos, _ = self._targets.get_world_poses(clone=False)
         self.refresh_body_state_tensors()
         
-
-        # Compute distance to target
-        distance_to_target = torch.sqrt(torch.sum((base_pos - target_pos) ** 2, dim=-1))
-
         # Define parameters
         gamma = 0.5  # Decay rate for the exponential reward
         # Compute dense reward based on distance
-        if self.target_reached:  # Check if the target is reached
-            dense_reward = torch.zeros_like(self.target_reached, device=distance_to_target.device)
+        if self._computed_distance < 0.4:  # Check if the target is reached
+            dense_reward = torch.zeros_like(self.target_reached)
         else:
-            dense_reward = 1.0 - torch.exp(gamma * distance_to_target)  # Exponential decay otherwise
+            dense_reward = 1.0 - torch.exp(gamma * self._computed_distance)  # Exponential decay otherwise
 
         # Alignment reward: Align velocity with the target direction
         target_direction = (target_pos - base_pos)
