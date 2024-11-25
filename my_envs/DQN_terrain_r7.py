@@ -560,7 +560,7 @@ class ReachingTargetTask(RLTask):
 
         # Efficiency penalty: Penalize large torques
         current_efforts = self._robots.get_applied_joint_efforts(clone=True)
-        torque_penalty = torch.mean(current_efforts, dim=-1) # max 20 Nm per wheel
+        torque_penalty = torch.mean(torch.abs(current_efforts), dim=-1) # max 20 Nm per wheel
 
         # Bonus for reaching the target
         target_reached = self.target_reached.float() * 20.0
@@ -574,6 +574,13 @@ class ReachingTargetTask(RLTask):
             target_reached -     # Completion bonus
             crashed
         )
+        print("Dense Reward:", dense_reward)
+        print("Alignment Reward:", alignment_reward)
+        print("Torque Penalty:", torque_penalty)
+        print("Target Reached Bonus:", target_reached)
+        print("Crash Penalty:", crashed)
+        print("Total Reward before Clipping:", reward)
+
 
         # Normalize and handle resets
         reward = torch.clip(reward, -100.0, 100.0)  # Clip rewards to avoid large gradients
