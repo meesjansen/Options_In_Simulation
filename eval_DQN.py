@@ -137,7 +137,7 @@ agent = DQN(models=models,
             action_space=env.action_space,
             device=device)
 
-agent.load("./my_runs/r6/DQN_Terrain_Rooms_r6_long/checkpoints/agent_150000.pt")
+agent.load("./my_runs/r7/DQN_Terrain_Rooms_r7_long/checkpoints/agent_250000.pt")
 
 
 # configure and instantiate the RL trainer
