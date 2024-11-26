@@ -247,7 +247,7 @@ class ReachingTargetTask(RLTask):
 
     def get_robot(self):
         
-        robot_translation = torch.tensor([-2.0, -2.0, 0.0])
+        robot_translation = torch.tensor([-1.5, -1.5, 0.0])
         robot_orientation = torch.tensor([1.0, 0.0, 0.0, 0.0])
         self.robot_v101 = Robot_v10(
             prim_path=self.default_zero_env_path + "/robot_v10",
@@ -503,7 +503,7 @@ class ReachingTargetTask(RLTask):
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
         # target reached or lost
-        self.target_reached = self._computed_distance <= 0.8
+        self.target_reached = self._computed_distance <= 1.0
         self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
 
         # max episode length
@@ -571,10 +571,10 @@ class ReachingTargetTask(RLTask):
             # 0.1 * torque_penalty +     # Small penalty for torque
             crashed
         )
-        print("Dense Reward:", dense_reward)
-        print("Target Reached Bonus:", target_reached)
-        print("Crash Penalty:", crashed)
-        print("Total Reward before Clipping:", reward)
+        # print("Dense Reward:", dense_reward)
+        # print("Target Reached Bonus:", target_reached)
+        # print("Crash Penalty:", crashed)
+        # print("Total Reward before Clipping:", reward)
 
         # Normalize and handle resets
         reward = torch.clip(reward, -50.0, 50.0)  # Clip rewards to avoid large gradients
