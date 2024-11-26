@@ -115,7 +115,7 @@ DQN_DEFAULT_CONFIG = {
         "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
         "store_separately": False,          # whether to store checkpoints separately
 
-        "wandb": True,             # whether to use Weights & Biases
+        "wandb": False,             # whether to use Weights & Biases
         "wandb_kwargs": {"project":     "RL-Terrain-Simulation",
                         "entity":       "meesjansen-Delft Technical University",
                         "name":         "DQN_Terrain_Rooms_r1_long",
