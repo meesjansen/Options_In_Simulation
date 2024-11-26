@@ -123,7 +123,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 16 + 289  # features + height points
+        self._num_observations = 16 + 169  # features + height points
         self._num_actions = 11  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
@@ -142,7 +142,7 @@ class ReachingTargetTask(RLTask):
 
         self.height_points = self.init_height_points()  
         self.measured_heights = None
-        self.bounds = torch.tensor([-4.0, 4.0, -4.0, 4.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-3.0, 3.0, -3.0, 3.0], device=self.device, dtype=torch.float)
 
 
 
@@ -186,12 +186,12 @@ class ReachingTargetTask(RLTask):
         self.decimation = 4
 
     def init_height_points(self):
-        # 8mx8m rectangle (without center line) 17x17=289 points
+        # 6mx6m rectangle (without center line) 13x13=169 points
         y = 0.5 * torch.tensor(
-            [ -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
+            [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6], device=self.device, requires_grad=False
         )  # 50cm on each side
         x = 0.5 * torch.tensor(
-            [ -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
+            [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6], device=self.device, requires_grad=False
         )  
         grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
 
@@ -247,7 +247,7 @@ class ReachingTargetTask(RLTask):
 
     def get_robot(self):
         
-        robot_translation = torch.tensor([-2.0, -2.0, 0.0])
+        robot_translation = torch.tensor([0.0, 0.0, 0.0])
         robot_orientation = torch.tensor([1.0, 0.0, 0.0, 0.0])
         self.robot_v101 = Robot_v10(
             prim_path=self.default_zero_env_path + "/robot_v10",
@@ -316,8 +316,8 @@ class ReachingTargetTask(RLTask):
         indices = env_ids.to(dtype=torch.int32)
 
         # Define square boundary size with some margin to reduce instant resets
-        square_size_x = 6.5  # Total width of the square
-        square_size_y = 6.5  # Total length of the square
+        square_size_x = 4.5  # Total width of the square
+        square_size_y = 4.5  # Total length of the square
 
         edge = random.randint(0, 3)
 
@@ -325,34 +325,40 @@ class ReachingTargetTask(RLTask):
         if edge == 0:  # Left edge
             x_pos = -square_size_x / 2
             y_pos = random.uniform(-square_size_y / 2, square_size_y / 2)
-            quat = torch.tensor([1.0, 0.0, 0.0, 0.0], device=self.device)  # Looking right
         elif edge == 1:  # Right edge
             x_pos = square_size_x / 2
             y_pos = random.uniform(-square_size_y / 2, square_size_y / 2)
-            quat = torch.tensor([0.0, 0.0, 0.0, 1.0], device=self.device)  # Looking left
         elif edge == 2:  # Top edge
             y_pos = square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
-            if x_pos < 0:
-                x_pos = -0.35
-            else:
-                x_pos = 0.35
-            quat = torch.tensor([0.7071, 0.0, 0.0, -0.7071], device=self.device)  # Looking down
+            if -0.5 < x_pos < 0.5:
+                x_pos = 0.5
         else:  # Bottom edge
             y_pos = -square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
-            if x_pos < 0:
-                x_pos = -0.35
-            else:
-                x_pos = 0.35
-            quat = torch.tensor([0.7071, 0.0, 0.0, 0.7071], device=self.device)  # Looking up
+            if -0.5 < x_pos < 0.5:
+                x_pos = 0.5
 
-        # Z position is fixed at 0.4
+        # Z position is fixed at 0.15
         z_pos = 0.15
 
         # Store the position in a list
         pos = torch.tensor([x_pos, y_pos, z_pos], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
-        quat = quat.repeat(self.num_envs, 1)
+
+        # Generate a random rotation angle around the Z-axis
+        theta = random.uniform(-math.pi, math.pi)  # Angle between -π and π
+        half_theta = theta / 2.0
+        cos_half_theta = math.cos(half_theta)
+        sin_half_theta = math.sin(half_theta)
+
+        # Quaternion components in [w, x, y, z] format
+        w = cos_half_theta
+        x = 0.0
+        y = 0.0
+        z = sin_half_theta
+
+        # Create the quaternion tensor
+        quat = torch.tensor([w, x, y, z], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
 
         self.dof_vel[env_ids] = self.dof_init_state[4:8]
         self.dof_efforts[env_ids] = self.dof_init_state[0:4]
