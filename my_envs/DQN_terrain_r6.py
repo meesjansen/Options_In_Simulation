@@ -331,19 +331,15 @@ class ReachingTargetTask(RLTask):
         elif edge == 2:  # Top edge
             y_pos = square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
-            if x_pos < 0:
-                x_pos = -0.35
-            else:
-                x_pos = 0.35
+            if -0.5 < x_pos < 0.5:
+                x_pos = 0.5
         else:  # Bottom edge
-            y_pos = -square_size_y / 2
+            y_pos =5-square_size_y / 2
             x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
-            if x_pos < 0:
-                x_pos = -0.35
-            else:
-                x_pos = 0.35
+            if -0.5 < x_pos < 0.5:
+                x_pos = 0.5
 
-        # Z position is fixed at 0.4
+        # Z position is fixed at 0.15
         z_pos = 0.15
 
         # Store the position in a list
@@ -507,7 +503,7 @@ class ReachingTargetTask(RLTask):
         self._computed_distance = torch.norm(base_pos - target_pos, dim=-1)
 
         # target reached or lost
-        self.target_reached = self._computed_distance <= 0.4
+        self.target_reached = self._computed_distance <= 0.8
         self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
 
         # max episode length
@@ -581,7 +577,7 @@ class ReachingTargetTask(RLTask):
         print("Total Reward before Clipping:", reward)
 
         # Normalize and handle resets
-        reward = torch.clip(reward, -100.0, 100.0)  # Clip rewards to avoid large gradients
+        reward = torch.clip(reward, -50.0, 50.0)  # Clip rewards to avoid large gradients
         self.rew_buf[:] = reward
 
         return self.rew_buf
