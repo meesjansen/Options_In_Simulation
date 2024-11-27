@@ -28,7 +28,7 @@ OPTION_CRITIC_DEFAULT_CONFIG = {
     "epsilon_decay": 10000,
     "temperature": 1.0,
     "gradient_clip": 1.0,
-    "device": "cpu",
+    "device": "gpu",
     "experiment": {
         "directory": "",
         "experiment_name": "OptionCritic",
@@ -72,6 +72,7 @@ class OptionCriticAgent(Agent):
         self.policy = self.models.get("policy")
         if self.policy is None:
             raise ValueError("The 'policy' model is required for the OptionCriticAgent.")
+        
 
         # Move the model to the specified device
         self.policy.to(self.device)
@@ -116,6 +117,8 @@ class OptionCriticAgent(Agent):
 
         # Ensure that the memory has the necessary tensors
         if self.memory is not None:
+            self.memory.create_tensor(name="states", size=self.observation_space, dtype=torch.float32)
+            self.memory.create_tensor(name="next_states", size=self.observation_space, dtype=torch.float32)
             self.memory.create_tensor("options", torch.long)
             self.memory.create_tensor("logits_options", torch.float)
             self.memory.create_tensor("terminations", torch.float)
@@ -164,10 +167,12 @@ class OptionCriticAgent(Agent):
     def pre_interaction(self, timestep: int, timesteps: int) -> None:
         # Optionally update the agent before interaction
         if timestep % self.update_interval == 0 and timestep > 0:
-            self.update(timestep, timesteps)
+            self._update(timestep, timesteps)
 
     def post_interaction(self, timestep: int, timesteps: int) -> None:
         # Optionally update the agent after interaction
+        if timestep % self.update_interval == 0 and timestep > 0:
+            self._update(timestep, timesteps)
         # Update epsilon for exploration
         self.epsilon = max(self.epsilon_final, self.epsilon - (self.epsilon_start - self.epsilon_final) / self.epsilon_decay)
 
