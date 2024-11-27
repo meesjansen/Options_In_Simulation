@@ -27,11 +27,11 @@ class Policy(CategoricalMixin, Model):
 
         self.net = nn.Sequential(
             nn.Linear(self.num_observations, 256),
-            nn.ELU(),
+            nn.ReLU(),
             nn.Linear(256, 128),
-            nn.ELU(),
+            nn.ReLU(),
             nn.Linear(128, 64),
-            nn.ELU(),
+            nn.ReLU(),
             nn.Linear(64, self.num_actions)  # Output logits for discrete actions
         )
 
