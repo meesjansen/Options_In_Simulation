@@ -108,8 +108,8 @@ DQN_DEFAULT_CONFIG = {
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/r7_v2",            # experiment's parent directory
-        "experiment_name": "DQN_Terrain_Rooms_r7_v2_long",      # experiment name
+        "directory": "/workspace/Options_In_Simulation/my_runs/NN",            # experiment's parent directory
+        "experiment_name": "DQN_Terrain_Rooms_r7_NN",      # experiment name
         "write_interval": "auto",   # TensorBoard writing interval (timesteps)
 
         "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
@@ -118,8 +118,8 @@ DQN_DEFAULT_CONFIG = {
         "wandb": True,             # whether to use Weights & Biases
         "wandb_kwargs": {"project":     "RL-Terrain-Simulation",
                         "entity":       "meesjansen-Delft Technical University",
-                        "name":         "DQN_Terrain_Rooms_r7_v2_long",
-                        "tags":         ["DQN", "Rooms"],
+                        "name":         "DQN_Terrain_Rooms_r7_NN",
+                        "tags":         ["DQN", "Rooms", "NN"],
                         "dir":          "/workspace/Options_In_Simulation/my_runs"}    # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
     }
 }
