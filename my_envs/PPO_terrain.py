@@ -127,8 +127,8 @@ class ReachingTargetTask(RLTask):
         self._num_actions = 11  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
-            low=float("-inf"),  # Replace with a specific lower bound if needed
-            high=float("inf"),  # Replace with a specific upper bound if needed
+            low=float("-50"),  # Replace with a specific lower bound if needed
+            high=float("50"),  # Replace with a specific upper bound if needed
             shape=(self.num_observations,),
             dtype=np.float32  # Ensure data type is consistent
         )
