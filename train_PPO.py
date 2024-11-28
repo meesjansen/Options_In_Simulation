@@ -59,7 +59,7 @@ class Value(DeterministicMixin, Model):
 # instantiate and configure the task
 headless = True  # set headless to False for rendering
 
-env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
+env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
 from my_envs.PPO_terrain import ReachingTargetTask, TASK_CFG
