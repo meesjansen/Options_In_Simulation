@@ -127,8 +127,8 @@ class ReachingTargetTask(RLTask):
         self._num_actions = 11  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
-            low=float("-inf"),  # Replace with a specific lower bound if needed
-            high=float("inf"),  # Replace with a specific upper bound if needed
+            low=-50.0,  # Replace with a specific lower bound if needed
+            high=50.0,  # Replace with a specific upper bound if needed
             shape=(self.num_observations,),
             dtype=np.float32  # Ensure data type is consistent
         )
@@ -413,10 +413,10 @@ class ReachingTargetTask(RLTask):
             return
         
         # # If we are still in the first two steps, don't apply any action but advance the simulation
-        if self.common_step_counter < 2:
-            self.common_step_counter += 1
-            SimulationContext.step(self.world, render=False)  # Advance simulation
-            return 
+        # if self.common_step_counter < 2:
+        #     self.common_step_counter += 1
+        #     SimulationContext.step(self.world, render=False)  # Advance simulation
+        #     return 
 
         # There are 12 possible actions
         action_torque_vectors = torch.tensor([
@@ -564,11 +564,11 @@ class ReachingTargetTask(RLTask):
 
         # Combine rewards and penalties
         reward = (
-            dense_reward +   # Scale progress
-            alignment_reward -   # Scale alignment
-            0.1 * torque_penalty +     # Small penalty for torque
-            target_reached -     # Completion bonus
-            crashed
+            dense_reward +   # Scale progress ~ -15 to 0
+            alignment_reward -   # Scale alignment ~ 0 to 5
+            0.1 * torque_penalty +     # Small penalty for torque ~ 0 to 2
+            target_reached -     # Completion bonus +20
+            crashed     # Penalty for crashing -20
         )
         # print("Dense Reward:", dense_reward)
         # print("Alignment Reward:", alignment_reward)
