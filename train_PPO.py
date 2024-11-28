@@ -4,7 +4,7 @@ import torch.nn as nn
 # Import the skrl components to build the RL system
 from skrl.models.torch import Model, GaussianMixin, DeterministicMixin
 from skrl.memories.torch import RandomMemory
-from skrl.agents.torch.ppo import PPO, PPO_DEFAULT_CONFIG
+# from skrl.agents.torch.ppo import PPO, PPO_DEFAULT_CONFIG
 from skrl.resources.schedulers.torch import KLAdaptiveRL
 from skrl.resources.preprocessors.torch import RunningStandardScaler
 from skrl.trainers.torch import SequentialTrainer
@@ -13,9 +13,11 @@ from skrl.envs.torch import wrap_env
 from skrl.utils import set_seed
 
 from my_models.categorical import CategoricalMixin
+from my_agents.ppo import PPO, PPO_DEFAULT_CONFIG
 
 # set the seed for reproducibility
 seed = set_seed(42)
+
 torch.autograd.set_detect_anomaly(True)
 
 
