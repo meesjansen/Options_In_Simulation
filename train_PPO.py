@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 # Import the skrl components to build the RL system
-from skrl.models.torch import Model, GaussianMixin, DeterministicMixin, CategoricalMixin
+from skrl.models.torch import Model, GaussianMixin, DeterministicMixin
 from skrl.memories.torch import RandomMemory
 from skrl.agents.torch.ppo import PPO, PPO_DEFAULT_CONFIG
 from skrl.resources.schedulers.torch import KLAdaptiveRL
@@ -12,9 +12,11 @@ from skrl.utils.omniverse_isaacgym_utils import get_env_instance
 from skrl.envs.torch import wrap_env
 from skrl.utils import set_seed
 
+from my_models.categorical import CategoricalMixin
 
 # set the seed for reproducibility
 seed = set_seed(42)
+torch.autograd.set_detect_anomaly(True)
 
 
 # Define the models (stochastic and deterministic models) for the agent using helper mixin.
@@ -125,7 +127,7 @@ cfg_ppo["experiment"]["experiment_name"] = "PPO_Terrain_Rooms"  # experiment nam
 cfg_ppo["experiment"]["write_interval"] = "auto"  # TensorBoard writing interval (timesteps)
 cfg_ppo["experiment"]["checkpoint_interval"] = "auto"  # interval for checkpoints (timesteps)
 cfg_ppo["experiment"]["store_separately"] = False  # whether to store checkpoints separately
-cfg_ppo["experiment"]["wandb"] = True  # whether to use Weights & Biases
+cfg_ppo["experiment"]["wandb"] = False  # whether to use Weights & Biases
 cfg_ppo["experiment"]["wandb_kwargs"]["project"] =  "RL-Terrain-Simulation"
 cfg_ppo["experiment"]["wandb_kwargs"]["entity"] = "meesjansen-Delft Technical University"
 cfg_ppo["experiment"]["wandb_kwargs"]["name"] = "PPO_Terrain_Rooms"
