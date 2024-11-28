@@ -47,11 +47,11 @@ class Value(DeterministicMixin, Model):
         DeterministicMixin.__init__(self, clip_actions)
 
         self.net = nn.Sequential(nn.Linear(self.num_observations, 256),
-                                 nn.ELU(),
+                                 nn.ReLU(),
                                  nn.Linear(256, 128),
-                                 nn.ELU(),
+                                 nn.ReLU(),
                                  nn.Linear(128, 64),
-                                 nn.ELU(),
+                                 nn.ReLU(),
                                  nn.Linear(64, 1))
 
     def compute(self, inputs, role):
@@ -105,8 +105,8 @@ cfg_ppo["lambda"] = 0.95
 cfg_ppo["learning_rate"] = 5e-4
 cfg_ppo["learning_rate_scheduler"] = KLAdaptiveRL
 cfg_ppo["learning_rate_scheduler_kwargs"] = {"kl_threshold": 0.008}
-cfg_ppo["random_timesteps"] = 0
-cfg_ppo["learning_starts"] = 0
+cfg_ppo["random_timesteps"] = 1000
+cfg_ppo["learning_starts"] = cfg_ppo["rollouts"] * env.num_envs * 4
 cfg_ppo["grad_norm_clip"] = 1.0
 cfg_ppo["ratio_clip"] = 0.2
 cfg_ppo["value_clip"] = 0.2
@@ -115,7 +115,7 @@ cfg_ppo["entropy_loss_scale"] = 0.0
 cfg_ppo["value_loss_scale"] = 2.0
 cfg_ppo["kl_threshold"] = 0
 cfg_ppo["state_preprocessor"] = RunningStandardScaler
-cfg_ppo["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
+cfg_ppo["state_preprocessor_kwargs"] = {"size": env.observation_space.shape[0], "device": device}
 cfg_ppo["value_preprocessor"] = RunningStandardScaler
 cfg_ppo["value_preprocessor_kwargs"] = {"size": 1, "device": device}
 # logging to TensorBoard and write checkpoints each 32 and 250 timesteps respectively
