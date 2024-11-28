@@ -36,6 +36,7 @@ class Policy(CategoricalMixin, Model):
         )
 
     def compute(self, inputs, role):
+        print(inputs["states"].shape)
         return self.net(inputs["states"]), {}
 
 class Value(DeterministicMixin, Model):
