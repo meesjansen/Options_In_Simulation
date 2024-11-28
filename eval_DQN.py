@@ -25,7 +25,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.DQN_terrain_r6 import ReachingTargetTask, TASK_CFG
+from my_envs.DQN_terrain_r7 import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
@@ -137,7 +137,7 @@ agent = DQN(models=models,
             action_space=env.action_space,
             device=device)
 
-agent.load("./my_runs/r6/DQN_Terrain_Rooms_r6_long/checkpoints/agent_300000.pt")
+agent.load("./my_runs/r7/DQN_Terrain_Rooms_r7_long/checkpoints/agent_250000.pt")
 
 
 # configure and instantiate the RL trainer
