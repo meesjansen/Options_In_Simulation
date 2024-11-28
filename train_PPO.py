@@ -115,7 +115,7 @@ cfg_ppo["entropy_loss_scale"] = 0.0
 cfg_ppo["value_loss_scale"] = 2.0
 cfg_ppo["kl_threshold"] = 0
 cfg_ppo["state_preprocessor"] = RunningStandardScaler
-cfg_ppo["state_preprocessor_kwargs"] = {"size": env.observation_space.shape[0], "device": device}
+cfg_ppo["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
 cfg_ppo["value_preprocessor"] = RunningStandardScaler
 cfg_ppo["value_preprocessor_kwargs"] = {"size": 1, "device": device}
 # logging to TensorBoard and write checkpoints each 32 and 250 timesteps respectively
