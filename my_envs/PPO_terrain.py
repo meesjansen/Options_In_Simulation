@@ -592,12 +592,12 @@ class ReachingTargetTask(RLTask):
             target_reached -     # Completion bonus
             crashed
         )
-        # print("Dense Reward:", dense_reward)
-        # print("Alignment Reward:", alignment_reward)
-        # print("Torque Penalty:", torque_penalty)
-        # print("Target Reached Bonus:", target_reached)
-        # print("Crash Penalty:", crashed)
-        # print("Total Reward before Clipping:", reward)
+        print("Dense Reward:", dense_reward)
+        print("Alignment Reward:", alignment_reward)
+        print("Torque Penalty * 0.25 :", torque_penalty)
+        print("Target Reached Bonus:", target_reached)
+        print("Crash Penalty:", crashed)
+        print("Total Reward before Clipping:", reward)
 
 
         # Normalize and handle resets
