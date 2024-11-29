@@ -99,7 +99,7 @@ models_ppo["value"] = Value(env.observation_space, env.action_space, device)
 # Only modify some of the default configuration, visit its documentation to see all the options
 # https://skrl.readthedocs.io/en/latest/modules/skrl.agents.ppo.html#configuration-and-hyperparameters
 cfg_ppo = PPO_DEFAULT_CONFIG.copy()
-cfg_ppo["rollouts"] = 16
+cfg_ppo["rollouts"] = 20
 cfg_ppo["learning_epochs"] = 8
 cfg_ppo["mini_batches"] = 8
 cfg_ppo["discount_factor"] = 0.99
