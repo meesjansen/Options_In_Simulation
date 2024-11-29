@@ -550,10 +550,10 @@ class ReachingTargetTask(RLTask):
 
         # Alignment reward
         # Extract quaternion components
-        w = self.base_orientation[:, 0]
-        x = self.base_orientation[:, 1]
-        y = self.base_orientation[:, 2]
-        z = self.base_orientation[:, 3]
+        w = self.base_quat[:, 0]
+        x = self.base_quat[:, 1]
+        y = self.base_quat[:, 2]
+        z = self.base_quat[:, 3]
 
         # Compute yaw angle from quaternion
         yaw = torch.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y ** 2 + z ** 2))
