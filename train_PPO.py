@@ -83,8 +83,8 @@ env = wrap_env(env, "omniverse-isaacgym")
 
 device = env.device
 
-# instantiate a memory as experience replay
-memory = RandomMemory(memory_size=320, num_envs=env.num_envs, device=device, replacement=False)
+# instantiate a memory as experience replay 202
+memory = RandomMemory(memory_size=20, num_envs=env.num_envs, device=device, replacement=False)
 
 
 # Instantiate the agent's models (function approximators).
