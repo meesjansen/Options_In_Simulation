@@ -592,14 +592,7 @@ class ReachingTargetTask(RLTask):
             target_reached -     # Completion bonus
             crashed
         )
-        print("Dense Reward:", dense_reward)
-        print("Alignment Reward:", alignment_reward)
-        print("Torque Penalty * 0.25 :", torque_penalty)
-        print("Target Reached Bonus:", target_reached)
-        print("Crash Penalty:", crashed)
-        print("Total Reward before Clipping:", reward)
-
-
+      
         # Normalize and handle resets
         reward = torch.clip(reward, -50.0, 50.0)  # Clip rewards to avoid large gradients
         self.rew_buf[:] = reward
