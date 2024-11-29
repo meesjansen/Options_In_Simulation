@@ -83,10 +83,7 @@ class CategoricalMixin:
         """
         # map from states/observations to normalized probabilities or unnormalized log probabilities
         net_output, outputs = self.compute(inputs, role)
-        print("input disctionary for states: ", inputs)
-        print("net_output .compute logits: ", net_output)
-        print("outputs .compute: ", outputs)
-        print(f"Batch size at timestep: {inputs['states'].size(0)}")
+       
 
         # unnormalized log probabilities
         if self._unnormalized_log_prob:
