@@ -548,11 +548,33 @@ class ReachingTargetTask(RLTask):
         dense_reward = 1.0 - torch.exp(gamma * self._computed_distance)  # Exponential decay otherwise
         dense_reward = torch.where(self.target_reached, torch.zeros_like(dense_reward), dense_reward)  # Set dense_reward to zero where target is reached
 
-        # Alignment reward: Align velocity with the target direction
-        target_direction = (target_pos - base_pos)
-        target_direction = target_direction / torch.norm(target_direction, dim=-1, keepdim=True)
-        velocity_alignment = torch.sum(self.base_vel[:, 0:3] * target_direction, dim=-1)
-        alignment_reward = velocity_alignment.clamp(min=0.0, max=5.0)  # Only positive alignment contributes, with a maximum value
+        # Alignment reward
+        # Extract quaternion components
+        w = self.base_orientation[:, 0]
+        x = self.base_orientation[:, 1]
+        y = self.base_orientation[:, 2]
+        z = self.base_orientation[:, 3]
+
+        # Compute yaw angle from quaternion
+        yaw = torch.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y ** 2 + z ** 2))
+
+        # Compute target direction vector (only x and y components)
+        target_direction = target_pos - base_pos  # Shape: [batch_size, 3]
+        target_direction_x = target_direction[:, 0]
+        target_direction_y = target_direction[:, 1]
+
+        # Compute target angle from target direction
+        target_angle = torch.atan2(target_direction_y, target_direction_x)
+
+        # Compute angle difference and wrap to [0, π]
+        angle_difference = torch.abs(target_angle - yaw)
+        angle_difference = torch.fmod(angle_difference, 2 * np.pi)
+        angle_difference = torch.where(angle_difference > np.pi, 2 * np.pi - angle_difference, angle_difference)
+
+        # Compute the alignment reward
+        k = 2.5  # Curvature parameter for the exponential function
+        alignment_reward = (1.0 - torch.exp(k * (angle_difference / np.pi)))
+        alignment_reward = alignment_reward.clamp(min=-15.0, max=0.0)
 
         # Efficiency penalty: Penalize large torques
         current_efforts = self._robots.get_applied_joint_efforts(clone=True)
@@ -566,7 +588,7 @@ class ReachingTargetTask(RLTask):
         reward = (
             dense_reward +   # Scale progress
             alignment_reward -   # Scale alignment
-            0.1 * torque_penalty +     # Small penalty for torque
+            0.25 * torque_penalty +     # Small penalty for torque
             target_reached -     # Completion bonus
             crashed
         )

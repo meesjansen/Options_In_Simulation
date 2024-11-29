@@ -18,12 +18,10 @@ from my_agents.ppo import PPO, PPO_DEFAULT_CONFIG
 # set the seed for reproducibility
 seed = set_seed(42)
 
-torch.autograd.set_detect_anomaly(True)
-
 
 # Define the models (stochastic and deterministic models) for the agent using helper mixin.
-# - Policy: takes as input the environment's observation/state and returns an action
-# - Value: takes the state as input and provides a value to guide the policy
+# - Policy: takes as input the environment's observation/state and returns action probs
+# - Value: takes the state as input and provides a state value to guide the policy
 class Policy(CategoricalMixin, Model):
     def __init__(self, observation_space, action_space, device):
         Model.__init__(self, observation_space, action_space, device)
@@ -40,7 +38,6 @@ class Policy(CategoricalMixin, Model):
         )
 
     def compute(self, inputs, role):
-        print(inputs["states"].shape)
         return self.net(inputs["states"]), {}
 
 class Value(DeterministicMixin, Model):
@@ -145,7 +142,7 @@ agent = PPO(models=models_ppo,
 
 
 # Configure and instantiate the RL trainer
-cfg_trainer = {"timesteps": 100000, "headless": True}
+cfg_trainer = {"timesteps": 250000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # start training

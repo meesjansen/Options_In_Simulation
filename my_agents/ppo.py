@@ -256,12 +256,7 @@ class PPO(Agent):
         :type timesteps: int
         """
 
-        print(f"Shapes: States={states.shape}, Actions={actions.shape}, Rewards={rewards.shape}, Next States={next_states.shape}, "
-              f"Terminated={terminated.shape}, Truncated={truncated.shape}, Infos={type(infos)}, Timestep={timestep}, Timesteps={timesteps}")
-        print(f"Adding to Memory: States={states}, Actions={actions}, Rewards={rewards}, Next States={next_states}, "
-              f"Terminated={terminated}, Truncated={truncated}, Infos={infos}, Timestep={timestep}, Timesteps={timesteps}")
-
-
+        
         super().record_transition(states, actions, rewards, next_states, terminated, truncated, infos, timestep, timesteps)
 
         if self.memory is not None:
