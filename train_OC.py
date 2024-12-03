@@ -33,7 +33,7 @@ class OptionCriticModel(Model):
             nn.ReLU()
         )
 
-        # Critic for options
+        # Critic for options DQN
         self.q_layer = nn.Linear(hidden_size, num_options)
         
         # Termination functions
@@ -49,10 +49,10 @@ class OptionCriticModel(Model):
         features = self.feature_extractor(states)  # Shape: [batch_size, 64]
 
         # Compute option-values
-        q_options = self.q_layer(features)  # Shape: [batch_size, num_options]
+        so_values = self.q_layer(features)  # Shape: [batch_size, num_options]
 
         # Compute termination probabilities
-        beta = torch.sigmoid(self.termination_layer(features))  # Shape: [batch_size, num_options]
+        beta_termin = torch.sigmoid(self.termination_layer(features))  # Shape: [batch_size, num_options]
 
         # Compute intra-option policies
         logits_intra = []
@@ -74,9 +74,12 @@ class OptionCriticModel(Model):
         log_probs_intra = torch.stack(log_probs_intra, dim=1)
 
 
-        return {"q_options": q_options, "beta": beta, "intra_option_pi": pi_intra, "intra_option_logits": logits_intra, "intra_option_log_probs": log_probs_intra}
+        return {"q_options": so_values, "beta": beta_termin, "intra_option_pi": pi_intra}
 
     def act(self, inputs, role):
+        
+        
+        
         outputs = self.compute(inputs, role)
         q_options = outputs["q_options"][0]  # Shape: [num_options]
         beta = outputs["beta"][0]  # Shape: [num_options]
@@ -101,13 +104,10 @@ class OptionCriticModel(Model):
             self.current_option_terminated = False
 
         # Intra-option policy
-        pi = pi_intra[option]
-        if self.testing:
-            action = torch.argmax(pi).unsqueeze(0)
-        else:
-            action = torch.multinomial(pi, num_samples=1)
+        actions = pi_intra[option]
+        
 
-        return {"actions": action, "option": torch.tensor([option])}
+        return actions # log prob? check act gaussian mix and deterministic mixin
 
     def reset(self):
         self.current_option = None
@@ -142,12 +142,12 @@ memory = RandomMemory(memory_size=300_000, num_envs=env.num_envs, device=device,
 # Instantiate the model
 num_options = 5
 model = OptionCriticModel(env.observation_space, env.action_space, num_options).to(device)
-target_model = OptionCriticModel(env.observation_space, env.action_space, num_options).to(device)
-target_model.load_state_dict(model.state_dict())
+prime_model = OptionCriticModel(env.observation_space, env.action_space, num_options).to(device)
+prime_model.load_state_dict(model.state_dict())
 
 models = {
-    "model": model,
-    "target_model": target_model
+    "Option-Critic": model,
+    "Prime Option-Critic": prime_model
 }
 
 # Agent configuration
@@ -159,7 +159,18 @@ cfg_agent = {
     "num_options": num_options,
     "target_update_frequency": 1000,
     "start_learning": 1000,
-    "gradient_clipping": 1.0
+    "gradient_clipping": 1.0,
+    "experiment": {
+        "directory": "",            # experiment's parent directory
+        "experiment_name": "",      # experiment name
+        "write_interval": "auto",   # TensorBoard writing interval (timesteps)
+
+        "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
+        "store_separately": False,          # whether to store checkpoints separately
+
+        "wandb": False,             # whether to use Weights & Biases
+        "wandb_kwargs": {}          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
+    }
 }
 
 # Create the agent

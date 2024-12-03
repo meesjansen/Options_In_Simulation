@@ -1,32 +1,51 @@
 from typing import Union, Tuple, Dict, Any, Optional, Mapping
 
 import copy
+import math
 import gym
 import gymnasium
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
 
+
+from skrl import config, logger
 from skrl.memories.torch import Memory
 from skrl.models.torch import Model
 from skrl.agents.torch import Agent
+from skrl.resources.schedulers.torch import KLAdaptiveLR
 
 
-
-
-
-
+# [start-config-dict-torch]
 OPTION_CRITIC_DEFAULT_CONFIG = {
+    "learning_rate": 5e-3,
+
     "discount_factor": 0.99,
-    "learning_rate": 1e-3,
-    "batch_size": 64,
-    "update_interval": 1,
-    "target_update_interval": 100,
-    "epsilon_start": 1.0,
-    "epsilon_final": 0.1,
-    "epsilon_decay": 10000,
+
+    "exploration": {
+        "initial_epsilon": 1.0,       # initial epsilon for epsilon-greedy exploration
+        "final_epsilon": 0.1,        # final epsilon for epsilon-greedy exploration
+        "timesteps": 10000,            # timesteps for epsilon-greedy decay
+    },
+
+    "random_timesteps": 0,          # random exploration steps
+    "learning_starts": 0,           # learning starts after this many steps
+
+    "batch_size": 32,
+    "update_interval": 4,
+    "prime_update_interval": 100,
+
+    "state_preprocessor": None,             # state preprocessor class (see skrl.resources.preprocessors)
+    "state_preprocessor_kwargs": {},        # state preprocessor's kwargs (e.g. {"size": env.observation_space})
+
+    "entropy_reg_coefficient": 0.01,
+    "termination_reg_coefficient": 0.01,
+
+    "num_options": 5,
     "temperature": 1.0,
+
     "gradient_clip": 1.0,
     "device": "gpu",
     "experiment": {
@@ -39,7 +58,7 @@ OPTION_CRITIC_DEFAULT_CONFIG = {
         "wandb_kwargs": {}
     }
 }
-
+# [end-config-dict-torch]
 
 
 class OptionCriticAgent(Agent):
@@ -50,9 +69,9 @@ class OptionCriticAgent(Agent):
                  action_space: Optional[Union[int, Tuple[int], gym.Space, gymnasium.Space]] = None,
                  device: Optional[Union[str, torch.device]] = None,
                  cfg: Optional[dict] = None) -> None:
-        """Option-Critic Agent
+        """Option-Critic (OC) agent implementation.
         
-        :param models: Dictionary containing the "policy" model.
+        :param models: Dictionary containing the "OC" model and prime model for DQN.
         :param memory: Experience replay memory.
         :param observation_space: Observation space.
         :param action_space: Action space.
@@ -68,29 +87,48 @@ class OptionCriticAgent(Agent):
                          device=device,
                          cfg=_cfg)
 
-        # Retrieve the policy model
-        self.policy = self.models.get("policy")
-        if self.policy is None:
-            raise ValueError("The 'policy' model is required for the OptionCriticAgent.")
+        # Retrieve the OC model and prime for Option selection
+        self.OC_NN = self.models.get("Options-Critic")
+        self.prime_NN = self.models.get("Prime Option-Critic")
+               
+        # Add the models to checkpoint modules
+        self.checkpoint_modules["Option-Critic"] = self.OC_NN
+        self.checkpoint_modules["Prime Option-Critic"] = self.prime_NN
+
+        # broadcast models' parameters in distributed runs
+        if config.torch.is_distributed:
+            logger.info(f"Broadcasting models' parameters")
+            if self.OC_NN is not None:
+                self.OC_NN.broadcast_parameters()
+                if self.prime_NN is not None and self.policy is not self.prime_NN:
+                    self.prime_NN.broadcast_parameters()
         
-
-        # Move the model to the specified device
-        self.policy.to(self.device)
-
-        # Add the policy model to checkpoint modules
-        self.checkpoint_modules["policy"] = self.policy
-
         # Parse configurations
-        self.discount_factor = self.cfg["discount_factor"]
         self.learning_rate = self.cfg["learning_rate"]
+
+        self.discount_factor = self.cfg["discount_factor"]
+
+        self._exploration_initial_epsilon = self.cfg["exploration"]["initial_epsilon"]
+        self._exploration_final_epsilon = self.cfg["exploration"]["final_epsilon"]
+        self._exploration_timesteps = self.cfg["exploration"]["timesteps"]
+
+        self._random_timesteps = self.cfg["random_timesteps"]
+        self._learning_starts = self.cfg["learning_starts"]
+
         self.batch_size = self.cfg["batch_size"]
         self.update_interval = self.cfg["update_interval"]
-        self.target_update_interval = self.cfg["target_update_interval"]
-        self.epsilon_start = self.cfg["epsilon_start"]
-        self.epsilon_final = self.cfg["epsilon_final"]
-        self.epsilon_decay = self.cfg["epsilon_decay"]
+        self.prime_update_interval = self.cfg["prime_update_interval"]
+
+        self._state_preprocessor = self.cfg["state_preprocessor"]
+
+        self.entropy_reg_coefficient = self.cfg["entropy_reg_coefficient"]
+        self.termination_reg_coefficient = self.cfg["termination_reg_coefficient"]
+
+        self.num_options = self.cfg["num_options"]
         self.temperature = self.cfg["temperature"]
+
         self.gradient_clip = self.cfg["gradient_clip"]
+        self.device = self.cfg["device"]
 
         # Initialize epsilon for exploration
         self.epsilon = self.epsilon_start
@@ -99,13 +137,12 @@ class OptionCriticAgent(Agent):
         # Optimizer
         self.optimizer = optim.Adam(self.policy.parameters(), lr=self.learning_rate)
 
-        # Target network for stability
-        self.target_policy = copy.deepcopy(self.policy)
-        self.target_policy.to(self.device)
-        self.checkpoint_modules["target_policy"] = self.target_policy
-
-        # Loss function
-        self.mse_loss = nn.MSELoss()
+        # set up preprocessors
+        if self._state_preprocessor:
+            self._state_preprocessor = self._state_preprocessor(**self.cfg["state_preprocessor_kwargs"])
+            self.checkpoint_modules["state_preprocessor"] = self._state_preprocessor
+        else:
+            self._state_preprocessor = self._empty_preprocessor
 
         # Initialize temporary variables
         self._current_option = None
@@ -119,26 +156,47 @@ class OptionCriticAgent(Agent):
         if self.memory is not None:
             self.memory.create_tensor(name="states", size=self.observation_space, dtype=torch.float32)
             self.memory.create_tensor(name="next_states", size=self.observation_space, dtype=torch.float32)
-            self.memory.create_tensor("options", torch.long)
-            self.memory.create_tensor("logits_options", torch.float)
-            self.memory.create_tensor("terminations", torch.float)
-            self.memory.create_tensor("beta", torch.float)
+            self.memory.create_tensor(name="options", size=1, dtype=torch.int32)
+            self.memory.create_tensor(name="s_values", size=1, dtype=torch.float32)
+            self.memory.create_tensor(name="so_values", size=1, dtype=torch.float32)
+            self.memory.create_tensor(name="advantages_DQN", size=1, dtype=torch.float32)
+            self.memory.create_tensor(name="actions", size=self.action_space, dtype=torch.float32) # check this for size
+            self.memory.create_tensor(name="rewards", size=1, dtype=torch.float32)
+            self.memory.create_tensor(name="terminated", size=1, dtype=torch.bool)
+            self.memory.create_tensor(name="log_prob", size=1, dtype=torch.float32)
+            self.memory.create_tensor(name="a_values", size=1, dtype=torch.float32)
+            self.memory.create_tensor(name="returns", size=1, dtype=torch.float32)
+            self.memory.create_tensor(name="advantages_termin", size=1, dtype=torch.float32)
+            self.memory.create_tensor(name="beta_termin", size=self.num_options, dtype=torch.float)
+
 
     def act(self, states: torch.Tensor, timestep: int, timesteps: int) -> torch.Tensor:
-        # Prepare inputs
-        inputs = {"states": states.to(self.device)}
+        
 
-        # Call the policy's act method
-        outputs = self.policy.act(inputs, role="policy")
+        states = self._state_preprocessor(states)
 
-        # Retrieve actions and options
-        actions = outputs["actions"]
-        options = outputs["option"]
+        if not self._exploration_timesteps:
+            return torch.argmax(self.OC_NN.act({"states": states}, role="Option-Critic")[0], dim=1, keepdim=True), None, None
 
-        # Store the current option for use in training
-        self._current_option = options
+        # sample random actions
+        actions = self.OC_NN.random_act({"states": states}, role="Option-Critic")[0]
+        if timestep < self._random_timesteps:
+            return actions, None, None
 
-        return actions
+        # sample actions with epsilon-greedy policy
+        epsilon = self._exploration_final_epsilon + (self._exploration_initial_epsilon - self._exploration_final_epsilon) \
+                * math.exp(-1.0 * timestep / self._exploration_timesteps)
+
+        indexes = (torch.rand(states.shape[0], device=self.device) >= epsilon).nonzero().view(-1)
+        if indexes.numel():
+            actions[indexes] = torch.argmax(self.q_network.act({"states": states[indexes]}, role="q_network")[0], dim=1, keepdim=True)
+
+        
+        # record epsilonup
+        self.track_data("Exploration / Exploration epsilon", epsilon)
+
+        return actions, None, None
+
 
     def record_transition(self,
                           states: torch.Tensor,
@@ -165,21 +223,21 @@ class OptionCriticAgent(Agent):
                                      "options": options})
 
     def pre_interaction(self, timestep: int, timesteps: int) -> None:
-        # Optionally update the agent before interaction
-        if timestep % self.update_interval == 0 and timestep > 0:
-            self._update(timestep, timesteps)
+        """Callback called before the interaction with the environment
+
+        :param timestep: Current timestep
+        :type timestep: int
+        :param timesteps: Number of timesteps
+        :type timesteps: int
+        """
+        pass
 
     def post_interaction(self, timestep: int, timesteps: int) -> None:
         # Optionally update the agent after interaction
         if timestep % self.update_interval == 0 and timestep > 0:
             self._update(timestep, timesteps)
-        # Update epsilon for exploration
-        self.epsilon = max(self.epsilon_final, self.epsilon - (self.epsilon_start - self.epsilon_final) / self.epsilon_decay)
-
-        # Update target network
-        if timestep % self.target_update_interval == 0:
-            self.target_policy.load_state_dict(self.policy.state_dict())
-
+        
+        # write tracking data and checkpoints
         super().post_interaction(timestep, timesteps)
 
     def _update(self, timestep: int, timesteps: int) -> None:
