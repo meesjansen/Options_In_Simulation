@@ -137,11 +137,11 @@ agent = DQN(models=models,
             action_space=env.action_space,
             device=device)
 
-agent.load("./my_runs/r7_v3/DQN_Terrain_Rooms_r7_v3_long/checkpoints/agent_250000.pt")
+agent.load("./my_runs/r7_v4/DQN_Terrain_Rooms_r7_v4_long/checkpoints/agent_250000.pt")
 
 
 # configure and instantiate the RL trainer
-cfg_trainer = {"timesteps": 5000, "headless": True}
+cfg_trainer = {"timesteps": 50000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # start training
