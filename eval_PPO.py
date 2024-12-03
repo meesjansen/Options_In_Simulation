@@ -137,11 +137,7 @@ PPO_DEFAULT_CONFIG = {
         "store_separately": False,          # whether to store checkpoints separately
 
         "wandb": True,             # whether to use Weights & Biases
-        "wandb_kwargs": {"project":     "RL-Terrain-Simulation",
-                        "entity":       "meesjansen-Delft Technical University",
-                        "name":         "PPO_Rooms_r7_1M",
-                        "tags":         ["PPO", "Rooms"],
-                        "dir":          "/workspace/Options_In_Simulation/my_runs"}    # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
+        "wandb_kwargs": {}    # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
                     }          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
     }
 
