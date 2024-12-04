@@ -457,7 +457,7 @@ class ReachingTargetTask(RLTask):
         # Apply the actions to the robot
         scaled_actions = self.min_torque + (actions + 1) * 0.5 * (self.max_torque - self.min_torque)
 
-        updated_efforts = torch.clip(scaled_actions, -10.0, 10.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
+        updated_efforts = torch.clip(scaled_actions, -15.0, 15.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
 
         if self.world.is_playing():
             self._robots.set_joint_efforts(updated_efforts) 
