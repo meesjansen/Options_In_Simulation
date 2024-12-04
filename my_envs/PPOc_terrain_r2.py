@@ -577,7 +577,7 @@ class ReachingTargetTask(RLTask):
 
         # Combine rewards and penalties
         reward = (
-            dense_reward +   # Scale progress
+            # dense_reward +   # Scale progress
             alignment_reward -   # Scale alignment
             0.25 * torque_penalty +     # Small penalty for torque
             target_reached -     # Completion bonus
