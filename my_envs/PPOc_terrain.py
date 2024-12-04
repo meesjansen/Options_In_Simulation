@@ -471,6 +471,9 @@ class ReachingTargetTask(RLTask):
             if self.world.is_playing():
                 self._robots.set_joint_efforts(updated_efforts) 
                 SimulationContext.step(self.world, render=False)
+
+        print(self._robots.get_applied_joint_efforts(clone=True)) # [:, np.array([1,2,4,5])]
+
                 
         
     def post_physics_step(self):
@@ -616,6 +619,8 @@ class ReachingTargetTask(RLTask):
             dim=-1,
         )
         
+        print(self.obs_buf)
+
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     
 
