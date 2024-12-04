@@ -22,23 +22,24 @@ seed = set_seed(42)
 # Define the models (stochastic and deterministic models) for the agent using helper mixin.
 # - Policy: takes as input the environment's observation/state and returns action probs
 # - Value: takes the state as input and provides a state value to guide the policy
-class Policy(CategoricalMixin, Model):
-    def __init__(self, observation_space, action_space, device):
+class Policy(GaussianMixin, Model):
+    def __init__(self, observation_space, action_space, device, clip_actions=False,
+                 clip_log_std=True, min_log_std=-20, max_log_std=2):
         Model.__init__(self, observation_space, action_space, device)
-        CategoricalMixin.__init__(self)
+        GaussianMixin.__init__(self, clip_actions, clip_log_std, min_log_std, max_log_std)
 
-        self.net = nn.Sequential(
-            nn.Linear(self.num_observations, 256),
-            nn.ReLU(),
-            nn.Linear(256, 128),
-            nn.ReLU(),
-            nn.Linear(128, 64),
-            nn.ReLU(),
-            nn.Linear(64, self.num_actions)  # Output logits for discrete actions
-        )
+        self.net = nn.Sequential(nn.Linear(self.num_observations, 256),
+                                 nn.ReLU(),
+                                 nn.Linear(256, 128),
+                                 nn.ReLU(),
+                                 nn.Linear(128, 64),
+                                 nn.ReLU(),
+                                 nn.Linear(64, self.num_actions))
+        self.log_std_parameter = nn.Parameter(torch.zeros(self.num_actions))
 
     def compute(self, inputs, role):
-        return self.net(inputs["states"]), {}
+        return self.net(inputs["states"]), self.log_std_parameter, {}
+
 
 class Value(DeterministicMixin, Model):
     def __init__(self, observation_space, action_space, device, clip_actions=False):
@@ -63,7 +64,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.PPOd_terrain import ReachingTargetTask, TASK_CFG
+from my_envs.PPOc_terrain import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
@@ -129,8 +130,8 @@ PPO_DEFAULT_CONFIG = {
     "time_limit_bootstrap": False,  # bootstrap at timeout termination (episode truncation)
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/PPO_1M",            # experiment's parent directory
-        "experiment_name": "PPO_r7_1M",      # experiment name
+        "directory": "/workspace/Options_In_Simulation/my_runs/PPO",            # experiment's parent directory
+        "experiment_name": "PPO_r7",      # experiment name
         "write_interval": "auto",   # TensorBoard writing interval (timesteps)
 
         "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
@@ -139,7 +140,7 @@ PPO_DEFAULT_CONFIG = {
         "wandb": True,             # whether to use Weights & Biases
         "wandb_kwargs": {"project":     "RL-Terrain-Simulation",
                         "entity":       "meesjansen-Delft Technical University",
-                        "name":         "PPO_Rooms_r7_1M",
+                        "name":         "PPO_Rooms_r7",
                         "tags":         ["PPO", "Rooms"],
                         "dir":          "/workspace/Options_In_Simulation/my_runs"}    # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
                     }          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
@@ -181,7 +182,7 @@ agent = PPO(models=models_ppo,
 
 
 # Configure and instantiate the RL trainer
-cfg_trainer = {"timesteps": 1_000_000, "headless": True}
+cfg_trainer = {"timesteps": 250000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # start training
