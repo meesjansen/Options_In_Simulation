@@ -129,8 +129,8 @@ PPO_DEFAULT_CONFIG = {
     "time_limit_bootstrap": False,  # bootstrap at timeout termination (episode truncation)
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/PPO",            # experiment's parent directory
-        "experiment_name": "PPO_r7",      # experiment name
+        "directory": "/workspace/Options_In_Simulation/my_runs/PPOd",            # experiment's parent directory
+        "experiment_name": "PPOd",      # experiment name
         "write_interval": "auto",   # TensorBoard writing interval (timesteps)
 
         "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
@@ -139,7 +139,7 @@ PPO_DEFAULT_CONFIG = {
         "wandb": True,             # whether to use Weights & Biases
         "wandb_kwargs": {"project":     "RL-Terrain-Simulation",
                         "entity":       "meesjansen-Delft Technical University",
-                        "name":         "PPO_Rooms_r7",
+                        "name":         "PPOd_Rooms",
                         "tags":         ["PPO", "Rooms"],
                         "dir":          "/workspace/Options_In_Simulation/my_runs"}    # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
                     }          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
@@ -181,7 +181,7 @@ agent = PPO(models=models_ppo,
 
 
 # Configure and instantiate the RL trainer
-cfg_trainer = {"timesteps": 250000, "headless": True}
+cfg_trainer = {"timesteps": 500000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # start training
