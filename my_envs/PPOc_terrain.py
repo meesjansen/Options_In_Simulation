@@ -606,7 +606,7 @@ class ReachingTargetTask(RLTask):
         self.obs_buf = torch.cat(
             (
                 self.base_vel[:, 0:3],
-                self.angle_difference,
+                self.angle_difference.unsqueeze(-1),
                 # self.base_vel[:, 3:6],
                 self.projected_gravity,
                 delta_pos,
