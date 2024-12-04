@@ -1,0 +1,35 @@
+# Header
+Bootstrap: docker
+From: nvcr.io/nvidia/isaac-sim:4.0.0
+
+
+%post
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
+        git &&\
+    apt-get clean && rm -rf /var/lib/apt/lists/* 
+
+    mkdir -p /workspace && cd /workspace
+
+    # Clone and install the omniisaacgymenvs repo
+    git clone https://github.com/NVIDIA-Omniverse/OmniIsaacGymEnvs.git /workspace/OmniIsaacGymEnvs
+    cd /workspace/OmniIsaacGymEnvs
+    /isaac-sim/python.sh -m pip install -e .
+
+    cd /workspace
+    # Clone and install skrl
+    git clone https://github.com/Toni-SM/skrl.git /workspace/skrl
+    cd /workspace/skrl
+    /isaac-sim/python.sh -m pip install .[torch]
+
+    cd /workspace
+    # Clone your custom repo (Options_In_Simulation)
+    git clone https://github.com/meesjansen/Options_In_Simulation.git /workspace/Options_In_Simulation
+    cd /workspace/Options_In_Simulation
+    /isaac-sim/python.sh -m pip install -e .
+
+%runscript
+    # This section allows you to define a default behavior when the container is run
+    echo "Training can commence..."
+    cd /workspace/Options_In_Simulation
+    # /isaac-sim/python.sh train_DQN.py
