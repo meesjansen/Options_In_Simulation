@@ -611,7 +611,7 @@ class ReachingTargetTask(RLTask):
                 self.base_vel[:, 0:2],
                 self.angle_difference.unsqueeze(-1),
                 # self.base_vel[:, 3:6],
-                self.projected_gravity[:, 2],
+                self.projected_gravity[:, 2].unsqueeze(-1),
                 delta_pos[:, 0:2],
                 # heights,
                 # current_efforts 
