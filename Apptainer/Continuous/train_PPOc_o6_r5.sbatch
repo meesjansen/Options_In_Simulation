@@ -2,7 +2,7 @@
 #SBATCH --job-name=isaac-sim-job
 #SBATCH --partition=general  # Request partition. Default is 'general' 
 #SBATCH --qos=medium         # Request Quality of Service. Default is 'short' (maximum run time: 4 hours)
-#SBATCH --time=9:00:00
+#SBATCH --time=20:00:00
 #SBATCH --ntasks=1          # Request number of parallel tasks per job. Default is 1
 #SBATCH --cpus-per-task=2   # Request number of CPUs (threads) per task. Default is 1 (note: CPUs are always allocated to jobs per 2).
 #SBATCH --mem=24GB
@@ -52,7 +52,7 @@ srun apptainer exec --nv \
     -B "$data/logs:$HOME/.nvidia-omniverse/logs" \
     -B "$data/data:$HOME/.local/share/ov/data" \
     -B "$data/documents:$HOME/Documents" \
-    $APPTAINER_ROOT/$APPTAINER_NAME /isaac-sim/python.sh /workspace/Options_In_Simulation/train_PPOc_o6_r4.py
+    $APPTAINER_ROOT/$APPTAINER_NAME /isaac-sim/python.sh /workspace/Options_In_Simulation/train_PPOc_o6_r5.py
 
 
 # Measure GPU usage of your job (result)
