@@ -123,7 +123,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 6  # features (+ height points)
+        self._num_observations = 5  # features (+ height points)
         self._num_actions = 4  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
