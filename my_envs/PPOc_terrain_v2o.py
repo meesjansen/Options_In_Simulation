@@ -47,7 +47,7 @@ TASK_CFG = {"test": False,
                                                 },
                             "dofInitTorques": [0.0, 0.0, 0.0, 0.0],
                             "dofInitVelocities": [0.0, 0.0, 0.0, 0.0],
-                            "TerrainType": "rooms", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed                         
+                            "TerrainType": "custom", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed                         
 
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
@@ -123,7 +123,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 10  # features (+ height points)
+        self._num_observations = 10 + 169 # features (+ height points)
         self._num_actions = 4  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
@@ -275,7 +275,7 @@ class ReachingTargetTask(RLTask):
     def get_target(self):
         target = DynamicSphere(prim_path=self.default_zero_env_path + "/target",
                                name="target",
-                               radius=0.1,
+                               radius=0.05,
                                color=torch.tensor([1, 0, 0]))
         self._sim_config.apply_articulation_settings("target", get_prim_at_path(target.prim_path), self._sim_config.parse_actor_config("target"))
         target.set_collision_enabled(False)
@@ -308,9 +308,9 @@ class ReachingTargetTask(RLTask):
         )
         self.num_dof = self._robots.num_dof 
         self.env_origins = self.terrain_origins.view(-1, 3)[:self.num_envs]
-        self._target_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
-        self._target_pos += torch.tensor([0.5, 2.0, 0.1], dtype=torch.float, device=self.device)
-        self._target_pos[:, :2] += self.env_origins[:, :2]
+        self.target_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
+        self.target_pos += torch.tensor([0.0, 0.0, 0.26], dtype=torch.float, device=self.device)
+        self.target_pos[:, :2] += self.env_origins[:, :2]
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
         self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
         self.dof_efforts = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
@@ -318,7 +318,7 @@ class ReachingTargetTask(RLTask):
         indices = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.reset_idx(indices)
         base_pos, base_quat = self._robots.get_world_poses(clone=False)
-        self.last_distance_to_target = torch.norm(base_pos - self._target_pos, dim=-1)
+        self.last_distance_to_target = torch.norm(base_pos - self.target_pos, dim=-1)
 
         self.init_done = True
 
@@ -330,7 +330,7 @@ class ReachingTargetTask(RLTask):
         square_size_x = 4.5  # Total width of the square
         square_size_y = 4.5  # Total length of the square
 
-        edge = random.randint(0, 3)
+        edge = random.randint(0, 1)
 
         # Generate x and y positions based on the edge
         if edge == 0:  # Left edge
@@ -339,16 +339,16 @@ class ReachingTargetTask(RLTask):
         elif edge == 1:  # Right edge
             x_pos = square_size_x / 2
             y_pos = random.uniform(-square_size_y / 2, square_size_y / 2)
-        elif edge == 2:  # Top edge
-            y_pos = square_size_y / 2
-            x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
-            if -0.5 < x_pos < 0.5:
-                x_pos = 0.5
-        else:  # Bottom edge
-            y_pos = -square_size_y / 2
-            x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
-            if -0.5 < x_pos < 0.5:
-                x_pos = 0.5
+        # elif edge == 2:  # Top edge
+        #     y_pos = square_size_y / 2
+        #     x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
+        #     if -0.5 < x_pos < 0.5:
+        #         x_pos = 0.5
+        # else:  # Bottom edge
+        #     y_pos = -square_size_y / 2
+        #     x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
+        #     if -0.5 < x_pos < 0.5:
+        #         x_pos = 0.5
 
         # Z position is fixed at 0.15
         z_pos = 0.15
@@ -380,7 +380,7 @@ class ReachingTargetTask(RLTask):
         self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
 
-        self._targets.set_world_poses(positions=self._target_pos[env_ids].clone(), indices=indices)
+        self._targets.set_world_poses(positions=self.target_pos[env_ids].clone(), indices=indices)
 
         self.last_actions[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
@@ -578,7 +578,7 @@ class ReachingTargetTask(RLTask):
         reward = (
             dense_reward    # Scale progress
             + alignment_reward    # Scale alignment
-            - torque_penalty      # Small penalty for torque
+            - 0.5 * torque_penalty      # Small penalty for torque
             + target_reached      # Completion bonus
             - crashed
         )
@@ -612,7 +612,7 @@ class ReachingTargetTask(RLTask):
                 # self.base_vel[:, 3:6],
                 self.projected_gravity,
                 delta_pos,
-                # heights,
+                heights,
                 # current_efforts 
             ),
             dim=-1,
