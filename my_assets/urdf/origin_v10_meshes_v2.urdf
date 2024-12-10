@@ -2,6 +2,19 @@
 
 <robot name="avular_origin_v10">
 
+  <!-- Define custom materials -->
+  <material name="anthracite">
+    <color rgba="0.2 0.2 0.2 1"/>
+  </material>
+
+  <material name="rubber_gray">
+    <color rgba="0.1 0.1 0.1 1"/>
+  </material>
+
+  <material name="dark_red">
+    <color rgba="0.8 0.0 0.0 1"/>
+  </material>
+  
   <material name="black">
     <color rgba="0 0 0 1"/>
   </material>
@@ -23,7 +36,7 @@
         <mesh filename="../meshes/body.obj"
           scale="0.001 0.001 0.001" />
       </geometry>
-      <material name="black"/>
+      <material name="anthracite"/>
     </visual>
   </link>
 
@@ -45,7 +58,7 @@
         <mesh filename="../meshes/wheel.obj"
           scale="0.001 0.001 0.001" />
       </geometry>
-      <material name="black"/>
+      <material name="rubber_gray"/>
     </visual>
   </link>
 
@@ -66,7 +79,7 @@
         <mesh filename="../meshes/wheel.obj"
           scale="0.001 0.001 0.001" />
       </geometry>
-      <material name="black"/>
+      <material name="rubber_gray"/>
     </visual>
   </link>
 
@@ -87,6 +100,7 @@
         <mesh filename="../meshes/wheel.obj"
           scale="0.001 0.001 0.001" />
       </geometry>
+      <material name="rubber_gray"/>
     </visual>
   </link>
 
@@ -107,6 +121,7 @@
         <mesh filename="../meshes/wheel.obj"
           scale="0.001 0.001 0.001" />
       </geometry>
+      <material name="rubber_gray"/>
     </visual>
   </link>
 
@@ -127,6 +142,7 @@
       <geometry>
         <box size="0.1 0.1 0.1"/>
       </geometry>
+      <material name="dark_red"/>
     </collision>
   </link>
 
