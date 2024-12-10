@@ -36,7 +36,7 @@
         <mesh filename="../meshes/body.obj"
           scale="0.001 0.001 0.001" />
       </geometry>
-      <material name="anthracite"/>
+      <material name="black"/>
     </visual>
   </link>
 
