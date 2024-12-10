@@ -46,7 +46,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.PPOc_terrain_o6_r4 import ReachingTargetTask, TASK_CFG
+from my_envs.PPOc_terrain_r4_v2 import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
@@ -112,8 +112,8 @@ PPO_DEFAULT_CONFIG = {
     "time_limit_bootstrap": False,  # bootstrap at timeout termination (episode truncation)
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/PPO_1M",            # experiment's parent directory
-        "experiment_name": "PPO_r7_1M",      # experiment name
+        "directory": "",            # experiment's parent directory
+        "experiment_name": "",      # experiment name
         "write_interval": "auto",   # TensorBoard writing interval (timesteps)
 
         "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
@@ -158,7 +158,7 @@ agent = PPO(models=models_ppo,
             action_space=env.action_space,
             device=device)
 
-agent.load("./my_runs/PPOc_06_r4/PPOc_o6_r4/checkpoints/agent_150000.pt")
+agent.load("./my_runs/PPOc_r4_v2/PPOc_r4_v2/checkpoints/agent_500000.pt")
 
 
 
