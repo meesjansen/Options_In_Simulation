@@ -275,7 +275,7 @@ class ReachingTargetTask(RLTask):
     def get_target(self):
         target = DynamicSphere(prim_path=self.default_zero_env_path + "/target",
                                name="target",
-                               radius=0.05,
+                               radius=0.1,
                                color=torch.tensor([1, 0, 0]))
         self._sim_config.apply_articulation_settings("target", get_prim_at_path(target.prim_path), self._sim_config.parse_actor_config("target"))
         target.set_collision_enabled(False)
@@ -309,7 +309,7 @@ class ReachingTargetTask(RLTask):
         self.num_dof = self._robots.num_dof 
         self.env_origins = self.terrain_origins.view(-1, 3)[:self.num_envs]
         self._target_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
-        self._target_pos += torch.tensor([0.3, 2.0, 0.1], dtype=torch.float, device=self.device)
+        self._target_pos += torch.tensor([0.5, 0.5, 0.1], dtype=torch.float, device=self.device)
         self._target_pos[:, :2] += self.env_origins[:, :2]
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
         self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
@@ -379,6 +379,8 @@ class ReachingTargetTask(RLTask):
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
         self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
+
+        print("target pos", self._target_pos[env_ids].clone())
 
         self._targets.set_world_poses(positions=self._target_pos[env_ids].clone(), indices=indices)
 
