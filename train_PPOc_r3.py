@@ -68,7 +68,7 @@ from my_envs.PPOc_terrain_r3 import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 144
+TASK_CFG["task"]["env"]["numEnvs"] = 36
 
 
 sim_config = SimConfig(TASK_CFG)
