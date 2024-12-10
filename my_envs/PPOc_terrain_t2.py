@@ -309,7 +309,7 @@ class ReachingTargetTask(RLTask):
         self.num_dof = self._robots.num_dof 
         self.env_origins = self.terrain_origins.view(-1, 3)[:self.num_envs]
         self._target_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
-        self._target_pos += torch.tensor([0.5, 0.5, 0.1], dtype=torch.float, device=self.device)
+        self._target_pos += torch.tensor([0.5, 1.5, 0.1], dtype=torch.float, device=self.device)
         self._target_pos[:, :2] += self.env_origins[:, :2]
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
         self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
