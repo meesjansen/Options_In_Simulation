@@ -133,8 +133,8 @@ class ReachingTargetTask(RLTask):
             dtype=np.float32  # Ensure data type is consistent
         )
         # Define the action range for torques
-        self.min_torque = -15.0  # Example min torque value
-        self.max_torque = 15.0   # Example max torque value
+        self.min_torque = -10.0  # Example min torque value
+        self.max_torque = 10.0   # Example max torque value
 
 
         # Using the shape argument
@@ -457,7 +457,7 @@ class ReachingTargetTask(RLTask):
         # Apply the actions to the robot
         scaled_actions = self.min_torque + (actions + 1) * 0.5 * (self.max_torque - self.min_torque)
 
-        updated_efforts = torch.clip(scaled_actions, -15.0, 15.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
+        updated_efforts = torch.clip(scaled_actions, -10.0, 10.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
 
         if self.world.is_playing():
             self._robots.set_joint_efforts(updated_efforts) 
@@ -513,7 +513,7 @@ class ReachingTargetTask(RLTask):
         self._computed_distance = torch.norm(self.base_pos - self.target_pos, dim=-1)
 
         # target reached or lost
-        self.target_reached = self._computed_distance <= 0.6
+        self.target_reached = self._computed_distance <= 0.3
         self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
 
         # max episode length
@@ -553,9 +553,8 @@ class ReachingTargetTask(RLTask):
 
     
     def calculate_metrics(self) -> None:
-                
         # Define parameters
-        gamma = 0.25  # Decay rate for the exponential reward
+        gamma = 0.1  # Decay rate for the exponential reward
         dense_reward = 1.0 - torch.exp(gamma * self._computed_distance)  # Exponential decay otherwise
         dense_reward = torch.where(self.target_reached, torch.zeros_like(dense_reward), dense_reward)  # Set dense_reward to zero where target is reached
 
@@ -563,7 +562,7 @@ class ReachingTargetTask(RLTask):
         angle_difference = torch.where(self.angle_difference > np.pi, 2 * np.pi - self.angle_difference, self.angle_difference)
 
         # Compute the alignment reward
-        k = 2.5  # Curvature parameter for the exponential function
+        k = 1.25  # Curvature parameter for the exponential function
         alignment_reward = (1.0 - torch.exp(k * (angle_difference / np.pi)))
         alignment_reward = alignment_reward.clamp(min=-15.0, max=0.0)
 
@@ -572,21 +571,19 @@ class ReachingTargetTask(RLTask):
         torque_penalty = torch.mean(torch.abs(current_efforts), dim=-1) # max 20 Nm per wheel
 
         # Bonus for reaching the target
-        target_reached = self.target_reached.float() * 200.0
-        crashed = self.fallen.float() * 200.0   # Penalty for crashing
-        out_of_bounds = self.out_of_bounds.float() * 200.0
+        target_reached = self.target_reached.float() * 1000.0
+        crashed = self.fallen.float() * 1000.0   # Penalty for crashing
 
         # Combine rewards and penalties
         reward = (
             dense_reward    # Scale progress
-            # + 0.5 * alignment_reward    # Scale alignment
-            - 0.1 * torque_penalty      # Small penalty for torque
+            + alignment_reward    # Scale alignment
+            - 0.5 * torque_penalty      # Small penalty for torque
             + target_reached      # Completion bonus
             - crashed
-            - out_of_bounds
         )
       
-        
+        # Normalize and handle resets
         # reward = torch.clip(reward, -50.0, 25.0)  # Clip rewards to avoid large gradients
         self.rew_buf[:] = reward
 
