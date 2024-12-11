@@ -612,6 +612,8 @@ class ReachingTargetTask(RLTask):
         # Current joint efforts
         current_efforts = self._robots.get_applied_joint_efforts(clone=True)
 
+        print(f"heigth_data: {height_data}")
+
         # Construct the final observation vector:
         # Example ordering: [base_lin_vel(3), angle_diff(1), projected_gravity(3), delta_pos(3), height_data(1014)]
         # total = 3 + 1 + 3 + 3 + 1014 = 1024 for example
