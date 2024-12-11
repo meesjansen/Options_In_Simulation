@@ -124,7 +124,7 @@ class ReachingTargetTask(RLTask):
 
         # observation and action space DQN
         self.num_height_points = 13*13  # matches what is done in init_height_points
-        self._num_observations = 10 + (self.num_height_points * 6)
+        self._num_observations = 13 + (self.num_height_points * 6)
         self._num_actions = 4
         
         self.observation_space = spaces.Box(
