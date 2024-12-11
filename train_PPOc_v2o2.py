@@ -24,12 +24,9 @@ class Policy(GaussianMixin, Model):
         Model.__init__(self, observation_space, action_space, device)
         GaussianMixin.__init__(self, clip_actions, clip_log_std, min_log_std, max_log_std)
 
-        # According to the ENV code, total obs = 13 (non-height) + 1014 (height)
-        # height map: 13x13=169 points, each with 6 channels = 169*6=1014
-        # So total obs: 13 (other) + 1014 (height) = 1027
-        # Ensure these match your environment's actual obs definition.
+        
         self.num_observations = self.num_observations
-        self.num_height_channels = 6
+        self.num_height_channels = 4
         self.height_size = 13
         self.num_height_features = self.height_size * self.height_size * self.num_height_channels
         self.num_other_features = self.num_observations - self.num_height_features
@@ -48,10 +45,13 @@ class Policy(GaussianMixin, Model):
 
         # MLP for other features + CNN output
         self.fc = nn.Sequential(
-            nn.Linear(self.num_other_features + 128, 64),
-            nn.ReLU(),
-            nn.Linear(64, self.num_actions)
-        )
+            nn.Linear(self.num_other_features + 128, 256),
+                                 nn.ReLU(),
+                                 nn.Linear(256, 128),
+                                 nn.ReLU(),
+                                 nn.Linear(128, 64),
+                                 nn.ReLU(),
+                                 nn.Linear(64, self.num_actions))
 
         self.log_std_parameter = nn.Parameter(torch.zeros(self.num_actions))
 
@@ -90,11 +90,13 @@ class Value(DeterministicMixin, Model):
         )
 
         self.fc = nn.Sequential(
-            nn.Linear(self.num_other_features + 128, 64),
-            nn.ReLU(),
-            nn.Linear(64, 1)
-        )
-
+            nn.Linear(self.num_other_features + 128, 256),
+                                 nn.ReLU(),
+                                 nn.Linear(256, 128),
+                                 nn.ReLU(),
+                                 nn.Linear(128, 64),
+                                 nn.ReLU(),
+                                 nn.Linear(64, 1))
     def compute(self, inputs, role):
         x = inputs["states"]
         other_features = x[:, :self.num_other_features]
@@ -203,6 +205,6 @@ agent = PPO(models=models_ppo,
             action_space=env.action_space,
             device=device)
 
-cfg_trainer = {"timesteps": 500000, "headless": True}
+cfg_trainer = {"timesteps": 1000000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 trainer.train()
