@@ -652,7 +652,7 @@ class ReachingTargetTask(RLTask):
         if env_ids is None:
             env_ids = torch.arange(self.num_envs, device=self.device)
 
-        points_2d = self.height_points[env_ids, :, 0:2] + self.base_pos[env_ids, 0:3].unsqueeze(1)
+        points_2d = self.height_points[env_ids, :, 0:2] + self.env_origins[env_ids, 0:2].unsqueeze(1)
         points_2d[..., :2] += self.terrain.border_size
         points_idx = (points_2d[..., :2] / self.terrain.horizontal_scale).long()
 
