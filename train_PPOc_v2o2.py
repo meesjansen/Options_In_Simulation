@@ -72,7 +72,7 @@ class Value(DeterministicMixin, Model):
         DeterministicMixin.__init__(self, clip_actions)
 
         self.num_observations = self.num_observations
-        self.num_height_channels = 6
+        self.num_height_channels = 4
         self.height_size = 13
         self.num_height_features = self.height_size * self.height_size * self.num_height_channels
         self.num_other_features = self.num_observations - self.num_height_features
