@@ -15,9 +15,9 @@ from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.simulation_context import SimulationContext
 
-from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10
+from my_robots.origin_v10_meshes import AvularOrigin_v10 as Robot_v10
 from my_utils.terrain_generator_v2 import Terrain, add_terrain_to_stage
-from my_utils.terrain_utils import get_axis_params
+from my_utils.terrain_utils_v2 import get_axis_params
 
 TASK_CFG = {"test": False,
             "device_id": 0,
@@ -442,7 +442,7 @@ class ReachingTargetTask(RLTask):
 
         reward = (
             dense_reward
-            + alignment_reward
+            # + alignment_reward
             - 0.5 * torque_penalty
             + target_reached
             - crashed
@@ -463,6 +463,8 @@ class ReachingTargetTask(RLTask):
         full_points[:, :, 5] = Nz
 
         height_data = full_points[:, :, -4:].reshape(self.num_envs, -1)
+
+        print(height_data)
 
         self.refresh_body_state_tensors()
         delta_pos = self.target_pos - self.base_pos
