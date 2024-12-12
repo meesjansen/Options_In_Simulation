@@ -200,6 +200,7 @@ class ReachingTargetTask(RLTask):
         print(light_prim)
         light_prim = self._stage.GetPrimAtPath("/World/defaultDistantLight")
         print(light_prim.GetTypeName())
+        light_prim.CreateColorAttr()
         light_prim.GetColorAttr().Set(Gf.Vec3f(1.0, 1.0, 1.0))
 
         self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robot_view")
