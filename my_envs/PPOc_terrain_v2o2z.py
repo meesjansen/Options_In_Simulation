@@ -6,7 +6,7 @@ import random
 import math
 from pxr import Gf, UsdGeom, UsdLux
 
-from omniisaacgymenvs.tasks.base.rl_task import RLTask
+from my_envs.rl_task import RLTask 
 
 from omni.isaac.core.prims import RigidPrimView
 from omni.isaac.core.articulations import ArticulationView
@@ -196,11 +196,11 @@ class ReachingTargetTask(RLTask):
 
         super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"], copy_from_source=True)
 
-        light_prim = self._stage.GetPrimAtPath("/World/defaultDistantLight").IsValid()
-        print(light_prim)
-        light_prim = self._stage.GetPrimAtPath("/World/defaultDistantLight")
-        print(light_prim.GetTypeName())
-        light_prim.CreateColorAttr().Set(Gf.Vec3f(1.0, 1.0, 1.0))
+        # light_prim = self._stage.GetPrimAtPath("/World/defaultDistantLight").IsValid()
+        # print(light_prim)
+        # light_prim = self._stage.GetPrimAtPath("/World/defaultDistantLight")
+        # print(light_prim.GetTypeName())
+        # light_prim.CreateColorAttr().Set(Gf.Vec3f(1.0, 1.0, 1.0))
 
         self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robot_view")
         scene.add(self._robots)
