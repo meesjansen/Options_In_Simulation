@@ -209,16 +209,16 @@ class ReachingTargetTask(RLTask):
         warm_yellow_orange = Gf.Vec3f(255/255, 174/255, 66/255)  # Normalize RGB values to [0,1] range
         light.CreateColorAttr(warm_yellow_orange)
 
-        light_1 = create_prim(
-                    "/World/Light_2",
-                    "SphereLight",
-                    position=np.array([1.0, 1.0, 1.0]),
-                    attributes={
-                        "inputs:radius": 0.01,
-                        "inputs:intensity": 5e3,
-                        "inputs:color": (1.0, 0.0, 1.0)
-                    }
-                )
+        # light_1 = create_prim(
+        #             "/World/Light_2",
+        #             "SphereLight",
+        #             position=np.array([1.0, 1.0, 1.0]),
+        #             attributes={
+        #                 "inputs:radius": 0.01,
+        #                 "inputs:intensity": 5e3,
+        #                 "inputs:color": (1.0, 0.0, 1.0)
+        #             }
+        #         )
 
     def get_terrain(self, create_mesh=True):
         self.env_origins = torch.zeros((self.num_envs, 3), device=self.device, requires_grad=False)
