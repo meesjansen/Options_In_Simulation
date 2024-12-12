@@ -197,6 +197,8 @@ class ReachingTargetTask(RLTask):
         super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"], copy_from_source=True)
 
         light_prim = self._stage.GetPrimAtPath("/World/defaultDistantLight").IsValid()
+        print(light_prim)
+        light_prim = self._stage.GetPrimAtPath("/World/defaultDistantLight")
         print(light_prim.GetTypeName())
         light_prim.CreateColorAttr().Set(Gf.Vec3f(1.0, 1.0, 1.0))
 
