@@ -4,7 +4,7 @@
 
   <!-- Define custom materials -->
   <material name="anthracite">
-    <color rgba="0.2 0.2 0.2 1"/>
+    <color rgba="0.01 0.01 0.01 1"/>
   </material>
 
   <material name="rubber_gray">
@@ -36,7 +36,7 @@
         <mesh filename="../meshes/body.obj"
           scale="0.001 0.001 0.001" />
       </geometry>
-      <material name="black"/>
+      <material name="anthracite"/>
     </visual>
   </link>
 
@@ -136,13 +136,13 @@
         <mesh filename="../meshes/ouster.obj"
           scale="0.001 0.001 0.001" />
       </geometry>
+      <material name="dark_red"/>
     </visual>
     <collision name="ouster_base">
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
       <geometry>
         <box size="0.1 0.1 0.1"/>
       </geometry>
-      <material name="dark_red"/>
     </collision>
   </link>
 
