@@ -210,7 +210,7 @@ class ReachingTargetTask(RLTask):
         light.CreateColorAttr(warm_yellow_orange)
 
         light_1 = create_prim(
-                    "/World/Light_1",
+                    "/World/Light_2",
                     "SphereLight",
                     position=np.array([1.0, 1.0, 1.0]),
                     attributes={
