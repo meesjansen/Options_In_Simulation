@@ -4,6 +4,7 @@ import gym
 from gym import spaces
 import random
 import math
+from pxr import Gf, UsdGeom, UsdLux
 
 from omniisaacgymenvs.tasks.base.rl_task import RLTask
 
@@ -11,13 +12,13 @@ from omni.isaac.core.prims import RigidPrimView
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.objects import DynamicSphere
 from omni.isaac.core.utils.torch.rotations import quat_rotate_inverse, quat_apply
-from omni.isaac.core.utils.prims import get_prim_at_path
+from omni.isaac.core.utils.prims import get_prim_at_path, create_prim
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.simulation_context import SimulationContext
 
-from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10
+from my_robots.origin_v10_meshes import AvularOrigin_v10 as Robot_v10
 from my_utils.terrain_generator_v2 import Terrain, add_terrain_to_stage
-from my_utils.terrain_utils import get_axis_params
+from my_utils.terrain_utils_v2 import get_axis_params
 
 TASK_CFG = {"test": False,
             "device_id": 0,
@@ -188,6 +189,7 @@ class ReachingTargetTask(RLTask):
 
     def set_up_scene(self, scene) -> None:
         self._stage = get_current_stage()
+        self._create_distant_light()
         self.get_terrain()
         self.get_target()
         self.get_robot()
@@ -199,6 +201,24 @@ class ReachingTargetTask(RLTask):
                      
         self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
         scene.add(self._targets)
+
+    def _create_distant_light(self, prim_path="/World/defaultDistantLight", intensity=5000):
+        light = UsdLux.DistantLight.Define(self._stage, prim_path)
+        light.CreateIntensityAttr().Set(intensity)
+        # Set the color of the light to warm yellow-orange
+        warm_yellow_orange = Gf.Vec3f(255/255, 174/255, 66/255)  # Normalize RGB values to [0,1] range
+        light.CreateColorAttr(warm_yellow_orange)
+
+        light_1 = create_prim(
+                    "/World/Light_1",
+                    "SphereLight",
+                    position=np.array([1.0, 1.0, 1.0]),
+                    attributes={
+                        "inputs:radius": 0.01,
+                        "inputs:intensity": 5e3,
+                        "inputs:color": (1.0, 0.0, 1.0)
+                    }
+                )
 
     def get_terrain(self, create_mesh=True):
         self.env_origins = torch.zeros((self.num_envs, 3), device=self.device, requires_grad=False)
@@ -442,7 +462,7 @@ class ReachingTargetTask(RLTask):
 
         reward = (
             dense_reward
-            + alignment_reward
+            # + alignment_reward
             - 0.5 * torque_penalty
             + target_reached
             - crashed
@@ -463,6 +483,8 @@ class ReachingTargetTask(RLTask):
         full_points[:, :, 5] = Nz
 
         height_data = full_points[:, :, 2].reshape(self.num_envs, -1)
+
+        print(height_data)
 
         self.refresh_body_state_tensors()
         delta_pos = self.target_pos - self.base_pos
