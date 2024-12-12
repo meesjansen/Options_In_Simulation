@@ -214,7 +214,7 @@ class RLTask(RLTaskInterface):
         stage = get_current_stage()
         light = UsdLux.DistantLight.Define(stage, prim_path)
         light.CreateIntensityAttr().Set(intensity)
-        light.CreateColorAttr().Set(Gf.Vec3f(1.0, 1.0, 1.0))
+        light.CreateColorAttr().Set(Gf.Vec3f(255/255, 174/255, 66/255))
 
     def initialize_views(self, scene):
         """Optionally implemented by individual task classes to initialize views used in the task.

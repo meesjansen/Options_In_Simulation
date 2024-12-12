@@ -196,35 +196,11 @@ class ReachingTargetTask(RLTask):
 
         super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"], copy_from_source=True)
 
-        # light_prim = self._stage.GetPrimAtPath("/World/defaultDistantLight").IsValid()
-        # print(light_prim)
-        # light_prim = self._stage.GetPrimAtPath("/World/defaultDistantLight")
-        # print(light_prim.GetTypeName())
-        # light_prim.CreateColorAttr().Set(Gf.Vec3f(1.0, 1.0, 1.0))
-
         self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robot_view")
         scene.add(self._robots)
                      
         self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
         scene.add(self._targets)
-
-    # def _create_distant_light(self, prim_path="/World/defaultDistantLight", intensity=5000):
-        # light = UsdLux.DistantLight.Define(self._stage, prim_path)
-        # light.CreateIntensityAttr().Set(intensity)
-        # # Set the color of the light to warm yellow-orange
-        # warm_yellow_orange = Gf.Vec3f(255/255, 174/255, 66/255)  # Normalize RGB values to [0,1] range
-        # light.CreateColorAttr(warm_yellow_orange)
-
-        # light_1 = create_prim(
-        #             "/World/Light_2",
-        #             "SphereLight",
-        #             position=np.array([1.0, 1.0, 1.0]),
-        #             attributes={
-        #                 "inputs:radius": 0.01,
-        #                 "inputs:intensity": 5e3,
-        #                 "inputs:color": (1.0, 0.0, 1.0)
-        #             }
-        #         )
 
     def get_terrain(self, create_mesh=True):
         self.env_origins = torch.zeros((self.num_envs, 3), device=self.device, requires_grad=False)
