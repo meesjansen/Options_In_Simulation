@@ -109,7 +109,7 @@ class Value(DeterministicMixin, Model):
 
 # instantiate and configure the task
 headless = True  # set headless to False for rendering
-env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
+env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
 from my_envs.PPOc_terrain_v2o2z import ReachingTargetTask, TASK_CFG
@@ -164,10 +164,10 @@ PPO_DEFAULT_CONFIG = {
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {
-            "project": "RL-Terrain-Simulation",
+            "project": "PPOc",
             "entity": "meesjansen-Delft Technical University",
             "name": "PPOc_Rooms_v2o2z",
-            "tags": ["PPOc", "Rooms"],
+            "tags": ["PPOc", "Custom"],
             "dir": "/workspace/Options_In_Simulation/my_runs"
         }
     }
