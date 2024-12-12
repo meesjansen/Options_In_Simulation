@@ -162,7 +162,7 @@ PPO_DEFAULT_CONFIG = {
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
-        "wandb": True,
+        "wandb": False,
         "wandb_kwargs": {
             "project": "PPOc",
             "entity": "meesjansen-Delft Technical University",
