@@ -196,7 +196,9 @@ class ReachingTargetTask(RLTask):
 
         super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"], copy_from_source=True)
 
-
+        light_prim = get_prim_at_path("/World/defaultDistantLight")
+        color=(1.0, 0.0, 1.0)
+        light_prim.GetAttribute("color").Set(Gf.Vec3f(*color))
 
         self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robot_view")
         scene.add(self._robots)
