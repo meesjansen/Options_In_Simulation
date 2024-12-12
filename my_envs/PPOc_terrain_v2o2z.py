@@ -487,6 +487,8 @@ class ReachingTargetTask(RLTask):
         height_data = full_points[:, :, 2].reshape(self.num_envs, -1)
 
         print(height_data)
+        non_zero_count = torch.count_nonzero(height_data)
+        print(f"Number of non-zero elements in height_data: {non_zero_count}")
 
         self.refresh_body_state_tensors()
         delta_pos = self.target_pos - self.base_pos
