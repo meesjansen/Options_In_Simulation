@@ -1,10 +1,8 @@
 <?xml version='1.0'?>
 
-<robot name="avular_origin_v10">
+<robot name="avular_origin_v11">
 
-  <material name="main_body_color">
-    <color rgba="1 0 0 1"/>  <!-- RED -->
-  </material>
+
   <link name='main_body'>
     <inertial>
       <mass value="21.0"/>
@@ -21,13 +19,12 @@
       <geometry>
         <box size=".65 .4 .125"/>
       </geometry>
-      <material name="main_body_color" />
+      <material name="main_body_color">
+        <color rgba="1 0 0 1"/>  <!-- RED -->
+      </material>
     </visual>
   </link>
 
-  <material name="wheel_color">
-    <color rgba="0 0 0 1"/>  <!-- Black -->
-  </material>
   <link name="left_front_wheel">
     <inertial>
       <mass value="1"/>
@@ -36,17 +33,20 @@
     <collision>
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
-        <cylinder length=".07" radius=".1175"/>
+        <cylinder length=".07" radius=".2"/>
       </geometry>
     </collision>
     <visual>
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
       <geometry>
-        <cylinder length=".07" radius=".1175"/>
+        <cylinder length=".07" radius=".2"/>
       </geometry>
-      <material name="wheel_color"/>
+      <material name="left_front_wheel_color">
+        <color rgba="0 0 0 1"/>  <!-- Black -->
+      </material>
     </visual>
   </link>
+
 
   <link name="right_front_wheel">
     <inertial>
@@ -56,15 +56,17 @@
     <collision>
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
-        <cylinder length=".07" radius=".1175"/>
+        <cylinder length=".07" radius=".2"/>
       </geometry>
     </collision>
     <visual>
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
       <geometry>
-        <cylinder length=".07" radius=".1175"/>
+        <cylinder length=".07" radius=".2"/>
       </geometry>
-      <material name="wheel_color"/>
+      <material name="right_front_wheel_color">
+        <color rgba="0 0 0 1"/>  <!-- Black -->
+      </material>
     </visual>
   </link>
 
@@ -76,15 +78,17 @@
     <collision>
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
-        <cylinder length=".07" radius=".1175"/>
+        <cylinder length=".07" radius=".2"/>
       </geometry>
     </collision>
     <visual>
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
       <geometry>
-        <cylinder length=".07" radius=".1175"/>
+        <cylinder length=".07" radius=".2"/>
       </geometry>
-      <material name="wheel_color"/>
+      <material name="left_rear_wheel_color">
+        <color rgba="0 0 0 1"/>  <!-- Black -->
+      </material>
     </visual>
   </link>
 
@@ -96,21 +100,22 @@
     <collision>
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
-        <cylinder length=".07" radius=".1175"/>
+        <cylinder length=".07" radius=".2"/>
       </geometry>
     </collision>
     <visual>
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
       <geometry>
-        <cylinder length=".07" radius=".1175"/>
+        <cylinder length=".07" radius=".2"/>
       </geometry>
-      <material name="wheel_color"/>
+      <material name="right_rear_wheel_color">
+        <color rgba="0 0 0 1"/>  <!-- Black -->
+      </material>
     </visual>
   </link>
 
-  <material name="ouster_base_color">
-    <color rgba="1 1 1 1"/>  <!-- White -->
-  </material>
+
+
   <link name="ouster_base">
     <inertial>
       <mass value="1"/>
@@ -120,7 +125,9 @@
       <geometry>
         <box size="0.1 0.1 0.1"/>
       </geometry>
-      <material name="ouster_base_color"/>
+      <material name="ouster_base_color">
+        <color rgba="1 1 1 1"/>  <!-- White -->
+      </material>
     </visual>
     <collision name="collision-base">
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
