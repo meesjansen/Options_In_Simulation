@@ -7,8 +7,8 @@
 #SBATCH --cpus-per-task=2   # Request number of CPUs (threads) per task. Default is 1 (note: CPUs are always allocated to jobs per 2).
 #SBATCH --mem=24GB
 #SBATCH --mail-type=END     # Set mail type to 'END' to receive a mail when the job finishes. 
-#SBATCH --output=isaac-sim-output_%j.log
-#SBATCH --error=isaac-sim-error_%j.log # Set name of error log. %j is the Slurm jobId
+#SBATCH --output=mixed_CNNz_r1_output_%j.log
+#SBATCH --error=mixed_CNNz_r1_error_%j.log # Set name of error log. %j is the Slurm jobId
 
 #SBATCH --gres=gpu:a40:1 # Request 1 GPU
 
