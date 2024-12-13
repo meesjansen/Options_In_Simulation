@@ -4,7 +4,6 @@ import gym
 from gym import spaces
 import random
 import math
-from pxr import Gf, UsdGeom, UsdLux
 
 from my_envs.rl_task import RLTask 
 
@@ -12,7 +11,7 @@ from omni.isaac.core.prims import RigidPrimView
 from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.objects import DynamicSphere
 from omni.isaac.core.utils.torch.rotations import quat_rotate_inverse, quat_apply
-from omni.isaac.core.utils.prims import get_prim_at_path, create_prim
+from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.simulation_context import SimulationContext
 
@@ -118,9 +117,9 @@ class ReachingTargetTask(RLTask):
         # observation and action space
         self.num_height_points = 13*13
         # Non-height features: base_vel(3), angle_diff(1), projected_gravity(3), target_pos(3), base_pos(3) = 13
-        # Height features: 169 points * 1 channels = 169
-        # total obs = 10 + 169 = 179
-        self._num_observations = 179
+        # Height features: 169 points * 4 channels = 676
+        # total obs = 10 + 676 = 686
+        self._num_observations = 686
         self._num_actions = 4
 
         self.observation_space = spaces.Box(low=-50, high=50, shape=(self._num_observations,), dtype=np.float32)
@@ -189,7 +188,6 @@ class ReachingTargetTask(RLTask):
 
     def set_up_scene(self, scene) -> None:
         self._stage = get_current_stage()
-        # self._create_distant_light()
         self.get_terrain()
         self.get_target()
         self.get_robot()
@@ -443,9 +441,9 @@ class ReachingTargetTask(RLTask):
         crashed = self.fallen.float() * 1000.0
 
         reward = (
-            dense_reward
-            # + alignment_reward
-            - 0.5 * torque_penalty
+            0.75 * dense_reward
+            + 0.75 * alignment_reward
+            - 0.25 * torque_penalty
             + target_reached
             - crashed
         )
@@ -464,7 +462,7 @@ class ReachingTargetTask(RLTask):
         full_points[:, :, 4] = Ny
         full_points[:, :, 5] = Nz
 
-        height_data = full_points[:, :, 2].reshape(self.num_envs, -1)
+        height_data = full_points[:, :, -4:].reshape(self.num_envs, -1)
 
         print(height_data)
         non_zero_count = torch.count_nonzero(height_data)

@@ -52,7 +52,7 @@ srun apptainer exec --nv \
     -B "$data/logs:$HOME/.nvidia-omniverse/logs" \
     -B "$data/data:$HOME/.local/share/ov/data" \
     -B "$data/documents:$HOME/Documents" \
-    $APPTAINER_ROOT/$APPTAINER_NAME /isaac-sim/python.sh /workspace/Options_In_Simulation/train_PPOc_v2o2z.py
+    $APPTAINER_ROOT/$APPTAINER_NAME /isaac-sim/python.sh /workspace/Options_In_Simulation/train_mixed_CNNz_r1.py
 
 
 # Measure GPU usage of your job (result)

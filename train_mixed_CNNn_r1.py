@@ -26,7 +26,7 @@ class Policy(GaussianMixin, Model):
 
         
         self.num_observations = self.num_observations
-        self.num_height_channels = 1
+        self.num_height_channels = 4
         self.height_size = 13
         self.num_height_features = self.height_size * self.height_size * self.num_height_channels
         self.num_other_features = self.num_observations - self.num_height_features
@@ -72,7 +72,7 @@ class Value(DeterministicMixin, Model):
         DeterministicMixin.__init__(self, clip_actions)
 
         self.num_observations = self.num_observations
-        self.num_height_channels = 1
+        self.num_height_channels = 4
         self.height_size = 13
         self.num_height_features = self.height_size * self.height_size * self.num_height_channels
         self.num_other_features = self.num_observations - self.num_height_features
@@ -109,10 +109,10 @@ class Value(DeterministicMixin, Model):
 
 # instantiate and configure the task
 headless = True  # set headless to False for rendering
-env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
+env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.PPOc_terrain_v2o2z import ReachingTargetTask, TASK_CFG
+from my_envs.PPOc_mixed_CNNn_r1 import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
@@ -132,46 +132,58 @@ models_ppo = {}
 models_ppo["policy"] = Policy(env.observation_space, env.action_space, device)
 models_ppo["value"] = Value(env.observation_space, env.action_space, device)
 
+# Configure and instantiate the agent.
+# Only modify some of the default configuration, visit its documentation to see all the options
+# https://skrl.readthedocs.io/en/latest/modules/skrl.agents.ppo.html#configuration-and-hyperparameters
 PPO_DEFAULT_CONFIG = {
-    "rollouts": 16,
-    "learning_epochs": 8,
-    "mini_batches": 2,
-    "discount_factor": 0.99,
-    "lambda": 0.95,
-    "learning_rate": 1e-3,
-    "learning_rate_scheduler": None,
-    "learning_rate_scheduler_kwargs": {},
-    "state_preprocessor": None,
-    "state_preprocessor_kwargs": {},
-    "value_preprocessor": None,
-    "value_preprocessor_kwargs": {},
-    "random_timesteps": 0,
-    "learning_starts": 0,
-    "grad_norm_clip": 0.5,
-    "ratio_clip": 0.2,
-    "value_clip": 0.2,
-    "clip_predicted_values": False,
-    "entropy_loss_scale": 0.0,
-    "value_loss_scale": 1.0,
-    "kl_threshold": 0,
-    "rewards_shaper": None,
-    "time_limit_bootstrap": False,
+    "rollouts": 16,                 # number of rollouts before updating
+    "learning_epochs": 8,           # number of learning epochs during each update
+    "mini_batches": 2,              # number of mini batches during each learning epoch
+
+    "discount_factor": 0.99,        # discount factor (gamma)
+    "lambda": 0.95,                 # TD(lambda) coefficient (lam) for computing returns and advantages
+
+    "learning_rate": 1e-3,                  # learning rate
+    "learning_rate_scheduler": None,        # learning rate scheduler class (see torch.optim.lr_scheduler)
+    "learning_rate_scheduler_kwargs": {},   # learning rate scheduler's kwargs (e.g. {"step_size": 1e-3})
+
+    "state_preprocessor": None,             # state preprocessor class (see skrl.resources.preprocessors)
+    "state_preprocessor_kwargs": {},        # state preprocessor's kwargs (e.g. {"size": env.observation_space})
+    "value_preprocessor": None,             # value preprocessor class (see skrl.resources.preprocessors)
+    "value_preprocessor_kwargs": {},        # value preprocessor's kwargs (e.g. {"size": 1})
+
+    "random_timesteps": 0,          # random exploration steps
+    "learning_starts": 0,           # learning starts after this many steps
+
+    "grad_norm_clip": 0.5,              # clipping coefficient for the norm of the gradients
+    "ratio_clip": 0.2,                  # clipping coefficient for computing the clipped surrogate objective
+    "value_clip": 0.2,                  # clipping coefficient for computing the value loss (if clip_predicted_values is True)
+    "clip_predicted_values": False,     # clip predicted values during value loss computation
+
+    "entropy_loss_scale": 0.0,      # entropy loss scaling factor
+    "value_loss_scale": 1.0,        # value loss scaling factor
+
+    "kl_threshold": 0,              # KL divergence threshold for early stopping
+
+    "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
+    "time_limit_bootstrap": False,  # bootstrap at timeout termination (episode truncation)
+
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_v2o2z",
-        "experiment_name": "PPOc_v2o2z",
-        "write_interval": "auto",
-        "checkpoint_interval": "auto",
-        "store_separately": False,
-        "wandb": False,
-        "wandb_kwargs": {
-            "project": "PPOc",
-            "entity": "meesjansen-Delft Technical University",
-            "name": "PPOc_Rooms_v2o2z",
-            "tags": ["PPOc", "Custom"],
-            "dir": "/workspace/Options_In_Simulation/my_runs"
-        }
+        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_mixed_CNNn_r1",            # experiment's parent directory
+        "experiment_name": "PPOc_mixed_CNNn_r1",      # experiment name
+        "write_interval": "auto",   # TensorBoard writing interval (timesteps)
+
+        "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
+        "store_separately": False,          # whether to store checkpoints separately
+
+        "wandb": True,             # whether to use Weights & Biases
+        "wandb_kwargs": {"project":     "PPOc",
+                        "entity":       "meesjansen-Delft Technical University",
+                        "name":         "PPOc_mixed_CNNn_r1",
+                        "tags":         ["PPOc", "Mixed"],
+                        "dir":          "/workspace/Options_In_Simulation/my_runs"}    # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
+                    }          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
     }
-}
 
 cfg_ppo = PPO_DEFAULT_CONFIG.copy()
 cfg_ppo["rollouts"] = 20
@@ -183,7 +195,7 @@ cfg_ppo["learning_rate"] = 5e-4
 cfg_ppo["learning_rate_scheduler"] = KLAdaptiveRL
 cfg_ppo["learning_rate_scheduler_kwargs"] = {"kl_threshold": 0.008}
 cfg_ppo["random_timesteps"] = 0
-cfg_ppo["learning_starts"] = 0
+cfg_ppo["learning_starts"] = 0 # cfg_ppo["rollouts"] * env.num_envs * 4
 cfg_ppo["grad_norm_clip"] = 1.0
 cfg_ppo["ratio_clip"] = 0.2
 cfg_ppo["value_clip"] = 0.2
@@ -195,8 +207,9 @@ cfg_ppo["state_preprocessor"] = RunningStandardScaler
 cfg_ppo["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
 cfg_ppo["value_preprocessor"] = RunningStandardScaler
 cfg_ppo["value_preprocessor_kwargs"] = {"size": 1, "device": device}
+# logging to TensorBoard and write checkpoints
 cfg_ppo["experiment"]["write_interval"] = 500
-cfg_ppo["experiment"]["checkpoint_interval"] = 50000
+cfg_ppo["experiment"]["checkpoint_interval"] = 50_000
 
 agent = PPO(models=models_ppo,
             memory=memory,

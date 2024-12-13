@@ -210,11 +210,11 @@ class RLTask(RLTaskInterface):
         camera_state.set_position_world(Gf.Vec3d(camera_position[0], camera_position[1], camera_position[2]), True)
         camera_state.set_target_world(Gf.Vec3d(camera_target[0], camera_target[1], camera_target[2]), True)
 
-    def _create_distant_light(self, prim_path="/World/defaultDistantLight", intensity=5000):
+    def _create_distant_light(self, prim_path="/World/defaultDistantLight", intensity=2000):
         stage = get_current_stage()
         light = UsdLux.DistantLight.Define(stage, prim_path)
         light.CreateIntensityAttr().Set(intensity)
-        light.CreateColorAttr().Set(Gf.Vec3f(255/255, 174/255, 66/255))
+        light.CreateColorAttr().Set(Gf.Vec3f(50/255, 50/255, 50/255))
 
     def initialize_views(self, scene):
         """Optionally implemented by individual task classes to initialize views used in the task.
