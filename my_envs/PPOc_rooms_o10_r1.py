@@ -3,7 +3,7 @@ import numpy as np
 import gym
 from gym import spaces
 
-from omniisaacgymenvs.tasks.base.rl_task import RLTask
+from my_envs.rl_task import RLTask 
 
 from omni.isaac.core.prims import RigidPrim, RigidPrimView
 from omni.isaac.core.articulations import ArticulationView
@@ -133,8 +133,8 @@ class ReachingTargetTask(RLTask):
             dtype=np.float32  # Ensure data type is consistent
         )
         # Define the action range for torques
-        self.min_torque = -15.0  # Example min torque value
-        self.max_torque = 15.0   # Example max torque value
+        self.min_torque = -10.0  # Example min torque value
+        self.max_torque = 10.0   # Example max torque value
 
 
         # Using the shape argument
@@ -577,8 +577,8 @@ class ReachingTargetTask(RLTask):
 
         # Combine rewards and penalties
         reward = (
-            dense_reward    # Scale progress
-            + alignment_reward    # Scale alignment
+            0.75 * dense_reward    # Scale progress
+            + 0.75 * alignment_reward    # Scale alignment
             - 0.25 * torque_penalty      # Small penalty for torque
             + target_reached      # Completion bonus
             - crashed

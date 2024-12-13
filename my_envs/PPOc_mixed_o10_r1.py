@@ -3,7 +3,7 @@ import numpy as np
 import gym
 from gym import spaces
 
-from omniisaacgymenvs.tasks.base.rl_task import RLTask
+from my_envs.rl_task import RLTask 
 
 from omni.isaac.core.prims import RigidPrim, RigidPrimView
 from omni.isaac.core.articulations import ArticulationView
@@ -20,7 +20,7 @@ from omni.isaac.core.prims import GeometryPrim, GeometryPrimView
 from pxr import PhysxSchema, UsdPhysics
 
 
-from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10
+from my_robots.origin_v10_meshes import AvularOrigin_v10 as Robot_v10
 
 from my_utils.terrain_generator import *
 from my_utils.terrain_utils import *
@@ -123,7 +123,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 10 + 169 # features (+ height points)
+        self._num_observations = 10  # features (+ height points)
         self._num_actions = 4  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
@@ -576,8 +576,8 @@ class ReachingTargetTask(RLTask):
 
         # Combine rewards and penalties
         reward = (
-            dense_reward    # Scale progress
-            + alignment_reward    # Scale alignment
+            0.5 * dense_reward    # Scale progress
+            + 0.5 * alignment_reward    # Scale alignment
             - 0.5 * torque_penalty      # Small penalty for torque
             + target_reached      # Completion bonus
             - crashed
@@ -592,10 +592,15 @@ class ReachingTargetTask(RLTask):
 
     def get_observations(self):
         ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
-        heights = self.get_heights(ids)
+        self.measured_heights = self.get_heights(ids)
+        heights = self.measured_heights * self.terrain.vertical_scale 
 
         self.refresh_body_state_tensors()
         delta_pos = self.target_pos - self.base_pos
+
+        # Get current joint efforts (torques)
+        _efforts = self._robots.get_applied_joint_efforts(clone=True)
+        current_efforts = _efforts #[:, np.array([1,2,4,5])]
 
         # compute distance for calculate_metrics() and is_done()
         self._computed_distance = torch.norm(delta_pos, dim=-1)
@@ -607,7 +612,8 @@ class ReachingTargetTask(RLTask):
                 # self.base_vel[:, 3:6],
                 self.projected_gravity,
                 delta_pos,
-                heights,
+                # heights,
+                # current_efforts 
             ),
             dim=-1,
         )
@@ -618,18 +624,29 @@ class ReachingTargetTask(RLTask):
     
 
     def get_heights(self, env_ids=None):
-        if env_ids is None:
-            env_ids = torch.arange(self.num_envs, device=self.device)
+        points = self.height_points[env_ids] + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
 
-        points_2d = self.height_points[env_ids, :, 0:2] + self.env_origins[env_ids, 0:2].unsqueeze(1)
-        points_2d[..., :2] += self.terrain.border_size
-        points_idx = (points_2d[..., :2] / self.terrain.horizontal_scale).long()
+        # Add terrain border size
+        points += self.terrain.border_size
 
-        px = points_idx[..., 0].clamp(0, self.height_samples.shape[0]-2)
-        py = points_idx[..., 1].clamp(0, self.height_samples.shape[1]-2)
-
+        # Convert to terrain grid coordinates (account for terrain scaling)
+        points = (points / self.terrain.horizontal_scale).long()
+        
+        # Extract the x and y coordinates for indexing into height_samples
+        px = points[:, :, 0].view(-1)  # Flatten x coordinates
+        py = points[:, :, 1].view(-1)  # Flatten y coordinates
+        
+        # Clip the values to stay within the height samples bounds
+        px = torch.clip(px, 0, self.height_samples.shape[0] - 2)
+        py = torch.clip(py, 0, self.height_samples.shape[1] - 2)
+        
+        # Get heights from the height_samples for these coordinates
         heights1 = self.height_samples[px, py]
-        heights2 = self.height_samples[px+1, py+1]
-        heights = torch.min(heights1, heights2) * self.terrain.vertical_scale
-        return heights
+        heights2 = self.height_samples[px + 1, py + 1]
+        
+        # Use the minimum height as a conservative estimate
+        heights = torch.min(heights1, heights2)
+
+        # Return the heights, scaled by the vertical scale
+        return heights.view(self.num_envs, -1) * self.terrain.vertical_scale
 
