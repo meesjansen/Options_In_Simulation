@@ -1,0 +1,204 @@
+++ /usr/bin/nvidia-smi --query-accounted-apps=gpu_utilization,mem_utilization,max_memory_usage,time --format=csv
+++ /usr/bin/tail -n +2
++ previous='21 %, 0 %, 1024 MiB, 16474285 ms
+21 %, 0 %, 1024 MiB, 16814400 ms
+60 %, 45 %, 24654 MiB, 129593418 ms
+93 %, 20 %, 34346 MiB, 1598707 ms
+93 %, 24 %, 34346 MiB, 1836245 ms
+93 %, 21 %, 34346 MiB, 1660469 ms
+97 %, 36 %, 34346 MiB, 6618920 ms
+98 %, 35 %, 34346 MiB, 7540244 ms
+97 %, 37 %, 34346 MiB, 5837660 ms
+90 %, 22 %, 34346 MiB, 706192 ms
+91 %, 23 %, 34346 MiB, 749161 ms
+91 %, 23 %, 34346 MiB, 774247 ms
+91 %, 22 %, 34346 MiB, 729972 ms
+90 %, 22 %, 34346 MiB, 707058 ms
+89 %, 18 %, 34346 MiB, 590422 ms
+89 %, 17 %, 34346 MiB, 574109 ms
+95 %, 42 %, 34346 MiB, 1438330 ms
+95 %, 42 %, 34346 MiB, 1351871 ms
+94 %, 41 %, 34346 MiB, 1064186 ms
+94 %, 25 %, 34346 MiB, 1796423 ms
+95 %, 26 %, 34346 MiB, 1932362 ms
+94 %, 19 %, 34346 MiB, 1417087 ms
+94 %, 19 %, 34346 MiB, 1446252 ms
+98 %, 37 %, 34346 MiB, 6389395 ms
+90 %, 22 %, 34346 MiB, 744663 ms
+90 %, 22 %, 34346 MiB, 760410 ms
+89 %, 20 %, 34346 MiB, 665842 ms
+90 %, 24 %, 34346 MiB, 814215 ms
+95 %, 44 %, 34348 MiB, 1614341 ms
+94 %, 27 %, 34346 MiB, 2208180 ms
+93 %, 22 %, 34346 MiB, 1739506 ms
+98 %, 39 %, 34348 MiB, 7204305 ms
+91 %, 22 %, 34346 MiB, 710227 ms
+91 %, 24 %, 34346 MiB, 756538 ms
+89 %, 19 %, 34346 MiB, 602265 ms
+90 %, 19 %, 34346 MiB, 617930 ms
+95 %, 45 %, 34348 MiB, 1542677 ms
+94 %, 44 %, 34348 MiB, 1237263 ms
+95 %, 29 %, 34346 MiB, 2248675 ms
+98 %, 41 %, 34348 MiB, 6951099 ms
+97 %, 44 %, 34348 MiB, 4495741 ms
+86 %, 3 %, 34344 MiB, 515244 ms
+89 %, 6 %, 34344 MiB, 744575 ms
+92 %, 7 %, 34344 MiB, 1170767 ms
+91 %, 2 %, 34344 MiB, 1067429 ms
+92 %, 7 %, 34344 MiB, 1152454 ms
+84 %, 3 %, 34346 MiB, 534771 ms
+84 %, 3 %, 34346 MiB, 526677 ms
+84 %, 3 %, 34346 MiB, 528417 ms
+87 %, 6 %, 34346 MiB, 765004 ms
+89 %, 7 %, 34346 MiB, 1215587 ms
+89 %, 2 %, 34346 MiB, 1107155 ms
+90 %, 7 %, 34346 MiB, 1196888 ms
+88 %, 6 %, 34344 MiB, 734893 ms
+84 %, 3 %, 34344 MiB, 515893 ms
+90 %, 2 %, 34344 MiB, 1055686 ms
+91 %, 8 %, 34344 MiB, 1132805 ms
+91 %, 2 %, 34344 MiB, 1039516 ms
+84 %, 3 %, 34344 MiB, 523456 ms
+87 %, 6 %, 34344 MiB, 756412 ms
+84 %, 3 %, 34344 MiB, 520806 ms
+87 %, 6 %, 34344 MiB, 744233 ms
+89 %, 2 %, 34344 MiB, 1084810 ms
+89 %, 2 %, 34344 MiB, 1072778 ms
+89 %, 7 %, 34344 MiB, 1158899 ms
+21 %, 0 %, 1024 MiB, 16383264 ms
+21 %, 0 %, 1024 MiB, 16873965 ms
+22 %, 0 %, 1024 MiB, 25151468 ms
+23 %, 0 %, 1024 MiB, 25606489 ms
+22 %, 0 %, 1026 MiB, 26882101 ms
+42 %, 16 %, 1144 MiB, 14421896 ms
+21 %, 0 %, 1024 MiB, 17048099 ms
+37 %, 0 %, 7524 MiB, 18334686 ms
+94 %, 79 %, 4896 MiB, 6054064 ms
+3 %, 3 %, 10168 MiB, 14392829 ms
+72 %, 40 %, 25772 MiB, 1675054 ms
+22 %, 0 %, 1026 MiB, 14314653 ms
+28 %, 0 %, 1026 MiB, 99966008 ms
+92 %, 3 %, 34344 MiB, 1420504 ms
+91 %, 3 %, 34344 MiB, 1423970 ms
+92 %, 2 %, 34344 MiB, 1399962 ms
+92 %, 8 %, 34344 MiB, 1540778 ms
+92 %, 8 %, 34344 MiB, 1523205 ms
+92 %, 8 %, 34344 MiB, 1524712 ms
+92 %, 8 %, 34344 MiB, 1543052 ms
+95 %, 34 %, 34346 MiB, 1570331 ms
+95 %, 34 %, 34346 MiB, 1728214 ms
+95 %, 29 %, 34346 MiB, 2292445 ms
+95 %, 27 %, 34346 MiB, 1963669 ms
+96 %, 34 %, 34346 MiB, 3088373 ms
+96 %, 29 %, 34346 MiB, 3028325 ms
+93 %, 16 %, 34346 MiB, 721292 ms
+96 %, 29 %, 34346 MiB, 2895668 ms
+97 %, 34 %, 34346 MiB, 5314836 ms
+97 %, 34 %, 34346 MiB, 4914463 ms
+95 %, 30 %, 34346 MiB, 1281110 ms
+55 %, 40 %, 1206 MiB, 204382 ms
+62 %, 44 %, 1208 MiB, 4067280 ms
+0 %, 0 %, 5309 MiB, 599867 ms
+0 %, 0 %, 5309 MiB, 224358 ms
+0 %, 0 %, 5309 MiB, 149853 ms
+2 %, 0 %, 5339 MiB, 76974 ms
+12 %, 0 %, 5351 MiB, 221009 ms
+1 %, 0 %, 3152 MiB, 1882324 ms
+1 %, 0 %, 3152 MiB, 2112692 ms
+1 %, 0 %, 3152 MiB, 1920136 ms
+1 %, 0 %, 3152 MiB, 2011472 ms
+1 %, 0 %, 3152 MiB, 1975704 ms
+1 %, 0 %, 3152 MiB, 1980466 ms
+1 %, 0 %, 3154 MiB, 2124529 ms
+96 %, 29 %, 34346 MiB, 2978421 ms
+97 %, 34 %, 34346 MiB, 5159195 ms
+1 %, 0 %, 3152 MiB, 1940296 ms
+1 %, 0 %, 3152 MiB, 808727 ms
+1 %, 0 %, 3152 MiB, 794036 ms
+1 %, 0 %, 3152 MiB, 2018200 ms
+1 %, 0 %, 3152 MiB, 1914717 ms
+1 %, 0 %, 3152 MiB, 827149 ms
+1 %, 0 %, 3152 MiB, 1978386 ms
+1 %, 0 %, 3152 MiB, 1921306 ms
+1 %, 0 %, 3152 MiB, 839835 ms
+1 %, 0 %, 3152 MiB, 794120 ms
+0 %, 0 %, 4211 MiB, 62227 ms
+16 %, 0 %, 5319 MiB, 72041055 ms
+22 %, 0 %, 1024 MiB, 25007565 ms
+42 %, 16 %, 1142 MiB, 14416227 ms
+0 %, 0 %, 5030 MiB, 222805 ms
+17 %, 14 %, 7794 MiB, 324672 ms'
++ /usr/bin/nvidia-smi
++ module use /opt/insy/modulefiles
++ '[' -z '' ']'
++ case "$-" in
++ __lmod_sh_dbg=x
++ '[' -n x ']'
++ set +x
+Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output
+Shell debugging restarted
++ unset __lmod_sh_dbg
++ return 0
++ export APPTAINER_ROOT=/winhome/meesjansen
++ APPTAINER_ROOT=/winhome/meesjansen
++ export APPTAINER_NAME=isaac-sim-custom.sif
++ APPTAINER_NAME=isaac-sim-custom.sif
++ export ISAACSIM_PATH=/isaac-sim
++ ISAACSIM_PATH=/isaac-sim
++ export ISAACSIM_PYTHON_EXE=/isaac-sim/python.sh
++ ISAACSIM_PYTHON_EXE=/isaac-sim/python.sh
++ export data=/home/nfs/meesjansen/isaac-sim
++ data=/home/nfs/meesjansen/isaac-sim
++ export HOME=/root
++ HOME=/root
++ srun apptainer exec --nv -C --env ACCEPT_EULA=Y --env PRIVACY_CONSENT=Y --env WANDB_API_KEY=e01d8dc5d40f0a16f58885a3808bf560a32837d7 -B /home/nfs/meesjansen/Options_In_Simulation:/workspace/Options_In_Simulation -B /home/nfs/meesjansen/isaac-sim/cache/kit:/isaac-sim/kit/cache -B /home/nfs/meesjansen/isaac-sim/cache/ov:/root/.cache/ov -B /home/nfs/meesjansen/isaac-sim/cache/pip:/root/.cache/pip -B /home/nfs/meesjansen/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache -B /home/nfs/meesjansen/isaac-sim/cache/computecache:/root/.nv/ComputeCache -B /home/nfs/meesjansen/isaac-sim/logs:/root/.nvidia-omniverse/logs -B /home/nfs/meesjansen/isaac-sim/data:/root/.local/share/ov/data -B /home/nfs/meesjansen/isaac-sim/documents:/root/Documents /winhome/meesjansen/isaac-sim-custom.sif /isaac-sim/python.sh /workspace/Options_In_Simulation/train_mixed_CNNn_r1.py
+[33;20m[skrl:WARNING] Using `from skrl.envs.torch import ...` is deprecated and will be removed in future versions.[0m
+[33;20m[skrl:WARNING]  - Import loaders using `from skrl.envs.loaders.torch import ...`[0m
+[33;20m[skrl:WARNING]  - Import wrappers using `from skrl.envs.wrappers.torch import ...`[0m
+[38;20m[skrl:INFO] Seed: 42[0m
+2024-12-13 20:14:50 [1,717ms] [Error] [carb.scripting-python.plugin] OSError: [Errno 30] Read-only file system: '/isaac-sim/kit/exts/omni.gpu_foundation/cache/nv_shadercache'
+
+At:
+  /isaac-sim/kit/python/lib/python3.10/os.py(230): makedirs
+  /isaac-sim/kit/exts/omni.gpu_foundation/omni/gpu_foundation_factory/impl/foundation_extension.py(77): setup_shadercache_locations
+  /isaac-sim/kit/exts/omni.gpu_foundation/omni/gpu_foundation_factory/impl/foundation_extension.py(142): on_startup
+  /isaac-sim/kit/kernel/py/omni/ext/_impl/_internal.py(164): _startup_ext
+  /isaac-sim/kit/kernel/py/omni/ext/_impl/_internal.py(224): startup
+  /isaac-sim/kit/kernel/py/omni/ext/_impl/_internal.py(328): startup_extension
+  PythonExtension.cpp::startup()(2): <module>
+  /isaac-sim/exts/omni.isaac.kit/omni/isaac/kit/simulation_app.py(350): _start_app
+  /isaac-sim/exts/omni.isaac.kit/omni/isaac/kit/simulation_app.py(197): __init__
+  /isaac-sim/exts/omni.isaac.gym/omni/isaac/gym/vec_env/vec_env_base.py(66): __init__
+  /isaac-sim/kit/python/lib/python3.10/site-packages/skrl/utils/omniverse_isaacgym_utils.py(329): get_env_instance
+  /workspace/Options_In_Simulation/train_mixed_CNNn_r1.py(112): <module>
+
+2024-12-13 20:14:50 [1,718ms] [Error] [omni.ext.plugin] [ext: omni.gpu_foundation-0.0.0] Failed to startup python extension.
+2024-12-13 20:14:52 [4,032ms] [Error] [gpu.foundation.plugin] Failed opening shader cache version file: ./shadercache/common/version
+2024-12-13 20:14:52 [4,032ms] [Error] [gpu.foundation.plugin] Failed to process shader cache version file
+2024-12-13 20:14:53 [5,537ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/Tf/__DOC.py:290: DeprecationWarning: invalid escape sequence '\ '
+  result["MallocTag"].GetCallTree.func_doc = """**classmethod** GetCallTree(tree, skipRepeated) -> bool
+2024-12-13 20:14:54 [5,685ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/Sdf/__DOC.py:11: DeprecationWarning: invalid escape sequence '\p'
+  result["AssetPath"].__init__.func_doc = """__init__()
+2024-12-13 20:14:54 [5,805ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/UsdSkel/__DOC.py:500: DeprecationWarning: invalid escape sequence '\e'
+  result["AnimMapper"].Remap.func_doc = """Remap(source, target, elementSize, defaultValue) -> bool
+2024-12-13 20:14:54 [6,305ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd/omni/usd/_impl/utils.py:1196: DeprecationWarning: invalid escape sequence '\d'
+  match = re.search("_(\d+)$", path)
+2024-12-13 20:14:54 [6,414ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.kit.renderer.imgui/omni/kit/ui/editor_menu.py:106: DeprecationWarning: invalid escape sequence '\/'
+  menu_parts = menu_path.replace("\/", "@TEMPSLASH@").split("/")
+2024-12-13 20:14:54 [6,478ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.kit.widget.filebrowser/omni/kit/widget/filebrowser/model.py:454: DeprecationWarning: invalid escape sequence '\.'
+  compiled_regex = re.compile(r'([\w.-]+)(.)('+numbers+')\.('+types+')$')
+2024-12-13 20:15:00 [11,659ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/extsPhysics/omni.physx/omni/physx/scripts/physicsUtils.py:39: DeprecationWarning: invalid escape sequence '\d'
+  match = re.search("_(\d+)$", path)
+2024-12-13 20:15:00 [11,680ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/exts/omni.isaac.core/omni/isaac/core/utils/deformable_mesh_utils.py:30: DeprecationWarning: invalid escape sequence '\s'
+  v_pat = re.compile(r"^\s*[vV]\s*" + flt_grp + "\s*" + flt_grp + "\s*" + flt_grp + "\s*$")
+2024-12-13 20:15:00 [11,905ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-13 20:15:00 [11,924ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/extscache/omni.graph.action_nodes-1.21.3+106.0.0.lx64.r.cp310/omni/graph/action_nodes/ogn/OgnCountdownDatabase.py:1: DeprecationWarning: invalid escape sequence '\ '
+  """Support for simplified access to data on nodes of type omni.graph.action.Countdown
+2024-12-13 20:15:00 [11,936ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/PxOsd/__DOC.py:270: DeprecationWarning: invalid escape sequence '\w'
+  result["MeshTopologyValidation"].__doc__ = """
+2024-12-13 20:15:01 [13,082ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-13 20:15:02 [13,758ms] [Error] [rtx.neuraylib.plugin] Cannot find `Documents/Kit/shared` directory.
+[W init.cpp:767] Warning: nvfuser is no longer supported in torch script, use _jit_set_nvfuser_enabled is deprecated and a no-op (function operator())
+2024-12-13 20:15:03 [15,441ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-13 20:15:03 [15,454ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+--- Logging error ---
