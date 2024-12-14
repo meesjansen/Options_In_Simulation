@@ -1,0 +1,446 @@
+++ /usr/bin/nvidia-smi --query-accounted-apps=gpu_utilization,mem_utilization,max_memory_usage,time --format=csv
+++ /usr/bin/tail -n +2
++ previous='44 %, 39 %, 4684 MiB, 1374553 ms
+59 %, 32 %, 1480 MiB, 12278914 ms
+40 %, 34 %, 12138 MiB, 3997663 ms
+28 %, 2 %, 1082 MiB, 6563884 ms
+29 %, 2 %, 1066 MiB, 9282246 ms
+51 %, 48 %, 15654 MiB, 13436831 ms
+53 %, 22 %, 1146 MiB, 12456715 ms
+19 %, 14 %, 3760 MiB, 3811061 ms
+19 %, 14 %, 3760 MiB, 3828947 ms
+19 %, 14 %, 3760 MiB, 3844060 ms
+19 %, 14 %, 3760 MiB, 3846830 ms
+19 %, 14 %, 3760 MiB, 3849498 ms
+19 %, 14 %, 3760 MiB, 3883613 ms
+18 %, 13 %, 3760 MiB, 4078784 ms
+17 %, 12 %, 3760 MiB, 4213196 ms
+16 %, 11 %, 3760 MiB, 4603416 ms
+12 %, 8 %, 3760 MiB, 6429509 ms
+19 %, 0 %, 1026 MiB, 10793670 ms
+60 %, 28 %, 1144 MiB, 13190682 ms
+26 %, 0 %, 1026 MiB, 77461117 ms
+91 %, 4 %, 34348 MiB, 1258403 ms
+90 %, 4 %, 34348 MiB, 1261205 ms
+94 %, 7 %, 34348 MiB, 2318948 ms
+94 %, 7 %, 34348 MiB, 2311721 ms
+94 %, 7 %, 34348 MiB, 2320031 ms
+90 %, 4 %, 34348 MiB, 1236131 ms
+90 %, 4 %, 34348 MiB, 1237861 ms
+90 %, 4 %, 34348 MiB, 1235736 ms
+94 %, 7 %, 34348 MiB, 2247146 ms
+94 %, 7 %, 34348 MiB, 2249493 ms
+94 %, 6 %, 34348 MiB, 2232951 ms
+90 %, 4 %, 34348 MiB, 1253548 ms
+90 %, 4 %, 34348 MiB, 1252978 ms
+94 %, 7 %, 34348 MiB, 2299375 ms
+94 %, 7 %, 34348 MiB, 2295684 ms
+94 %, 7 %, 34348 MiB, 2299555 ms
+90 %, 4 %, 34348 MiB, 1229324 ms
+90 %, 4 %, 34348 MiB, 1216011 ms
+94 %, 6 %, 34348 MiB, 2231193 ms
+94 %, 6 %, 34348 MiB, 2235244 ms
+94 %, 6 %, 34348 MiB, 2227172 ms
+91 %, 4 %, 34348 MiB, 1221730 ms
+94 %, 6 %, 34348 MiB, 2225554 ms
+91 %, 4 %, 34348 MiB, 1217082 ms
+95 %, 6 %, 34348 MiB, 2290541 ms
+91 %, 4 %, 34348 MiB, 1223529 ms
+94 %, 6 %, 34348 MiB, 2223496 ms
+94 %, 6 %, 34348 MiB, 2225753 ms
+94 %, 7 %, 34348 MiB, 2253959 ms
+93 %, 7 %, 34348 MiB, 2314923 ms
+93 %, 7 %, 34348 MiB, 2249920 ms
+58 %, 30 %, 1406 MiB, 12755116 ms
+27 %, 1 %, 1150 MiB, 14407897 ms
+27 %, 1 %, 1084 MiB, 14411722 ms
+19 %, 12 %, 1136 MiB, 5710097 ms
+19 %, 12 %, 1136 MiB, 5712554 ms
+19 %, 12 %, 1136 MiB, 5740060 ms
+19 %, 12 %, 1136 MiB, 5771728 ms
+16 %, 10 %, 1136 MiB, 6925574 ms
+20 %, 12 %, 1138 MiB, 9264238 ms
+19 %, 12 %, 1138 MiB, 9368461 ms
+18 %, 11 %, 1138 MiB, 9984189 ms
+18 %, 11 %, 1138 MiB, 9998866 ms
+16 %, 10 %, 1138 MiB, 11768334 ms
+92 %, 80 %, 2896 MiB, 11555787 ms
+33 %, 24 %, 43004 MiB, 161862248 ms
+0 %, 0 %, 8583 MiB, 112977 ms
+4 %, 0 %, 14739 MiB, 134859 ms
+3 %, 0 %, 14149 MiB, 137951 ms
+3 %, 0 %, 11909 MiB, 111285 ms
+12 %, 0 %, 11939 MiB, 54063167 ms
+53 %, 21 %, 1140 MiB, 8237564 ms
+59 %, 45 %, 24654 MiB, 129607590 ms
+37 %, 0 %, 8608 MiB, 129618986 ms
+13 %, 4 %, 1744 MiB, 14856335 ms
+10 %, 3 %, 1744 MiB, 2077101 ms
+14 %, 1 %, 1642 MiB, 23608 ms
+20 %, 2 %, 1876 MiB, 164026 ms
+20 %, 0 %, 1024 MiB, 17390251 ms
+95 %, 78 %, 25790 MiB, 851668 ms
+94 %, 72 %, 27578 MiB, 406353 ms
+19 %, 0 %, 1026 MiB, 19384605 ms
+19 %, 0 %, 1026 MiB, 19132560 ms
+21 %, 0 %, 1026 MiB, 18252516 ms
+20 %, 0 %, 1026 MiB, 18036733 ms
+20 %, 0 %, 1024 MiB, 17687059 ms
+21 %, 0 %, 1024 MiB, 17383113 ms
+27 %, 16 %, 5438 MiB, 11116739 ms
+4 %, 3 %, 42422 MiB, 128275 ms
+27 %, 16 %, 6468 MiB, 11183178 ms
+26 %, 16 %, 8314 MiB, 15915498 ms
+5 %, 5 %, 10168 MiB, 14376556 ms
+10 %, 9 %, 10168 MiB, 14362766 ms
+70 %, 53 %, 24654 MiB, 129596290 ms
+43 %, 21 %, 29700 MiB, 7241626 ms
+60 %, 29 %, 29700 MiB, 7245776 ms
+97 %, 82 %, 4896 MiB, 61154596 ms
+45 %, 21 %, 29696 MiB, 6959283 ms
+0 %, 0 %, 5075 MiB, 90290 ms
+18 %, 0 %, 5087 MiB, 72059993 ms
+21 %, 0 %, 1024 MiB, 26085724 ms
+95 %, 78 %, 2970 MiB, 9537871 ms
+98 %, 98 %, 36840 MiB, 28768908 ms
+79 %, 44 %, 7254 MiB, 410222 ms
+62 %, 34 %, 25714 MiB, 974272 ms
+0 %, 0 %, 18510 MiB, 697416 ms
+1 %, 0 %, 6066 MiB, 11991 ms
+2 %, 0 %, 6066 MiB, 9844 ms
+2 %, 0 %, 6066 MiB, 8732 ms
+2 %, 0 %, 6066 MiB, 8546 ms
+2 %, 0 %, 6066 MiB, 8502 ms
+16 %, 10 %, 6256 MiB, 112887 ms
+4 %, 0 %, 5444 MiB, 5437 ms
+16 %, 10 %, 6256 MiB, 112482 ms
+12 %, 8 %, 3378 MiB, 87906 ms
+31 %, 20 %, 5558 MiB, 20165 ms
+78 %, 44 %, 7254 MiB, 411753 ms
+20 %, 0 %, 1024 MiB, 18758561 ms
+0 %, 0 %, 733 MiB, 34292556 ms
+25 %, 0 %, 1026 MiB, 35379579 ms
+6 %, 5 %, 10168 MiB, 14363811 ms
+69 %, 33 %, 29700 MiB, 8686508 ms
+44 %, 21 %, 29700 MiB, 13621713 ms
+60 %, 28 %, 29700 MiB, 10016499 ms
+68 %, 33 %, 29700 MiB, 8715534 ms
+93 %, 54 %, 2418 MiB, 14707481 ms
+58 %, 29 %, 19542 MiB, 270012758 ms
+97 %, 94 %, 16122 MiB, 61139381 ms'
++ /usr/bin/nvidia-smi
++ module use /opt/insy/modulefiles
++ '[' -z '' ']'
++ case "$-" in
++ __lmod_sh_dbg=x
++ '[' -n x ']'
++ set +x
+Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output
+Shell debugging restarted
++ unset __lmod_sh_dbg
++ return 0
++ export APPTAINER_ROOT=/winhome/meesjansen
++ APPTAINER_ROOT=/winhome/meesjansen
++ export APPTAINER_NAME=isaac-sim-custom.sif
++ APPTAINER_NAME=isaac-sim-custom.sif
++ export ISAACSIM_PATH=/isaac-sim
++ ISAACSIM_PATH=/isaac-sim
++ export ISAACSIM_PYTHON_EXE=/isaac-sim/python.sh
++ ISAACSIM_PYTHON_EXE=/isaac-sim/python.sh
++ export data=/home/nfs/meesjansen/isaac-sim
++ data=/home/nfs/meesjansen/isaac-sim
++ export HOME=/root
++ HOME=/root
++ srun apptainer exec --nv -C --env ACCEPT_EULA=Y --env PRIVACY_CONSENT=Y --env WANDB_API_KEY=e01d8dc5d40f0a16f58885a3808bf560a32837d7 -B /home/nfs/meesjansen/Options_In_Simulation:/workspace/Options_In_Simulation -B /home/nfs/meesjansen/isaac-sim/cache/kit:/isaac-sim/kit/cache -B /home/nfs/meesjansen/isaac-sim/cache/ov:/root/.cache/ov -B /home/nfs/meesjansen/isaac-sim/cache/pip:/root/.cache/pip -B /home/nfs/meesjansen/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache -B /home/nfs/meesjansen/isaac-sim/cache/computecache:/root/.nv/ComputeCache -B /home/nfs/meesjansen/isaac-sim/logs:/root/.nvidia-omniverse/logs -B /home/nfs/meesjansen/isaac-sim/data:/root/.local/share/ov/data -B /home/nfs/meesjansen/isaac-sim/documents:/root/Documents /winhome/meesjansen/isaac-sim-custom.sif /isaac-sim/python.sh /workspace/Options_In_Simulation/train_mixed_o10_r1.py
+[33;20m[skrl:WARNING] Using `from skrl.envs.torch import ...` is deprecated and will be removed in future versions.[0m
+[33;20m[skrl:WARNING]  - Import loaders using `from skrl.envs.loaders.torch import ...`[0m
+[33;20m[skrl:WARNING]  - Import wrappers using `from skrl.envs.wrappers.torch import ...`[0m
+[38;20m[skrl:INFO] Seed: 42[0m
+2024-12-14 14:15:08 [1,925ms] [Error] [carb.scripting-python.plugin] OSError: [Errno 30] Read-only file system: '/isaac-sim/kit/exts/omni.gpu_foundation/cache/nv_shadercache'
+
+At:
+  /isaac-sim/kit/python/lib/python3.10/os.py(230): makedirs
+  /isaac-sim/kit/exts/omni.gpu_foundation/omni/gpu_foundation_factory/impl/foundation_extension.py(77): setup_shadercache_locations
+  /isaac-sim/kit/exts/omni.gpu_foundation/omni/gpu_foundation_factory/impl/foundation_extension.py(142): on_startup
+  /isaac-sim/kit/kernel/py/omni/ext/_impl/_internal.py(164): _startup_ext
+  /isaac-sim/kit/kernel/py/omni/ext/_impl/_internal.py(224): startup
+  /isaac-sim/kit/kernel/py/omni/ext/_impl/_internal.py(328): startup_extension
+  PythonExtension.cpp::startup()(2): <module>
+  /isaac-sim/exts/omni.isaac.kit/omni/isaac/kit/simulation_app.py(350): _start_app
+  /isaac-sim/exts/omni.isaac.kit/omni/isaac/kit/simulation_app.py(197): __init__
+  /isaac-sim/exts/omni.isaac.gym/omni/isaac/gym/vec_env/vec_env_base.py(66): __init__
+  /isaac-sim/kit/python/lib/python3.10/site-packages/skrl/utils/omniverse_isaacgym_utils.py(329): get_env_instance
+  /workspace/Options_In_Simulation/train_mixed_o10_r1.py(64): <module>
+
+2024-12-14 14:15:08 [1,925ms] [Error] [omni.ext.plugin] [ext: omni.gpu_foundation-0.0.0] Failed to startup python extension.
+2024-12-14 14:15:09 [3,122ms] [Error] [gpu.foundation.plugin] Failed opening shader cache version file: ./shadercache/common/version
+2024-12-14 14:15:09 [3,122ms] [Error] [gpu.foundation.plugin] Failed to process shader cache version file
+2024-12-14 14:15:11 [4,979ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/Tf/__DOC.py:290: DeprecationWarning: invalid escape sequence '\ '
+  result["MallocTag"].GetCallTree.func_doc = """**classmethod** GetCallTree(tree, skipRepeated) -> bool
+2024-12-14 14:15:11 [5,138ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/Sdf/__DOC.py:11: DeprecationWarning: invalid escape sequence '\p'
+  result["AssetPath"].__init__.func_doc = """__init__()
+2024-12-14 14:15:11 [5,248ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/UsdSkel/__DOC.py:500: DeprecationWarning: invalid escape sequence '\e'
+  result["AnimMapper"].Remap.func_doc = """Remap(source, target, elementSize, defaultValue) -> bool
+2024-12-14 14:15:12 [5,799ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd/omni/usd/_impl/utils.py:1196: DeprecationWarning: invalid escape sequence '\d'
+  match = re.search("_(\d+)$", path)
+2024-12-14 14:15:12 [5,918ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.kit.renderer.imgui/omni/kit/ui/editor_menu.py:106: DeprecationWarning: invalid escape sequence '\/'
+  menu_parts = menu_path.replace("\/", "@TEMPSLASH@").split("/")
+2024-12-14 14:15:12 [5,984ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.kit.widget.filebrowser/omni/kit/widget/filebrowser/model.py:454: DeprecationWarning: invalid escape sequence '\.'
+  compiled_regex = re.compile(r'([\w.-]+)(.)('+numbers+')\.('+types+')$')
+2024-12-14 14:15:15 [9,450ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/extsPhysics/omni.physx/omni/physx/scripts/physicsUtils.py:39: DeprecationWarning: invalid escape sequence '\d'
+  match = re.search("_(\d+)$", path)
+2024-12-14 14:15:15 [9,472ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/exts/omni.isaac.core/omni/isaac/core/utils/deformable_mesh_utils.py:30: DeprecationWarning: invalid escape sequence '\s'
+  v_pat = re.compile(r"^\s*[vV]\s*" + flt_grp + "\s*" + flt_grp + "\s*" + flt_grp + "\s*$")
+2024-12-14 14:15:16 [9,747ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-14 14:15:16 [9,761ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/PxOsd/__DOC.py:270: DeprecationWarning: invalid escape sequence '\w'
+  result["MeshTopologyValidation"].__doc__ = """
+2024-12-14 14:15:16 [9,770ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/extscache/omni.graph.action_nodes-1.21.3+106.0.0.lx64.r.cp310/omni/graph/action_nodes/ogn/OgnCountdownDatabase.py:1: DeprecationWarning: invalid escape sequence '\ '
+  """Support for simplified access to data on nodes of type omni.graph.action.Countdown
+2024-12-14 14:15:17 [11,005ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-14 14:15:18 [11,828ms] [Error] [rtx.neuraylib.plugin] Cannot find `Documents/Kit/shared` directory.
+[W init.cpp:767] Warning: nvfuser is no longer supported in torch script, use _jit_set_nvfuser_enabled is deprecated and a no-op (function operator())
+2024-12-14 14:15:20 [14,282ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-14 14:15:20 [14,300ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-14 14:15:30 [24,318ms] [Error] [omni.physx.plugin] PhysX error: BV32 binary image load error., FILE /builds/omniverse/physics/physx/source/geomutils/src/GuMeshFactory.cpp, LINE 390
+2024-12-14 14:15:31 [25,066ms] [Error] [omni.physx.plugin] PhysX error: BV32 binary image load error., FILE /builds/omniverse/physics/physx/source/geomutils/src/GuMeshFactory.cpp, LINE 390
+2024-12-14 14:15:31 [25,291ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+[38;20m[skrl:INFO] Environment wrapper: Omniverse Isaac Gym[0m
+2024-12-14 14:15:35 [29,334ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: Currently logged in as: meesjansen (meesjansen-Delft Technical University). Use `wandb login --relogin` to force relogin
+2024-12-14 14:15:37 [31,585ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: wandb version 0.19.1 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+2024-12-14 14:15:37 [31,585ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: Tracking run with wandb version 0.12.21
+2024-12-14 14:15:37 [31,585ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: Run data is saved locally in /workspace/Options_In_Simulation/my_runs/wandb/run-20241214_151535-bp86u9h3
+wandb: Run `wandb offline` to turn off syncing.
+2024-12-14 14:15:37 [31,587ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: Syncing run PPOc_mixed_o10_r1
+2024-12-14 14:15:37 [31,587ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: ⭐️ View project at https://wandb.ai/meesjansen-Delft%20Technical%20University/PPOc
+2024-12-14 14:15:37 [31,587ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: 🚀 View run at https://wandb.ai/meesjansen-Delft%20Technical%20University/PPOc/runs/bp86u9h3
+2024-12-14 14:15:37 [31,630ms] [Error] [omni.kit.app._impl] [py stderr]: [34m[1mwandb[0m: [33mWARNING[0m Found log directory outside of given root_logdir, dropping given root_logdir for event file in /workspace/Options_In_Simulation/my_runs/PPOc_mixed_o10_r1/PPOc_mixed_o10_r1
+2024-12-14 14:57:37 [2,551,590ms] [Error] [omni.kit.app._impl] [py stderr]: Traceback (most recent call last):
+2024-12-14 14:57:37 [2,551,591ms] [Error] [omni.kit.app._impl] [py stderr]:   File "/workspace/Options_In_Simulation/train_mixed_o10_r1.py", line 189, in <module>
+    trainer.train()
+2024-12-14 14:57:37 [2,551,591ms] [Error] [omni.kit.app._impl] [py stderr]:   File "/isaac-sim/kit/python/lib/python3.10/site-packages/skrl/trainers/torch/sequential.py", line 81, in train
+    self.single_agent_train()
+2024-12-14 14:57:37 [2,551,591ms] [Error] [omni.kit.app._impl] [py stderr]:   File "/isaac-sim/kit/python/lib/python3.10/site-packages/skrl/trainers/torch/base.py", line 206, in single_agent_train
+    self.agents.post_interaction(timestep=timestep, timesteps=self.timesteps)
+2024-12-14 14:57:37 [2,551,591ms] [Error] [omni.kit.app._impl] [py stderr]:   File "/workspace/Options_In_Simulation/my_agents/ppo.py", line 305, in post_interaction
+    self._update(timestep, timesteps)
+2024-12-14 14:57:37 [2,551,591ms] [Error] [omni.kit.app._impl] [py stderr]:   File "/workspace/Options_In_Simulation/my_agents/ppo.py", line 395, in _update
+    _, next_log_prob, _ = self.policy.act({"states": sampled_states, "taken_actions": sampled_actions}, role="policy")
+2024-12-14 14:57:37 [2,551,591ms] [Error] [omni.kit.app._impl] [py stderr]:   File "/isaac-sim/kit/python/lib/python3.10/site-packages/skrl/models/torch/gaussian.py", line 132, in act
+    self._distribution = Normal(mean_actions, log_std.exp())
+2024-12-14 14:57:37 [2,551,591ms] [Error] [omni.kit.app._impl] [py stderr]:   File "/isaac-sim/exts/omni.isaac.ml_archive/pip_prebundle/torch/distributions/normal.py", line 56, in __init__
+    super().__init__(batch_shape, validate_args=validate_args)
+2024-12-14 14:57:37 [2,551,591ms] [Error] [omni.kit.app._impl] [py stderr]:   File "/isaac-sim/exts/omni.isaac.ml_archive/pip_prebundle/torch/distributions/distribution.py", line 68, in __init__
+    raise ValueError(
+2024-12-14 14:57:37 [2,551,591ms] [Error] [omni.kit.app._impl] [py stderr]: ValueError: Expected parameter loc (Tensor of shape (40, 4)) of distribution Normal(loc: torch.Size([40, 4]), scale: torch.Size([40, 4])) to satisfy the constraint Real(), but found invalid values:
+tensor([[nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan],
+        [nan, nan, nan, nan]], device='cuda:0', grad_fn=<AddmmBackward0>)
+2024-12-14 14:57:40 [2,554,112ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+2024-12-14 14:57:48 [2,562,603ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: - 0.089 MB of 0.089 MB uploaded (0.000 MB deduped)wandb: \ 0.089 MB of 0.089 MB uploaded (0.000 MB deduped)wandb: | 0.089 MB of 0.100 MB uploaded (0.000 MB deduped)wandb: / 0.001 MB of 0.108 MB uploaded (0.000 MB deduped)wandb: - 0.001 MB of 0.108 MB uploaded (0.000 MB deduped)wandb: \ 0.005 MB of 0.108 MB uploaded (0.000 MB deduped)wandb: | 0.108 MB of 0.108 MB uploaded (0.000 MB deduped)wandb: / 0.108 MB of 0.108 MB uploaded (0.000 MB deduped)wandb: - 0.108 MB of 0.108 MB uploaded (0.000 MB deduped)wandb: \ 0.108 MB of 0.108 MB uploaded (0.000 MB deduped)wandb: | 0.108 MB of 0.108 MB uploaded (0.000 MB deduped)wandb: / 0.108 MB of 0.108 MB uploaded (0.000 MB deduped)wandb: - 0.108 MB of 0.108 MB uploaded (0.000 MB deduped)wandb: \ 0.108 MB of 0.108 MB uploaded (0.000 MB deduped)wandb: | 0.108 MB of 0.108 MB uploaded (0.000 MB deduped)wandb:                                                                                
+2024-12-14 14:57:50 [2,563,744ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: 
+wandb: Run history:
+wandb:      Episode / Total timesteps (max) ▃▁▅▃▇▄▃▂▂▂▃▂▂▂▂▄▂▂▅▄▃▃█▂▂▂▂▂▂▃▂▂▄▄▄▂▂▄▂▂
+wandb:     Episode / Total timesteps (mean) ▂▇▇▆▆▇█▇▇▇▆▆▆▆▅▃▃▃▂▃▃▃▅▂▁▁▃▃▃▃▅▄▄▄▆▃▆▂▂▄
+wandb:      Episode / Total timesteps (min) ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:             Learning / Learning rate █▄▄▄▃▄▃▂▄▂▂▃▂▂▁▂▁▁▂▁▂▂▁▂▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁
+wandb:                   Loss / Policy loss ▁▄█▆▆▅▄▃▅▃▃▄▅▂▄▄▃▆▇▃▅▄▇▂▂▄▁▃▂▃▄▄▄▆█▄▇▅▅▅
+wandb:                    Loss / Value loss █▁▃▁▄▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:          Policy / Standard deviation █▇▇▇▇▆▆▆▆▅▅▅▅▅▄▄▄▄▄▃▃▃▃▃▃▃▃▂▂▂▂▂▂▂▁▁▁▁▁▁
+wandb:  Reward / Instantaneous reward (max) █▇▇▆▆▅▄▄▅▃▃▇▅▅▃▄▅▂▄▃▃▄▃▂▂▃▁▄▄▃▄▄▂▂▆▅▃▄▁▄
+wandb: Reward / Instantaneous reward (mean) ██████████████████████▁█████████████████
+wandb:  Reward / Instantaneous reward (min) ██████████████████████▁█████████████████
+wandb:          Reward / Total reward (max) ▇██▆▇█▇▇█▆▇█▅█▇▇▄▇▇▇▇▇▅▇▅▁▇▇▆▅▇█▆▆▇▇▂▆▅▇
+wandb:         Reward / Total reward (mean) ██████████████████████▁█████████████████
+wandb:          Reward / Total reward (min) ██████████████████████▁█████████████████
+wandb:                          global_step ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb: 
+wandb: Run summary:
+wandb:      Episode / Total timesteps (max) 63.0
+wandb:     Episode / Total timesteps (mean) 19.12391
+wandb:      Episode / Total timesteps (min) 1.0
+wandb:             Learning / Learning rate 2e-05
+wandb:                   Loss / Policy loss -0.02728
+wandb:                    Loss / Value loss 0.0
+wandb:          Policy / Standard deviation 0.64367
+wandb:  Reward / Instantaneous reward (max) -1.42104
+wandb: Reward / Instantaneous reward (mean) -67.81509
+wandb:  Reward / Instantaneous reward (min) -29421.57812
+wandb:          Reward / Total reward (max) -6.19527
+wandb:         Reward / Total reward (mean) -1239.00684
+wandb:          Reward / Total reward (min) -104978.71875
+wandb:                          global_step 57000
+wandb: 
+2024-12-14 14:57:50 [2,563,746ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: Synced PPOc_mixed_o10_r1: https://wandb.ai/meesjansen-Delft%20Technical%20University/PPOc/runs/bp86u9h3
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+2024-12-14 14:57:50 [2,563,746ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: Find logs at: /workspace/Options_In_Simulation/my_runs/wandb/run-20241214_151535-bp86u9h3/logs
+[38;20m[skrl:INFO] Closing environment[0m
+2024-12-14 14:58:40 [2,614,371ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+/isaac-sim/kit/python/lib/python3.10/multiprocessing/resource_tracker.py:224: UserWarning: resource_tracker: There appear to be 6 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
++ /usr/bin/nvidia-smi --query-accounted-apps=gpu_utilization,mem_utilization,max_memory_usage,time --format=csv
++ /usr/bin/grep -v -F '44 %, 39 %, 4684 MiB, 1374553 ms
+59 %, 32 %, 1480 MiB, 12278914 ms
+40 %, 34 %, 12138 MiB, 3997663 ms
+28 %, 2 %, 1082 MiB, 6563884 ms
+29 %, 2 %, 1066 MiB, 9282246 ms
+51 %, 48 %, 15654 MiB, 13436831 ms
+53 %, 22 %, 1146 MiB, 12456715 ms
+19 %, 14 %, 3760 MiB, 3811061 ms
+19 %, 14 %, 3760 MiB, 3828947 ms
+19 %, 14 %, 3760 MiB, 3844060 ms
+19 %, 14 %, 3760 MiB, 3846830 ms
+19 %, 14 %, 3760 MiB, 3849498 ms
+19 %, 14 %, 3760 MiB, 3883613 ms
+18 %, 13 %, 3760 MiB, 4078784 ms
+17 %, 12 %, 3760 MiB, 4213196 ms
+16 %, 11 %, 3760 MiB, 4603416 ms
+12 %, 8 %, 3760 MiB, 6429509 ms
+19 %, 0 %, 1026 MiB, 10793670 ms
+60 %, 28 %, 1144 MiB, 13190682 ms
+26 %, 0 %, 1026 MiB, 77461117 ms
+91 %, 4 %, 34348 MiB, 1258403 ms
+90 %, 4 %, 34348 MiB, 1261205 ms
+94 %, 7 %, 34348 MiB, 2318948 ms
+94 %, 7 %, 34348 MiB, 2311721 ms
+94 %, 7 %, 34348 MiB, 2320031 ms
+90 %, 4 %, 34348 MiB, 1236131 ms
+90 %, 4 %, 34348 MiB, 1237861 ms
+90 %, 4 %, 34348 MiB, 1235736 ms
+94 %, 7 %, 34348 MiB, 2247146 ms
+94 %, 7 %, 34348 MiB, 2249493 ms
+94 %, 6 %, 34348 MiB, 2232951 ms
+90 %, 4 %, 34348 MiB, 1253548 ms
+90 %, 4 %, 34348 MiB, 1252978 ms
+94 %, 7 %, 34348 MiB, 2299375 ms
+94 %, 7 %, 34348 MiB, 2295684 ms
+94 %, 7 %, 34348 MiB, 2299555 ms
+90 %, 4 %, 34348 MiB, 1229324 ms
+90 %, 4 %, 34348 MiB, 1216011 ms
+94 %, 6 %, 34348 MiB, 2231193 ms
+94 %, 6 %, 34348 MiB, 2235244 ms
+94 %, 6 %, 34348 MiB, 2227172 ms
+91 %, 4 %, 34348 MiB, 1221730 ms
+94 %, 6 %, 34348 MiB, 2225554 ms
+91 %, 4 %, 34348 MiB, 1217082 ms
+95 %, 6 %, 34348 MiB, 2290541 ms
+91 %, 4 %, 34348 MiB, 1223529 ms
+94 %, 6 %, 34348 MiB, 2223496 ms
+94 %, 6 %, 34348 MiB, 2225753 ms
+94 %, 7 %, 34348 MiB, 2253959 ms
+93 %, 7 %, 34348 MiB, 2314923 ms
+93 %, 7 %, 34348 MiB, 2249920 ms
+58 %, 30 %, 1406 MiB, 12755116 ms
+27 %, 1 %, 1150 MiB, 14407897 ms
+27 %, 1 %, 1084 MiB, 14411722 ms
+19 %, 12 %, 1136 MiB, 5710097 ms
+19 %, 12 %, 1136 MiB, 5712554 ms
+19 %, 12 %, 1136 MiB, 5740060 ms
+19 %, 12 %, 1136 MiB, 5771728 ms
+16 %, 10 %, 1136 MiB, 6925574 ms
+20 %, 12 %, 1138 MiB, 9264238 ms
+19 %, 12 %, 1138 MiB, 9368461 ms
+18 %, 11 %, 1138 MiB, 9984189 ms
+18 %, 11 %, 1138 MiB, 9998866 ms
+16 %, 10 %, 1138 MiB, 11768334 ms
+92 %, 80 %, 2896 MiB, 11555787 ms
+33 %, 24 %, 43004 MiB, 161862248 ms
+0 %, 0 %, 8583 MiB, 112977 ms
+4 %, 0 %, 14739 MiB, 134859 ms
+3 %, 0 %, 14149 MiB, 137951 ms
+3 %, 0 %, 11909 MiB, 111285 ms
+12 %, 0 %, 11939 MiB, 54063167 ms
+53 %, 21 %, 1140 MiB, 8237564 ms
+59 %, 45 %, 24654 MiB, 129607590 ms
+37 %, 0 %, 8608 MiB, 129618986 ms
+13 %, 4 %, 1744 MiB, 14856335 ms
+10 %, 3 %, 1744 MiB, 2077101 ms
+14 %, 1 %, 1642 MiB, 23608 ms
+20 %, 2 %, 1876 MiB, 164026 ms
+20 %, 0 %, 1024 MiB, 17390251 ms
+95 %, 78 %, 25790 MiB, 851668 ms
+94 %, 72 %, 27578 MiB, 406353 ms
+19 %, 0 %, 1026 MiB, 19384605 ms
+19 %, 0 %, 1026 MiB, 19132560 ms
+21 %, 0 %, 1026 MiB, 18252516 ms
+20 %, 0 %, 1026 MiB, 18036733 ms
+20 %, 0 %, 1024 MiB, 17687059 ms
+21 %, 0 %, 1024 MiB, 17383113 ms
+27 %, 16 %, 5438 MiB, 11116739 ms
+4 %, 3 %, 42422 MiB, 128275 ms
+27 %, 16 %, 6468 MiB, 11183178 ms
+26 %, 16 %, 8314 MiB, 15915498 ms
+5 %, 5 %, 10168 MiB, 14376556 ms
+10 %, 9 %, 10168 MiB, 14362766 ms
+70 %, 53 %, 24654 MiB, 129596290 ms
+43 %, 21 %, 29700 MiB, 7241626 ms
+60 %, 29 %, 29700 MiB, 7245776 ms
+97 %, 82 %, 4896 MiB, 61154596 ms
+45 %, 21 %, 29696 MiB, 6959283 ms
+0 %, 0 %, 5075 MiB, 90290 ms
+18 %, 0 %, 5087 MiB, 72059993 ms
+21 %, 0 %, 1024 MiB, 26085724 ms
+95 %, 78 %, 2970 MiB, 9537871 ms
+98 %, 98 %, 36840 MiB, 28768908 ms
+79 %, 44 %, 7254 MiB, 410222 ms
+62 %, 34 %, 25714 MiB, 974272 ms
+0 %, 0 %, 18510 MiB, 697416 ms
+1 %, 0 %, 6066 MiB, 11991 ms
+2 %, 0 %, 6066 MiB, 9844 ms
+2 %, 0 %, 6066 MiB, 8732 ms
+2 %, 0 %, 6066 MiB, 8546 ms
+2 %, 0 %, 6066 MiB, 8502 ms
+16 %, 10 %, 6256 MiB, 112887 ms
+4 %, 0 %, 5444 MiB, 5437 ms
+16 %, 10 %, 6256 MiB, 112482 ms
+12 %, 8 %, 3378 MiB, 87906 ms
+31 %, 20 %, 5558 MiB, 20165 ms
+78 %, 44 %, 7254 MiB, 411753 ms
+20 %, 0 %, 1024 MiB, 18758561 ms
+0 %, 0 %, 733 MiB, 34292556 ms
+25 %, 0 %, 1026 MiB, 35379579 ms
+6 %, 5 %, 10168 MiB, 14363811 ms
+69 %, 33 %, 29700 MiB, 8686508 ms
+44 %, 21 %, 29700 MiB, 13621713 ms
+60 %, 28 %, 29700 MiB, 10016499 ms
+68 %, 33 %, 29700 MiB, 8715534 ms
+93 %, 54 %, 2418 MiB, 14707481 ms
+58 %, 29 %, 19542 MiB, 270012758 ms
+97 %, 94 %, 16122 MiB, 61139381 ms'
