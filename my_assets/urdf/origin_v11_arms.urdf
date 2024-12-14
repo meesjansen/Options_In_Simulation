@@ -34,8 +34,8 @@
         <parent link="main_body"/>
         <child link="left_front_passive_arm"/>
         <axis xyz="0 1 0"/>
-        <dynamics damping="0.1" stiffness="0.5"/>
-        <limit effort="100000.0" velocity="10" lower="-1.5708" upper="1.5708"/>
+        <dynamics damping="5.0" stiffness="150.0"/>
+        <limit effort="100000.0" velocity="10" lower="-0.7854" upper="0.0"/>
     </joint>
 
 
@@ -48,13 +48,13 @@
         <collision name="left_front_passive_arm_collision">
             <origin xyz="0.0 0.02 -0.1" rpy="0 0 0"/>
             <geometry>
-                <box size="0.1 0.04 0.3"/>
+                <box size="0.1 0.04 0.2"/>
             </geometry>
         </collision>
         <visual name="left_front_passive_arm_visual">
             <origin xyz="0.0 0.02 -0.1" rpy="0 0 0"/>
             <geometry>
-                <box size="0.1 0.04 0.3"/>
+                <box size="0.1 0.04 0.2"/>
             </geometry>
         </visual>
     </link>
@@ -62,12 +62,12 @@
 
     <!-- Left Front Passive Arm to Left Front Wheel -->
     <joint type="continuous" name="left_front_passive_arm_left_front_wheel_joint">
-        <origin xyz="0 0.04 -0.2" rpy="-1.5707 0 0"/>
+        <origin xyz="0 0.04 -0.1" rpy="-1.5707 0 0"/>
         <parent link="left_front_passive_arm"/>
         <child link="left_front_wheel"/>
         <axis xyz="0 1 0"/>
         <dynamics damping="0.1" stiffness="0.5"/>
-        <limit effort="100000.0" velocity="10" lower="-1.5708" upper="1.5708"/>
+        <limit effort="100000.0" velocity="10"/>
     </joint>
 
 
@@ -98,8 +98,8 @@
         <parent link="main_body"/>
         <child link="right_front_passive_arm"/>
         <axis xyz="0 -1 0"/>
-        <dynamics damping="0.1" stiffness="0.5"/>
-        <limit effort="100000.0" velocity="10" lower="-1.5708" upper="1.5708"/>
+        <dynamics damping="5.0" stiffness="150.0"/>
+        <limit effort="100000.0" velocity="10" lower="-0.7854" upper="0.0"/>
     </joint>
 
 
@@ -112,13 +112,13 @@
         <collision name="right_front_passive_arm_collision">
             <origin xyz="0.0 -0.02 -0.1" rpy="0 0 0"/>
             <geometry>
-                <box size="0.1 0.04 0.3"/>
+                <box size="0.1 0.04 0.2"/>
             </geometry>
         </collision>
         <visual name="right_front_passive_arm_visual">
             <origin xyz="0.0 -0.02 -0.1" rpy="0 0 0"/>
             <geometry>
-                <box size="0.1 0.04 0.3"/>
+                <box size="0.1 0.04 0.2"/>
             </geometry>
         </visual>
     </link>
@@ -126,12 +126,12 @@
 
     <!-- Right Front Passive Arm to Right Front Wheel -->
     <joint type="continuous" name="right_front_passive_arm_right_front_wheel_joint">
-        <origin xyz="0 -0.04 -0.2" rpy="-1.5707 0 0"/>
+        <origin xyz="0 -0.04 -0.1" rpy="-1.5707 0 0"/>
         <parent link="right_front_passive_arm"/>
         <child link="right_front_wheel"/>
         <axis xyz="0 1 0"/>
         <dynamics damping="0.1" stiffness="0.5"/>
-        <limit effort="100000.0" velocity="10" lower="-1.5708" upper="1.5708"/>
+        <limit effort="100000.0" velocity="10"/>
     </joint>
 
 
@@ -161,8 +161,8 @@
         <parent link="main_body"/>
         <child link="left_rear_passive_arm"/>
         <axis xyz="0 1 0"/>
-        <dynamics damping="0.1" stiffness="0.5"/>
-        <limit effort="100000.0" velocity="10" lower="-1.5708" upper="1.5708"/>
+        <dynamics damping="5.0" stiffness="150.0"/>
+        <limit effort="100000.0" velocity="10" lower="0.0" upper="0.7854"/>
     </joint>
 
 
@@ -175,13 +175,13 @@
         <collision name="left_rear_passive_arm_collision">
             <origin xyz="0.0 0.02 -0.1" rpy="0 0 0"/>
             <geometry>
-                <box size="0.1 0.04 0.3"/>
+                <box size="0.1 0.04 0.2"/>
             </geometry>
         </collision>
         <visual name="left_rear_passive_arm_visual">
             <origin xyz="0.0 0.02 -0.1" rpy="0 0 0"/>
             <geometry>
-                <box size="0.1 0.04 0.3"/>
+                <box size="0.1 0.04 0.2"/>
             </geometry>
         </visual>
     </link>
@@ -189,12 +189,12 @@
 
     <!-- Left Rear Passive Arm to Left Rear Wheel -->
     <joint type="continuous" name="left_rear_passive_arm_left_rear_wheel_joint">
-        <origin xyz="0 0.04 -0.2" rpy="-1.5707 0 0"/>
+        <origin xyz="0 0.04 -0.1" rpy="-1.5707 0 0"/>
         <parent link="left_rear_passive_arm"/>
         <child link="left_rear_wheel"/>
         <axis xyz="0 1 0"/>
         <dynamics damping="0.1" stiffness="0.5"/>
-        <limit effort="100000.0" velocity="10" lower="-1.5708" upper="1.5708"/>
+        <limit effort="100000.0" velocity="10">
     </joint>
 
 
@@ -224,8 +224,8 @@
         <parent link="main_body"/>
         <child link="right_rear_passive_arm"/>
         <axis xyz="0 -1 0"/>
-        <dynamics damping="0.1" stiffness="0.5"/>
-        <limit effort="100000.0" velocity="10" lower="-1.5708" upper="1.5708"/>
+        <dynamics damping="5.0" stiffness="150.0"/>
+        <limit effort="100000.0" velocity="10" lower="0.0" upper="0.7854"/>
     </joint>
 
     <!-- Right Rear Passive Arm -->
@@ -237,13 +237,13 @@
         <collision name="right_rear_passive_arm_collision">
             <origin xyz="0.0 -0.02 -0.1" rpy="0 0 0"/>
             <geometry>
-                <box size="0.1 0.04 0.3"/>
+                <box size="0.1 0.04 0.2"/>
             </geometry>
         </collision>
         <visual name="right_rear_passive_arm_visual">
             <origin xyz="0.0 -0.02 -0.1" rpy="0 0 0"/>
             <geometry>
-                <box size="0.1 0.04 0.3"/>
+                <box size="0.1 0.04 0.2"/>
             </geometry>
         </visual>
     </link>
@@ -251,12 +251,12 @@
 
     <!-- Right Rear Passive Arm to Right Rear Wheel -->
     <joint type="continuous" name="right_rear_passive_arm_right_rear_wheel_joint">
-        <origin xyz="0 -0.04 -0.2" rpy="-1.5707 0 0"/>
+        <origin xyz="0 -0.04 -0.1" rpy="-1.5707 0 0"/>
         <parent link="right_rear_passive_arm"/>
         <child link="right_rear_wheel"/>
         <axis xyz="0 1 0"/>
         <dynamics damping="0.1" stiffness="0.5"/>
-        <limit effort="100000.0" velocity="10" lower="-1.5708" upper="1.5708"/>
+        <limit effort="100000.0" velocity="10"/>
     </joint>
 
 

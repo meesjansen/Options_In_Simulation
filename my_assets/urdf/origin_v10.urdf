@@ -28,13 +28,13 @@
       <mass value="1"/>
       <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
     </inertial>
-    <collision name="left_front_wheel">
+    <collision name="left_front_wheel_collision">
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
     </collision>
-    <visual name="left_front_wheel">
+    <visual name="left_front_wheel_visual">
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
       <geometry>
         <cylinder length=".07" radius=".1175"/>
@@ -47,13 +47,13 @@
       <mass value="1"/>
       <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
     </inertial>
-    <collision name="right_front_wheel">
+    <collision name="right_front_wheel_collision">
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
     </collision>
-    <visual name="right_front_wheel">
+    <visual name="right_front_wheel_visual">
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
       <geometry>
         <cylinder length=".07" radius=".1175"/>
@@ -66,13 +66,13 @@
       <mass value="1"/>
       <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
     </inertial>
-    <collision name="left_rear_wheel">
+    <collision name="left_rear_wheel_collision">
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
     </collision>
-    <visual name="left_rear_wheel">
+    <visual name="left_rear_wheel_visual">
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
       <geometry>
         <cylinder length=".07" radius=".1175"/>
@@ -85,13 +85,13 @@
       <mass value="1"/>
       <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
     </inertial>
-    <collision name="right_rear_wheel">
+    <collision name="right_rear_wheel_collision">
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
         <cylinder length=".07" radius=".1175"/>
       </geometry>
     </collision>
-    <visual name="right_rear_wheel">
+    <visual name="right_rear_wheel_visual">
       <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
       <geometry>
         <cylinder length=".07" radius=".1175"/>
