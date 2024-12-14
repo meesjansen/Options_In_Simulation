@@ -1,0 +1,351 @@
+++ /usr/bin/nvidia-smi --query-accounted-apps=gpu_utilization,mem_utilization,max_memory_usage,time --format=csv
+++ /usr/bin/tail -n +2
++ previous='87 %, 2 %, 34344 MiB, 1073936 ms
+86 %, 2 %, 34344 MiB, 1085751 ms
+87 %, 2 %, 34344 MiB, 1070384 ms
+89 %, 13 %, 34344 MiB, 1302538 ms
+89 %, 13 %, 34344 MiB, 1318383 ms
+89 %, 13 %, 34344 MiB, 1300428 ms
+90 %, 13 %, 34344 MiB, 1296114 ms
+81 %, 3 %, 34346 MiB, 547628 ms
+80 %, 3 %, 34346 MiB, 549844 ms
+80 %, 3 %, 34346 MiB, 551282 ms
+81 %, 3 %, 34346 MiB, 547677 ms
+82 %, 8 %, 34346 MiB, 620464 ms
+82 %, 8 %, 34346 MiB, 619934 ms
+82 %, 8 %, 34346 MiB, 617474 ms
+86 %, 2 %, 34346 MiB, 1130665 ms
+86 %, 2 %, 34346 MiB, 1128058 ms
+86 %, 2 %, 34346 MiB, 1126708 ms
+87 %, 2 %, 34346 MiB, 1124080 ms
+88 %, 12 %, 34346 MiB, 1403111 ms
+88 %, 12 %, 34346 MiB, 1406883 ms
+89 %, 12 %, 34346 MiB, 1393137 ms
+83 %, 3 %, 34344 MiB, 532824 ms
+82 %, 3 %, 34344 MiB, 533566 ms
+82 %, 3 %, 34344 MiB, 535282 ms
+84 %, 8 %, 34344 MiB, 601802 ms
+84 %, 8 %, 34344 MiB, 601366 ms
+84 %, 8 %, 34344 MiB, 601139 ms
+89 %, 2 %, 34344 MiB, 1089192 ms
+89 %, 2 %, 34344 MiB, 1081912 ms
+89 %, 2 %, 34344 MiB, 1079156 ms
+91 %, 13 %, 34344 MiB, 1342816 ms
+91 %, 13 %, 34344 MiB, 1340708 ms
+91 %, 13 %, 34346 MiB, 1339705 ms
+91 %, 13 %, 34346 MiB, 1339231 ms
+97 %, 42 %, 34346 MiB, 4020833 ms
+97 %, 41 %, 34346 MiB, 4244908 ms
+94 %, 43 %, 34348 MiB, 1512431 ms
+93 %, 42 %, 34348 MiB, 1226478 ms
+93 %, 28 %, 34346 MiB, 2380647 ms
+97 %, 39 %, 34348 MiB, 7539805 ms
+97 %, 42 %, 34348 MiB, 4935624 ms
+93 %, 43 %, 34348 MiB, 1158462 ms
+94 %, 29 %, 34346 MiB, 2245317 ms
+98 %, 41 %, 34348 MiB, 6983110 ms
+97 %, 43 %, 34348 MiB, 5186605 ms
+90 %, 2 %, 34344 MiB, 1096121 ms
+90 %, 7 %, 34344 MiB, 1187369 ms
+89 %, 2 %, 34344 MiB, 1085306 ms
+82 %, 3 %, 34346 MiB, 543785 ms
+82 %, 3 %, 34346 MiB, 544350 ms
+82 %, 3 %, 34344 MiB, 543452 ms
+82 %, 3 %, 34346 MiB, 542926 ms
+87 %, 2 %, 34346 MiB, 1138878 ms
+88 %, 7 %, 34346 MiB, 1238869 ms
+87 %, 2 %, 34346 MiB, 1126744 ms
+83 %, 3 %, 34344 MiB, 529522 ms
+87 %, 6 %, 34344 MiB, 749107 ms
+83 %, 3 %, 34344 MiB, 522772 ms
+87 %, 6 %, 34344 MiB, 740945 ms
+90 %, 7 %, 34344 MiB, 1152950 ms
+89 %, 2 %, 34344 MiB, 1054770 ms
+90 %, 7 %, 34344 MiB, 1136328 ms
+85 %, 6 %, 34344 MiB, 773117 ms
+82 %, 2 %, 34344 MiB, 532360 ms
+87 %, 2 %, 34344 MiB, 1105783 ms
+87 %, 7 %, 34344 MiB, 1202837 ms
+87 %, 2 %, 34344 MiB, 1097282 ms
+19 %, 0 %, 1026 MiB, 18624594 ms
+22 %, 0 %, 1024 MiB, 24579614 ms
+20 %, 0 %, 1026 MiB, 27390975 ms
+21 %, 0 %, 1024 MiB, 25719732 ms
+20 %, 0 %, 1024 MiB, 10435363 ms
+41 %, 18 %, 1154 MiB, 14416179 ms
+19 %, 0 %, 1024 MiB, 17689274 ms
+33 %, 0 %, 9446 MiB, 20401070 ms
+94 %, 75 %, 4774 MiB, 7795446 ms
+4 %, 3 %, 10168 MiB, 14391617 ms
+80 %, 44 %, 7254 MiB, 407133 ms
+21 %, 0 %, 1026 MiB, 14314511 ms
+28 %, 0 %, 1026 MiB, 95967654 ms
+90 %, 7 %, 34344 MiB, 1149577 ms
+90 %, 7 %, 34344 MiB, 1153330 ms
+90 %, 7 %, 34344 MiB, 1134836 ms
+91 %, 3 %, 34344 MiB, 1433268 ms
+91 %, 3 %, 34344 MiB, 1432626 ms
+91 %, 2 %, 34344 MiB, 1411364 ms
+91 %, 8 %, 34344 MiB, 1557320 ms
+91 %, 8 %, 34344 MiB, 1556485 ms
+92 %, 8 %, 34344 MiB, 1527191 ms
+91 %, 8 %, 34344 MiB, 1554876 ms
+85 %, 7 %, 34342 MiB, 469286 ms
+95 %, 34 %, 34346 MiB, 1797505 ms
+94 %, 32 %, 34346 MiB, 1498210 ms
+95 %, 28 %, 34346 MiB, 2212230 ms
+94 %, 28 %, 34346 MiB, 2133247 ms
+96 %, 34 %, 34346 MiB, 3010352 ms
+95 %, 29 %, 34346 MiB, 3194130 ms
+90 %, 15 %, 34346 MiB, 551286 ms
+95 %, 31 %, 34346 MiB, 3295752 ms
+97 %, 34 %, 34346 MiB, 5146746 ms
+96 %, 33 %, 34346 MiB, 4669207 ms
+94 %, 30 %, 34346 MiB, 1295069 ms
+17 %, 6 %, 1012 MiB, 204557 ms
+10 %, 1 %, 1018 MiB, 2215268 ms
+1 %, 0 %, 3152 MiB, 1900439 ms
+1 %, 0 %, 3152 MiB, 1990094 ms
+1 %, 0 %, 3152 MiB, 1860544 ms
+1 %, 0 %, 3152 MiB, 1851317 ms
+1 %, 0 %, 3152 MiB, 1952523 ms
+1 %, 0 %, 3152 MiB, 1815591 ms
+2 %, 0 %, 5317 MiB, 87776 ms
+7 %, 0 %, 5319 MiB, 152076 ms
+2 %, 0 %, 5305 MiB, 65460 ms
+1 %, 0 %, 5353 MiB, 174762 ms
+96 %, 34 %, 34346 MiB, 3055377 ms
+96 %, 34 %, 34346 MiB, 4263374 ms
+1 %, 0 %, 3152 MiB, 2001868 ms
+1 %, 0 %, 3152 MiB, 1851474 ms
+1 %, 0 %, 3152 MiB, 1934610 ms
+1 %, 0 %, 3152 MiB, 1739229 ms
+1 %, 0 %, 3152 MiB, 1840471 ms
+1 %, 0 %, 3152 MiB, 1929268 ms
+1 %, 0 %, 3152 MiB, 1840347 ms
+1 %, 0 %, 3152 MiB, 822928 ms
+1 %, 0 %, 3152 MiB, 832149 ms
+22 %, 0 %, 1024 MiB, 25134040 ms
+20 %, 0 %, 1024 MiB, 27298923 ms
+21 %, 0 %, 1026 MiB, 26959723 ms'
++ /usr/bin/nvidia-smi
++ module use /opt/insy/modulefiles
++ '[' -z '' ']'
++ case "$-" in
++ __lmod_sh_dbg=x
++ '[' -n x ']'
++ set +x
+Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output
+Shell debugging restarted
++ unset __lmod_sh_dbg
++ return 0
++ export APPTAINER_ROOT=/winhome/meesjansen
++ APPTAINER_ROOT=/winhome/meesjansen
++ export APPTAINER_NAME=isaac-sim-custom.sif
++ APPTAINER_NAME=isaac-sim-custom.sif
++ export ISAACSIM_PATH=/isaac-sim
++ ISAACSIM_PATH=/isaac-sim
++ export ISAACSIM_PYTHON_EXE=/isaac-sim/python.sh
++ ISAACSIM_PYTHON_EXE=/isaac-sim/python.sh
++ export data=/home/nfs/meesjansen/isaac-sim
++ data=/home/nfs/meesjansen/isaac-sim
++ export HOME=/root
++ HOME=/root
++ srun apptainer exec --nv -C --env ACCEPT_EULA=Y --env PRIVACY_CONSENT=Y --env WANDB_API_KEY=***REDACTED*** -B /home/nfs/meesjansen/Options_In_Simulation:/workspace/Options_In_Simulation -B /home/nfs/meesjansen/isaac-sim/cache/kit:/isaac-sim/kit/cache -B /home/nfs/meesjansen/isaac-sim/cache/ov:/root/.cache/ov -B /home/nfs/meesjansen/isaac-sim/cache/pip:/root/.cache/pip -B /home/nfs/meesjansen/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache -B /home/nfs/meesjansen/isaac-sim/cache/computecache:/root/.nv/ComputeCache -B /home/nfs/meesjansen/isaac-sim/logs:/root/.nvidia-omniverse/logs -B /home/nfs/meesjansen/isaac-sim/data:/root/.local/share/ov/data -B /home/nfs/meesjansen/isaac-sim/documents:/root/Documents /winhome/meesjansen/isaac-sim-custom.sif /isaac-sim/python.sh /workspace/Options_In_Simulation/train_rooms_o10_r2_t2.py
+[33;20m[skrl:WARNING] Using `from skrl.envs.torch import ...` is deprecated and will be removed in future versions.[0m
+[33;20m[skrl:WARNING]  - Import loaders using `from skrl.envs.loaders.torch import ...`[0m
+[33;20m[skrl:WARNING]  - Import wrappers using `from skrl.envs.wrappers.torch import ...`[0m
+[38;20m[skrl:INFO] Seed: 42[0m
+2024-12-13 20:14:50 [1,929ms] [Error] [carb.scripting-python.plugin] OSError: [Errno 30] Read-only file system: '/isaac-sim/kit/exts/omni.gpu_foundation/cache/nv_shadercache'
+
+At:
+  /isaac-sim/kit/python/lib/python3.10/os.py(230): makedirs
+  /isaac-sim/kit/exts/omni.gpu_foundation/omni/gpu_foundation_factory/impl/foundation_extension.py(77): setup_shadercache_locations
+  /isaac-sim/kit/exts/omni.gpu_foundation/omni/gpu_foundation_factory/impl/foundation_extension.py(142): on_startup
+  /isaac-sim/kit/kernel/py/omni/ext/_impl/_internal.py(164): _startup_ext
+  /isaac-sim/kit/kernel/py/omni/ext/_impl/_internal.py(224): startup
+  /isaac-sim/kit/kernel/py/omni/ext/_impl/_internal.py(328): startup_extension
+  PythonExtension.cpp::startup()(2): <module>
+  /isaac-sim/exts/omni.isaac.kit/omni/isaac/kit/simulation_app.py(350): _start_app
+  /isaac-sim/exts/omni.isaac.kit/omni/isaac/kit/simulation_app.py(197): __init__
+  /isaac-sim/exts/omni.isaac.gym/omni/isaac/gym/vec_env/vec_env_base.py(66): __init__
+  /isaac-sim/kit/python/lib/python3.10/site-packages/skrl/utils/omniverse_isaacgym_utils.py(329): get_env_instance
+  /workspace/Options_In_Simulation/train_rooms_o10_r2_t2.py(64): <module>
+
+2024-12-13 20:14:50 [1,929ms] [Error] [omni.ext.plugin] [ext: omni.gpu_foundation-0.0.0] Failed to startup python extension.
+2024-12-13 20:14:52 [4,467ms] [Error] [gpu.foundation.plugin] Failed opening shader cache version file: ./shadercache/common/version
+2024-12-13 20:14:52 [4,467ms] [Error] [gpu.foundation.plugin] Failed to process shader cache version file
+2024-12-13 20:14:55 [6,950ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/Tf/__DOC.py:290: DeprecationWarning: invalid escape sequence '\ '
+  result["MallocTag"].GetCallTree.func_doc = """**classmethod** GetCallTree(tree, skipRepeated) -> bool
+2024-12-13 20:14:55 [7,091ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/Sdf/__DOC.py:11: DeprecationWarning: invalid escape sequence '\p'
+  result["AssetPath"].__init__.func_doc = """__init__()
+2024-12-13 20:14:55 [7,203ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/UsdSkel/__DOC.py:500: DeprecationWarning: invalid escape sequence '\e'
+  result["AnimMapper"].Remap.func_doc = """Remap(source, target, elementSize, defaultValue) -> bool
+2024-12-13 20:14:56 [7,668ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd/omni/usd/_impl/utils.py:1196: DeprecationWarning: invalid escape sequence '\d'
+  match = re.search("_(\d+)$", path)
+2024-12-13 20:14:56 [7,784ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.kit.renderer.imgui/omni/kit/ui/editor_menu.py:106: DeprecationWarning: invalid escape sequence '\/'
+  menu_parts = menu_path.replace("\/", "@TEMPSLASH@").split("/")
+2024-12-13 20:14:56 [7,851ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.kit.widget.filebrowser/omni/kit/widget/filebrowser/model.py:454: DeprecationWarning: invalid escape sequence '\.'
+  compiled_regex = re.compile(r'([\w.-]+)(.)('+numbers+')\.('+types+')$')
+2024-12-13 20:14:59 [10,905ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/extsPhysics/omni.physx/omni/physx/scripts/physicsUtils.py:39: DeprecationWarning: invalid escape sequence '\d'
+  match = re.search("_(\d+)$", path)
+2024-12-13 20:14:59 [10,927ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/exts/omni.isaac.core/omni/isaac/core/utils/deformable_mesh_utils.py:30: DeprecationWarning: invalid escape sequence '\s'
+  v_pat = re.compile(r"^\s*[vV]\s*" + flt_grp + "\s*" + flt_grp + "\s*" + flt_grp + "\s*$")
+2024-12-13 20:14:59 [11,202ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-13 20:14:59 [11,206ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/extscache/omni.graph.action_nodes-1.21.3+106.0.0.lx64.r.cp310/omni/graph/action_nodes/ogn/OgnCountdownDatabase.py:1: DeprecationWarning: invalid escape sequence '\ '
+  """Support for simplified access to data on nodes of type omni.graph.action.Countdown
+2024-12-13 20:14:59 [11,238ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/PxOsd/__DOC.py:270: DeprecationWarning: invalid escape sequence '\w'
+  result["MeshTopologyValidation"].__doc__ = """
+2024-12-13 20:15:01 [12,530ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-13 20:15:01 [13,365ms] [Error] [rtx.neuraylib.plugin] Cannot find `Documents/Kit/shared` directory.
+[W init.cpp:767] Warning: nvfuser is no longer supported in torch script, use _jit_set_nvfuser_enabled is deprecated and a no-op (function operator())
+2024-12-13 20:15:03 [15,267ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-13 20:15:03 [15,287ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-13 20:15:14 [25,910ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-13 20:15:14 [25,911ms] [Error] [omni.physx.tensors.plugin] Pattern '/World/envs/*/robot_*' did not match any rigid bodies
+
+2024-12-13 20:15:14 [25,911ms] [Error] [omni.physx.tensors.plugin] Provided pattern list did not match any articulations
+
+2024-12-13 20:15:14 [25,911ms] [Error] [omni.kit.app._impl] [py stderr]: Traceback (most recent call last):
+2024-12-13 20:15:14 [25,911ms] [Error] [omni.kit.app._impl] [py stderr]:   File "/workspace/Options_In_Simulation/train_rooms_o10_r2_t2.py", line 76, in <module>
+2024-12-13 20:15:14 [25,912ms] [Error] [omni.kit.app._impl] [py stderr]:     env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="torch", init_sim=True)
+2024-12-13 20:15:14 [25,912ms] [Error] [omni.kit.app._impl] [py stderr]:   File "/isaac-sim/exts/omni.isaac.gym/omni/isaac/gym/vec_env/vec_env_base.py", line 127, in set_task
+2024-12-13 20:15:14 [25,913ms] [Error] [omni.kit.app._impl] [py stderr]:     self._world.reset()
+2024-12-13 20:15:14 [25,913ms] [Error] [omni.kit.app._impl] [py stderr]:   File "/isaac-sim/exts/omni.isaac.core/omni/isaac/core/world/world.py", line 391, in reset
+2024-12-13 20:15:14 [25,913ms] [Error] [omni.kit.app._impl] [py stderr]:     self._scene._finalize(self.physics_sim_view)
+2024-12-13 20:15:14 [25,913ms] [Error] [omni.kit.app._impl] [py stderr]:   File "/isaac-sim/exts/omni.isaac.core/omni/isaac/core/scenes/scene.py", line 367, in _finalize
+2024-12-13 20:15:14 [25,913ms] [Error] [omni.kit.app._impl] [py stderr]:     articulated_view.initialize(physics_sim_view)
+2024-12-13 20:15:14 [25,913ms] [Error] [omni.kit.app._impl] [py stderr]:   File "/isaac-sim/exts/omni.isaac.core/omni/isaac/core/articulations/articulation_view.py", line 349, in initialize
+2024-12-13 20:15:14 [25,914ms] [Error] [omni.kit.app._impl] [py stderr]:     assert self._physics_view.is_homogeneous
+2024-12-13 20:15:14 [25,914ms] [Error] [omni.kit.app._impl] [py stderr]:   File "/isaac-sim/extsPhysics/omni.physics.tensors/omni/physics/tensors/impl/api.py", line 166, in is_homogeneous
+2024-12-13 20:15:14 [25,914ms] [Error] [omni.kit.app._impl] [py stderr]:     return self._backend.is_homogeneous
+2024-12-13 20:15:14 [25,914ms] [Error] [omni.kit.app._impl] [py stderr]: AttributeError: 'NoneType' object has no attribute 'is_homogeneous'
++ /usr/bin/nvidia-smi --query-accounted-apps=gpu_utilization,mem_utilization,max_memory_usage,time --format=csv
++ /usr/bin/grep -v -F '87 %, 2 %, 34344 MiB, 1073936 ms
+86 %, 2 %, 34344 MiB, 1085751 ms
+87 %, 2 %, 34344 MiB, 1070384 ms
+89 %, 13 %, 34344 MiB, 1302538 ms
+89 %, 13 %, 34344 MiB, 1318383 ms
+89 %, 13 %, 34344 MiB, 1300428 ms
+90 %, 13 %, 34344 MiB, 1296114 ms
+81 %, 3 %, 34346 MiB, 547628 ms
+80 %, 3 %, 34346 MiB, 549844 ms
+80 %, 3 %, 34346 MiB, 551282 ms
+81 %, 3 %, 34346 MiB, 547677 ms
+82 %, 8 %, 34346 MiB, 620464 ms
+82 %, 8 %, 34346 MiB, 619934 ms
+82 %, 8 %, 34346 MiB, 617474 ms
+86 %, 2 %, 34346 MiB, 1130665 ms
+86 %, 2 %, 34346 MiB, 1128058 ms
+86 %, 2 %, 34346 MiB, 1126708 ms
+87 %, 2 %, 34346 MiB, 1124080 ms
+88 %, 12 %, 34346 MiB, 1403111 ms
+88 %, 12 %, 34346 MiB, 1406883 ms
+89 %, 12 %, 34346 MiB, 1393137 ms
+83 %, 3 %, 34344 MiB, 532824 ms
+82 %, 3 %, 34344 MiB, 533566 ms
+82 %, 3 %, 34344 MiB, 535282 ms
+84 %, 8 %, 34344 MiB, 601802 ms
+84 %, 8 %, 34344 MiB, 601366 ms
+84 %, 8 %, 34344 MiB, 601139 ms
+89 %, 2 %, 34344 MiB, 1089192 ms
+89 %, 2 %, 34344 MiB, 1081912 ms
+89 %, 2 %, 34344 MiB, 1079156 ms
+91 %, 13 %, 34344 MiB, 1342816 ms
+91 %, 13 %, 34344 MiB, 1340708 ms
+91 %, 13 %, 34346 MiB, 1339705 ms
+91 %, 13 %, 34346 MiB, 1339231 ms
+97 %, 42 %, 34346 MiB, 4020833 ms
+97 %, 41 %, 34346 MiB, 4244908 ms
+94 %, 43 %, 34348 MiB, 1512431 ms
+93 %, 42 %, 34348 MiB, 1226478 ms
+93 %, 28 %, 34346 MiB, 2380647 ms
+97 %, 39 %, 34348 MiB, 7539805 ms
+97 %, 42 %, 34348 MiB, 4935624 ms
+93 %, 43 %, 34348 MiB, 1158462 ms
+94 %, 29 %, 34346 MiB, 2245317 ms
+98 %, 41 %, 34348 MiB, 6983110 ms
+97 %, 43 %, 34348 MiB, 5186605 ms
+90 %, 2 %, 34344 MiB, 1096121 ms
+90 %, 7 %, 34344 MiB, 1187369 ms
+89 %, 2 %, 34344 MiB, 1085306 ms
+82 %, 3 %, 34346 MiB, 543785 ms
+82 %, 3 %, 34346 MiB, 544350 ms
+82 %, 3 %, 34344 MiB, 543452 ms
+82 %, 3 %, 34346 MiB, 542926 ms
+87 %, 2 %, 34346 MiB, 1138878 ms
+88 %, 7 %, 34346 MiB, 1238869 ms
+87 %, 2 %, 34346 MiB, 1126744 ms
+83 %, 3 %, 34344 MiB, 529522 ms
+87 %, 6 %, 34344 MiB, 749107 ms
+83 %, 3 %, 34344 MiB, 522772 ms
+87 %, 6 %, 34344 MiB, 740945 ms
+90 %, 7 %, 34344 MiB, 1152950 ms
+89 %, 2 %, 34344 MiB, 1054770 ms
+90 %, 7 %, 34344 MiB, 1136328 ms
+85 %, 6 %, 34344 MiB, 773117 ms
+82 %, 2 %, 34344 MiB, 532360 ms
+87 %, 2 %, 34344 MiB, 1105783 ms
+87 %, 7 %, 34344 MiB, 1202837 ms
+87 %, 2 %, 34344 MiB, 1097282 ms
+19 %, 0 %, 1026 MiB, 18624594 ms
+22 %, 0 %, 1024 MiB, 24579614 ms
+20 %, 0 %, 1026 MiB, 27390975 ms
+21 %, 0 %, 1024 MiB, 25719732 ms
+20 %, 0 %, 1024 MiB, 10435363 ms
+41 %, 18 %, 1154 MiB, 14416179 ms
+19 %, 0 %, 1024 MiB, 17689274 ms
+33 %, 0 %, 9446 MiB, 20401070 ms
+94 %, 75 %, 4774 MiB, 7795446 ms
+4 %, 3 %, 10168 MiB, 14391617 ms
+80 %, 44 %, 7254 MiB, 407133 ms
+21 %, 0 %, 1026 MiB, 14314511 ms
+28 %, 0 %, 1026 MiB, 95967654 ms
+90 %, 7 %, 34344 MiB, 1149577 ms
+90 %, 7 %, 34344 MiB, 1153330 ms
+90 %, 7 %, 34344 MiB, 1134836 ms
+91 %, 3 %, 34344 MiB, 1433268 ms
+91 %, 3 %, 34344 MiB, 1432626 ms
+91 %, 2 %, 34344 MiB, 1411364 ms
+91 %, 8 %, 34344 MiB, 1557320 ms
+91 %, 8 %, 34344 MiB, 1556485 ms
+92 %, 8 %, 34344 MiB, 1527191 ms
+91 %, 8 %, 34344 MiB, 1554876 ms
+85 %, 7 %, 34342 MiB, 469286 ms
+95 %, 34 %, 34346 MiB, 1797505 ms
+94 %, 32 %, 34346 MiB, 1498210 ms
+95 %, 28 %, 34346 MiB, 2212230 ms
+94 %, 28 %, 34346 MiB, 2133247 ms
+96 %, 34 %, 34346 MiB, 3010352 ms
+95 %, 29 %, 34346 MiB, 3194130 ms
+90 %, 15 %, 34346 MiB, 551286 ms
+95 %, 31 %, 34346 MiB, 3295752 ms
+97 %, 34 %, 34346 MiB, 5146746 ms
+96 %, 33 %, 34346 MiB, 4669207 ms
+94 %, 30 %, 34346 MiB, 1295069 ms
+17 %, 6 %, 1012 MiB, 204557 ms
+10 %, 1 %, 1018 MiB, 2215268 ms
+1 %, 0 %, 3152 MiB, 1900439 ms
+1 %, 0 %, 3152 MiB, 1990094 ms
+1 %, 0 %, 3152 MiB, 1860544 ms
+1 %, 0 %, 3152 MiB, 1851317 ms
+1 %, 0 %, 3152 MiB, 1952523 ms
+1 %, 0 %, 3152 MiB, 1815591 ms
+2 %, 0 %, 5317 MiB, 87776 ms
+7 %, 0 %, 5319 MiB, 152076 ms
+2 %, 0 %, 5305 MiB, 65460 ms
+1 %, 0 %, 5353 MiB, 174762 ms
+96 %, 34 %, 34346 MiB, 3055377 ms
+96 %, 34 %, 34346 MiB, 4263374 ms
+1 %, 0 %, 3152 MiB, 2001868 ms
+1 %, 0 %, 3152 MiB, 1851474 ms
+1 %, 0 %, 3152 MiB, 1934610 ms
+1 %, 0 %, 3152 MiB, 1739229 ms
+1 %, 0 %, 3152 MiB, 1840471 ms
+1 %, 0 %, 3152 MiB, 1929268 ms
+1 %, 0 %, 3152 MiB, 1840347 ms
+1 %, 0 %, 3152 MiB, 822928 ms
+1 %, 0 %, 3152 MiB, 832149 ms
+22 %, 0 %, 1024 MiB, 25134040 ms
+20 %, 0 %, 1024 MiB, 27298923 ms
+21 %, 0 %, 1026 MiB, 26959723 ms'

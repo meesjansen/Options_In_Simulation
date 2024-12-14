@@ -1,0 +1,529 @@
+++ /usr/bin/nvidia-smi --query-accounted-apps=gpu_utilization,mem_utilization,max_memory_usage,time --format=csv
+++ /usr/bin/tail -n +2
++ previous='86 %, 9 %, 34344 MiB, 569685 ms
+86 %, 9 %, 34344 MiB, 570229 ms
+86 %, 9 %, 34344 MiB, 570106 ms
+90 %, 2 %, 34344 MiB, 1036840 ms
+90 %, 2 %, 34344 MiB, 1036871 ms
+90 %, 2 %, 34344 MiB, 1036142 ms
+90 %, 2 %, 34344 MiB, 1036074 ms
+92 %, 13 %, 34344 MiB, 1267686 ms
+92 %, 14 %, 34344 MiB, 1269570 ms
+92 %, 13 %, 34344 MiB, 1267564 ms
+92 %, 13 %, 34344 MiB, 1274157 ms
+84 %, 3 %, 34346 MiB, 528126 ms
+84 %, 3 %, 34346 MiB, 528313 ms
+84 %, 3 %, 34346 MiB, 528773 ms
+83 %, 3 %, 34346 MiB, 529231 ms
+85 %, 9 %, 34346 MiB, 598116 ms
+85 %, 8 %, 34346 MiB, 599366 ms
+85 %, 8 %, 34346 MiB, 598465 ms
+88 %, 2 %, 34346 MiB, 1108911 ms
+88 %, 2 %, 34346 MiB, 1108816 ms
+88 %, 2 %, 34346 MiB, 1107937 ms
+88 %, 2 %, 34346 MiB, 1107232 ms
+90 %, 12 %, 34346 MiB, 1378033 ms
+90 %, 12 %, 34346 MiB, 1373882 ms
+90 %, 12 %, 34346 MiB, 1377953 ms
+84 %, 3 %, 34344 MiB, 522571 ms
+85 %, 3 %, 34344 MiB, 519506 ms
+81 %, 3 %, 34344 MiB, 540591 ms
+86 %, 9 %, 34344 MiB, 586208 ms
+87 %, 9 %, 34344 MiB, 587882 ms
+87 %, 9 %, 34344 MiB, 584980 ms
+87 %, 9 %, 34344 MiB, 584967 ms
+90 %, 2 %, 34344 MiB, 1068515 ms
+90 %, 2 %, 34344 MiB, 1068650 ms
+90 %, 2 %, 34344 MiB, 1068127 ms
+92 %, 13 %, 34344 MiB, 1330974 ms
+92 %, 13 %, 34344 MiB, 1331089 ms
+92 %, 13 %, 34346 MiB, 1328421 ms
+98 %, 37 %, 34346 MiB, 6194478 ms
+97 %, 41 %, 34346 MiB, 4268777 ms
+94 %, 42 %, 34348 MiB, 1255891 ms
+93 %, 28 %, 34346 MiB, 2407807 ms
+93 %, 24 %, 34346 MiB, 1990339 ms
+97 %, 41 %, 34348 MiB, 5162465 ms
+97 %, 41 %, 34348 MiB, 5227884 ms
+95 %, 46 %, 34348 MiB, 1656190 ms
+95 %, 29 %, 34346 MiB, 2204563 ms
+98 %, 41 %, 34348 MiB, 6943079 ms
+97 %, 44 %, 34348 MiB, 4832457 ms
+89 %, 6 %, 34344 MiB, 743800 ms
+90 %, 2 %, 34344 MiB, 1092123 ms
+91 %, 2 %, 34344 MiB, 1072724 ms
+91 %, 7 %, 34344 MiB, 1159416 ms
+84 %, 3 %, 34346 MiB, 534395 ms
+87 %, 6 %, 34346 MiB, 780369 ms
+84 %, 3 %, 34346 MiB, 530983 ms
+88 %, 2 %, 34346 MiB, 1137562 ms
+89 %, 7 %, 34346 MiB, 1224322 ms
+88 %, 2 %, 34346 MiB, 1114009 ms
+85 %, 3 %, 34344 MiB, 514482 ms
+85 %, 3 %, 34344 MiB, 516151 ms
+85 %, 3 %, 34344 MiB, 512489 ms
+85 %, 3 %, 34344 MiB, 512125 ms
+90 %, 2 %, 34344 MiB, 1058722 ms
+91 %, 8 %, 34344 MiB, 1138970 ms
+91 %, 2 %, 34344 MiB, 1042328 ms
+83 %, 3 %, 34344 MiB, 525521 ms
+86 %, 6 %, 34344 MiB, 762382 ms
+83 %, 3 %, 34344 MiB, 522259 ms
+86 %, 6 %, 34344 MiB, 754521 ms
+88 %, 7 %, 34344 MiB, 1188584 ms
+88 %, 2 %, 34344 MiB, 1084262 ms
+88 %, 7 %, 34344 MiB, 1176799 ms
+21 %, 0 %, 1024 MiB, 16044730 ms
+22 %, 0 %, 1024 MiB, 15348826 ms
+23 %, 0 %, 1024 MiB, 23727206 ms
+22 %, 0 %, 1024 MiB, 24463443 ms
+23 %, 0 %, 1024 MiB, 24168167 ms
+43 %, 16 %, 1142 MiB, 14411099 ms
+21 %, 0 %, 1024 MiB, 16152442 ms
+36 %, 0 %, 7680 MiB, 20807432 ms
+89 %, 51 %, 2418 MiB, 9053503 ms
+1 %, 1 %, 4048 MiB, 136275141 ms
+88 %, 6 %, 34344 MiB, 726558 ms
+88 %, 6 %, 34344 MiB, 730777 ms
+90 %, 2 %, 34344 MiB, 1058584 ms
+90 %, 2 %, 34344 MiB, 1058532 ms
+91 %, 2 %, 34344 MiB, 1040848 ms
+90 %, 2 %, 34344 MiB, 1043430 ms
+91 %, 8 %, 34344 MiB, 1139302 ms
+91 %, 7 %, 34344 MiB, 1125110 ms
+91 %, 7 %, 34344 MiB, 1124742 ms
+91 %, 3 %, 34344 MiB, 1423481 ms
+92 %, 2 %, 34344 MiB, 1395851 ms
+92 %, 2 %, 34344 MiB, 1394112 ms
+92 %, 8 %, 34342 MiB, 1089294 ms
+93 %, 25 %, 34346 MiB, 1146748 ms
+93 %, 24 %, 34346 MiB, 1127937 ms
+93 %, 25 %, 34346 MiB, 1120064 ms
+93 %, 25 %, 34346 MiB, 1124744 ms
+94 %, 33 %, 34346 MiB, 1500238 ms
+95 %, 33 %, 34346 MiB, 1565874 ms
+95 %, 28 %, 34346 MiB, 2139868 ms
+95 %, 26 %, 34346 MiB, 1915496 ms
+96 %, 34 %, 34346 MiB, 2719226 ms
+96 %, 34 %, 34346 MiB, 3115554 ms
+96 %, 27 %, 34346 MiB, 2795218 ms
+95 %, 29 %, 34346 MiB, 2978199 ms
+97 %, 35 %, 34346 MiB, 4897476 ms
+92 %, 28 %, 34346 MiB, 614596 ms
+17 %, 0 %, 5321 MiB, 40822237 ms
+96 %, 29 %, 34346 MiB, 2959014 ms
+97 %, 33 %, 34346 MiB, 4578851 ms
+1 %, 0 %, 3152 MiB, 1906764 ms
+1 %, 0 %, 3152 MiB, 858419 ms
+1 %, 0 %, 3152 MiB, 810141 ms
+1 %, 0 %, 3152 MiB, 1905487 ms
+1 %, 0 %, 3152 MiB, 1843509 ms
+1 %, 0 %, 3152 MiB, 857310 ms
+1 %, 0 %, 3152 MiB, 794460 ms
+1 %, 0 %, 3152 MiB, 1969226 ms
+1 %, 0 %, 3152 MiB, 1884251 ms
+1 %, 0 %, 3152 MiB, 817430 ms
+1 %, 0 %, 3152 MiB, 815500 ms
+0 %, 0 %, 4211 MiB, 108625 ms
+17 %, 0 %, 5359 MiB, 72074844 ms
+23 %, 0 %, 1024 MiB, 23491134 ms
+22 %, 0 %, 1024 MiB, 24062589 ms'
++ /usr/bin/nvidia-smi
++ module use /opt/insy/modulefiles
++ '[' -z '' ']'
++ case "$-" in
++ __lmod_sh_dbg=x
++ '[' -n x ']'
++ set +x
+Shell debugging temporarily silenced: export LMOD_SH_DBG_ON=1 for Lmod's output
+Shell debugging restarted
++ unset __lmod_sh_dbg
++ return 0
++ export APPTAINER_ROOT=/winhome/meesjansen
++ APPTAINER_ROOT=/winhome/meesjansen
++ export APPTAINER_NAME=isaac-sim-custom.sif
++ APPTAINER_NAME=isaac-sim-custom.sif
++ export ISAACSIM_PATH=/isaac-sim
++ ISAACSIM_PATH=/isaac-sim
++ export ISAACSIM_PYTHON_EXE=/isaac-sim/python.sh
++ ISAACSIM_PYTHON_EXE=/isaac-sim/python.sh
++ export data=/home/nfs/meesjansen/isaac-sim
++ data=/home/nfs/meesjansen/isaac-sim
++ export HOME=/root
++ HOME=/root
++ srun apptainer exec --nv -C --env ACCEPT_EULA=Y --env PRIVACY_CONSENT=Y --env WANDB_API_KEY=***REDACTED*** -B /home/nfs/meesjansen/Options_In_Simulation:/workspace/Options_In_Simulation -B /home/nfs/meesjansen/isaac-sim/cache/kit:/isaac-sim/kit/cache -B /home/nfs/meesjansen/isaac-sim/cache/ov:/root/.cache/ov -B /home/nfs/meesjansen/isaac-sim/cache/pip:/root/.cache/pip -B /home/nfs/meesjansen/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache -B /home/nfs/meesjansen/isaac-sim/cache/computecache:/root/.nv/ComputeCache -B /home/nfs/meesjansen/isaac-sim/logs:/root/.nvidia-omniverse/logs -B /home/nfs/meesjansen/isaac-sim/data:/root/.local/share/ov/data -B /home/nfs/meesjansen/isaac-sim/documents:/root/Documents /winhome/meesjansen/isaac-sim-custom.sif /isaac-sim/python.sh /workspace/Options_In_Simulation/train_mixed_o10_r1.py
+[33;20m[skrl:WARNING] Using `from skrl.envs.torch import ...` is deprecated and will be removed in future versions.[0m
+[33;20m[skrl:WARNING]  - Import loaders using `from skrl.envs.loaders.torch import ...`[0m
+[33;20m[skrl:WARNING]  - Import wrappers using `from skrl.envs.wrappers.torch import ...`[0m
+[38;20m[skrl:INFO] Seed: 42[0m
+2024-12-13 20:14:50 [1,718ms] [Error] [carb.scripting-python.plugin] OSError: [Errno 30] Read-only file system: '/isaac-sim/kit/exts/omni.gpu_foundation/cache/nv_shadercache'
+
+At:
+  /isaac-sim/kit/python/lib/python3.10/os.py(230): makedirs
+  /isaac-sim/kit/exts/omni.gpu_foundation/omni/gpu_foundation_factory/impl/foundation_extension.py(77): setup_shadercache_locations
+  /isaac-sim/kit/exts/omni.gpu_foundation/omni/gpu_foundation_factory/impl/foundation_extension.py(142): on_startup
+  /isaac-sim/kit/kernel/py/omni/ext/_impl/_internal.py(164): _startup_ext
+  /isaac-sim/kit/kernel/py/omni/ext/_impl/_internal.py(224): startup
+  /isaac-sim/kit/kernel/py/omni/ext/_impl/_internal.py(328): startup_extension
+  PythonExtension.cpp::startup()(2): <module>
+  /isaac-sim/exts/omni.isaac.kit/omni/isaac/kit/simulation_app.py(350): _start_app
+  /isaac-sim/exts/omni.isaac.kit/omni/isaac/kit/simulation_app.py(197): __init__
+  /isaac-sim/exts/omni.isaac.gym/omni/isaac/gym/vec_env/vec_env_base.py(66): __init__
+  /isaac-sim/kit/python/lib/python3.10/site-packages/skrl/utils/omniverse_isaacgym_utils.py(329): get_env_instance
+  /workspace/Options_In_Simulation/train_mixed_o10_r1.py(64): <module>
+
+2024-12-13 20:14:50 [1,718ms] [Error] [omni.ext.plugin] [ext: omni.gpu_foundation-0.0.0] Failed to startup python extension.
+2024-12-13 20:14:52 [4,117ms] [Error] [gpu.foundation.plugin] Failed opening shader cache version file: ./shadercache/common/version
+2024-12-13 20:14:52 [4,117ms] [Error] [gpu.foundation.plugin] Failed to process shader cache version file
+2024-12-13 20:14:54 [5,812ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/Tf/__DOC.py:290: DeprecationWarning: invalid escape sequence '\ '
+  result["MallocTag"].GetCallTree.func_doc = """**classmethod** GetCallTree(tree, skipRepeated) -> bool
+2024-12-13 20:14:54 [5,942ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/Sdf/__DOC.py:11: DeprecationWarning: invalid escape sequence '\p'
+  result["AssetPath"].__init__.func_doc = """__init__()
+2024-12-13 20:14:54 [6,050ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/UsdSkel/__DOC.py:500: DeprecationWarning: invalid escape sequence '\e'
+  result["AnimMapper"].Remap.func_doc = """Remap(source, target, elementSize, defaultValue) -> bool
+2024-12-13 20:14:54 [6,480ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd/omni/usd/_impl/utils.py:1196: DeprecationWarning: invalid escape sequence '\d'
+  match = re.search("_(\d+)$", path)
+2024-12-13 20:14:55 [6,585ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.kit.renderer.imgui/omni/kit/ui/editor_menu.py:106: DeprecationWarning: invalid escape sequence '\/'
+  menu_parts = menu_path.replace("\/", "@TEMPSLASH@").split("/")
+2024-12-13 20:14:55 [6,655ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.kit.widget.filebrowser/omni/kit/widget/filebrowser/model.py:454: DeprecationWarning: invalid escape sequence '\.'
+  compiled_regex = re.compile(r'([\w.-]+)(.)('+numbers+')\.('+types+')$')
+2024-12-13 20:14:57 [9,234ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/extsPhysics/omni.physx/omni/physx/scripts/physicsUtils.py:39: DeprecationWarning: invalid escape sequence '\d'
+  match = re.search("_(\d+)$", path)
+2024-12-13 20:14:57 [9,256ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/exts/omni.isaac.core/omni/isaac/core/utils/deformable_mesh_utils.py:30: DeprecationWarning: invalid escape sequence '\s'
+  v_pat = re.compile(r"^\s*[vV]\s*" + flt_grp + "\s*" + flt_grp + "\s*" + flt_grp + "\s*$")
+2024-12-13 20:14:57 [9,511ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-13 20:14:57 [9,518ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/kit/exts/omni.usd.libs/pxr/PxOsd/__DOC.py:270: DeprecationWarning: invalid escape sequence '\w'
+  result["MeshTopologyValidation"].__doc__ = """
+2024-12-13 20:14:58 [9,876ms] [Error] [omni.kit.app._impl] [py stderr]: /isaac-sim/extscache/omni.graph.action_nodes-1.21.3+106.0.0.lx64.r.cp310/omni/graph/action_nodes/ogn/OgnCountdownDatabase.py:1: DeprecationWarning: invalid escape sequence '\ '
+  """Support for simplified access to data on nodes of type omni.graph.action.Countdown
+2024-12-13 20:14:59 [10,653ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-13 20:14:59 [11,427ms] [Error] [rtx.neuraylib.plugin] Cannot find `Documents/Kit/shared` directory.
+[W init.cpp:767] Warning: nvfuser is no longer supported in torch script, use _jit_set_nvfuser_enabled is deprecated and a no-op (function operator())
+2024-12-13 20:15:02 [13,735ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-13 20:15:02 [13,751ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+2024-12-13 20:15:09 [21,318ms] [Error] [omni.physx.plugin] PhysX error: BV32 binary image load error., FILE /builds/omniverse/physics/physx/source/geomutils/src/GuMeshFactory.cpp, LINE 390
+2024-12-13 20:15:10 [21,990ms] [Error] [omni.physx.plugin] PhysX error: BV32 binary image load error., FILE /builds/omniverse/physics/physx/source/geomutils/src/GuMeshFactory.cpp, LINE 390
+2024-12-13 20:15:10 [22,102ms] [Error] [omni.kit.app.plugin] failed to open file '/isaac-sim/kit/data/Kit/Isaac-Sim/4.0/user.config.json' - unable to save the dictionary
+[38;20m[skrl:INFO] Environment wrapper: Omniverse Isaac Gym[0m
+2024-12-13 20:15:14 [26,122ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: Currently logged in as: meesjansen (meesjansen-Delft Technical University). Use `wandb login --relogin` to force relogin
+2024-12-13 20:15:16 [28,205ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: wandb version 0.19.1 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+2024-12-13 20:15:16 [28,205ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: Tracking run with wandb version 0.12.21
+2024-12-13 20:15:16 [28,206ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: Run data is saved locally in /workspace/Options_In_Simulation/my_runs/wandb/run-20241213_211514-8qwnn7is
+wandb: Run `wandb offline` to turn off syncing.
+2024-12-13 20:15:16 [28,207ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: Syncing run PPOc_mixed_o10_r1
+2024-12-13 20:15:16 [28,207ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: ⭐️ View project at https://wandb.ai/meesjansen-Delft%20Technical%20University/PPOc
+2024-12-13 20:15:16 [28,207ms] [Error] [omni.kit.app._impl] [py stderr]: wandb: 🚀 View run at https://wandb.ai/meesjansen-Delft%20Technical%20University/PPOc/runs/8qwnn7is
+2024-12-13 20:15:16 [28,223ms] [Error] [omni.kit.app._impl] [py stderr]: [34m[1mwandb[0m: [33mWARNING[0m Found log directory outside of given root_logdir, dropping given root_logdir for event file in /workspace/Options_In_Simulation/my_runs/PPOc_mixed_o10_r1/PPOc_mixed_o10_r1
+srun: error: gpu12: task 0: Exited with exit code 1
+srun: launch/slurm: _step_signal: Terminating StepId=11203282.0
+*** Error in `srun': double free or corruption (fasttop): 0x000000000100ef40 ***
+======= Backtrace: =========
+/lib64/libc.so.6(+0x81329)[0x7f4ac6aff329]
+/usr/lib64/slurm/libslurmfull.so(slurm_xfree+0x25)[0x7f4ac76fc328]
+/usr/lib64/slurm/libslurmfull.so(+0x5c732)[0x7f4ac75e0732]
+/usr/lib64/slurm/libslurmfull.so(list_destroy+0xbc)[0x7f4ac76359d9]
+/usr/lib64/slurm/libslurmfull.so(client_io_handler_destroy+0xe3)[0x7f4ac75e2b54]
+/usr/lib64/slurm/libslurmfull.so(slurm_step_launch_wait_finish+0x4ba)[0x7f4ac75e6e71]
+/usr/lib64/slurm/launch_slurm.so(launch_p_step_wait+0x22)[0x7f4ac4028681]
+srun(launch_g_step_wait+0x2f)[0x40bedd]
+srun[0x407cfd]
+srun(srun+0x1527)[0x409328]
+srun(main+0x9)[0x4097e0]
+/lib64/libc.so.6(__libc_start_main+0xf5)[0x7f4ac6aa0555]
+srun[0x407129]
+======= Memory map: ========
+00400000-0041e000 r-xp 00000000 08:03 450090                             /usr/bin/srun
+0061d000-0061e000 r--p 0001d000 08:03 450090                             /usr/bin/srun
+0061e000-00620000 rw-p 0001e000 08:03 450090                             /usr/bin/srun
+00e82000-01135000 rw-p 00000000 00:00 0                                  [heap]
+7f4aac000000-7f4aac021000 rw-p 00000000 00:00 0 
+7f4aac021000-7f4ab0000000 ---p 00000000 00:00 0 
+7f4ab4000000-7f4ab4021000 rw-p 00000000 00:00 0 
+7f4ab4021000-7f4ab8000000 ---p 00000000 00:00 0 
+7f4ab8000000-7f4ab8021000 rw-p 00000000 00:00 0 
+7f4ab8021000-7f4abc000000 ---p 00000000 00:00 0 
+7f4abc000000-7f4abc021000 rw-p 00000000 00:00 0 
+7f4abc021000-7f4ac0000000 ---p 00000000 00:00 0 
+7f4ac277c000-7f4ac277d000 ---p 00000000 00:00 0 
+7f4ac277d000-7f4ac287d000 rw-p 00000000 00:00 0 
+7f4ac287d000-7f4ac287e000 r-xp 00000000 08:03 1202950                    /usr/lib64/slurm/route_default.so
+7f4ac287e000-7f4ac2a7d000 ---p 00001000 08:03 1202950                    /usr/lib64/slurm/route_default.so
+7f4ac2a7d000-7f4ac2a7e000 r--p 00000000 08:03 1202950                    /usr/lib64/slurm/route_default.so
+7f4ac2a7e000-7f4ac2a7f000 rw-p 00001000 08:03 1202950                    /usr/lib64/slurm/route_default.so
+7f4ac2a7f000-7f4ac2a80000 ---p 00000000 00:00 0 
+7f4ac2a80000-7f4ac2b80000 rw-p 00000000 00:00 0 
+7f4ac2b80000-7f4ac2b81000 ---p 00000000 00:00 0 
+7f4ac2b81000-7f4ac2c81000 rw-p 00000000 00:00 0 
+7f4ac2c81000-7f4ac2c82000 ---p 00000000 00:00 0 
+7f4ac2c82000-7f4ac2d82000 rw-p 00000000 00:00 0 
+7f4ac2d82000-7f4ac35ed000 r--s 00000000 08:03 262230                     /var/lib/sss/mc/passwd
+7f4ac35ed000-7f4ac35f5000 r-xp 00000000 08:03 402423                     /usr/lib64/libnss_sss.so.2
+7f4ac35f5000-7f4ac37f4000 ---p 00008000 08:03 402423                     /usr/lib64/libnss_sss.so.2
+7f4ac37f4000-7f4ac37f5000 r--p 00007000 08:03 402423                     /usr/lib64/libnss_sss.so.2
+7f4ac37f5000-7f4ac37f6000 rw-p 00008000 08:03 402423                     /usr/lib64/libnss_sss.so.2
+7f4ac37f6000-7f4ac37ff000 r-xp 00000000 08:03 450074                     /usr/lib64/libmunge.so.2.0.0
+7f4ac37ff000-7f4ac39fe000 ---p 00009000 08:03 450074                     /usr/lib64/libmunge.so.2.0.0
+7f4ac39fe000-7f4ac39ff000 r--p 00008000 08:03 450074                     /usr/lib64/libmunge.so.2.0.0
+7f4ac39ff000-7f4ac3a00000 rw-p 00009000 08:03 450074                     /usr/lib64/libmunge.so.2.0.0
+7f4ac3a00000-7f4ac3a03000 r-xp 00000000 08:03 1202866                    /usr/lib64/slurm/auth_munge.so
+7f4ac3a03000-7f4ac3c02000 ---p 00003000 08:03 1202866                    /usr/lib64/slurm/auth_munge.so
+7f4ac3c02000-7f4ac3c03000 r--p 00002000 08:03 1202866                    /usr/lib64/slurm/auth_munge.so
+7f4ac3c03000-7f4ac3c04000 rw-p 00003000 08:03 1202866                    /usr/lib64/slurm/auth_munge.so
+7f4ac3c04000-7f4ac3c0a000 r-xp 00000000 08:03 395005                     /usr/lib64/libnss_dns-2.17.so
+7f4ac3c0a000-7f4ac3e09000 ---p 00006000 08:03 395005                     /usr/lib64/libnss_dns-2.17.so
+7f4ac3e09000-7f4ac3e0a000 r--p 00005000 08:03 395005                     /usr/lib64/libnss_dns-2.17.so
+7f4ac3e0a000-7f4ac3e0b000 rw-p 00006000 08:03 395005                     /usr/lib64/libnss_dns-2.17.so
+7f4ac3e0b000-7f4ac3e22000 r-xp 00000000 08:03 1202922                    /usr/lib64/slurm/mpi_pmi2.so
+7f4ac3e22000-7f4ac4022000 ---p 00017000 08:03 1202922                    /usr/lib64/slurm/mpi_pmi2.so
+7f4ac4022000-7f4ac4023000 r--p 00017000 08:03 1202922                    /usr/lib64/slurm/mpi_pmi2.so
+7f4ac4023000-7f4ac4024000 rw-p 00018000 08:03 1202922                    /usr/lib64/slurm/mpi_pmi2.so
+7f4ac4024000-7f4ac402a000 r-xp 00000000 08:03 1202908                    /usr/lib64/slurm/launch_slurm.so
+7f4ac402a000-7f4ac4229000 ---p 00006000 08:03 1202908                    /usr/lib64/slurm/launch_slurm.so
+7f4ac4229000-7f4ac422a000 r--p 00005000 08:03 1202908                    /usr/lib64/slurm/launch_slurm.so
+7f4ac422a000-7f4ac422b000 rw-p 00006000 08:03 1202908                    /usr/lib64/slurm/launch_slurm.so
+7f4ac422b000-7f4ac428b000 r-xp 00000000 08:03 395169                     /usr/lib64/libpcre.so.1.2.0
+7f4ac428b000-7f4ac448b000 ---p 00060000 08:03 395169                     /usr/lib64/libpcre.so.1.2.0
+7f4ac448b000-7f4ac448c000 r--p 00060000 08:03 395169                     /usr/lib64/libpcre.so.1.2.0
+7f4ac448c000-7f4ac448d000 rw-p 00061000 08:03 395169                     /usr/lib64/libpcre.so.1.2.0
+7f4ac448d000-7f4ac44b1000 r-xp 00000000 08:03 395178                     /usr/lib64/libselinux.so.1
+7f4ac44b1000-7f4ac46b0000 ---p 00024000 08:03 395178                     /usr/lib64/libselinux.so.1
+7f4ac46b0000-7f4ac46b1000 r--p 00023000 08:03 395178                     /usr/lib64/libselinux.so.1
+7f4ac46b1000-7f4ac46b2000 rw-p 00024000 08:03 395178                     /usr/lib64/libselinux.so.1
+7f4ac46b2000-7f4ac46b4000 rw-p 00000000 00:00 0 
+7f4ac46b4000-7f4ac46b7000 r-xp 00000000 08:03 395851                     /usr/lib64/libkeyutils.so.1.5
+7f4ac46b7000-7f4ac48b6000 ---p 00003000 08:03 395851                     /usr/lib64/libkeyutils.so.1.5
+7f4ac48b6000-7f4ac48b7000 r--p 00002000 08:03 395851                     /usr/lib64/libkeyutils.so.1.5
+7f4ac48b7000-7f4ac48b8000 rw-p 00003000 08:03 395851                     /usr/lib64/libkeyutils.so.1.5
+7f4ac48b8000-7f4ac48c6000 r-xp 00000000 08:03 396297                     /usr/lib64/libkrb5support.so.0.1
+7f4ac48c6000-7f4ac4ac6000 ---p 0000e000 08:03 396297                     /usr/lib64/libkrb5support.so.0.1
+7f4ac4ac6000-7f4ac4ac7000 r--p 0000e000 08:03 396297                     /usr/lib64/libkrb5support.so.0.1
+7f4ac4ac7000-7f4ac4ac8000 rw-p 0000f000 08:03 396297                     /usr/lib64/libkrb5support.so.0.1
+7f4ac4ac8000-7f4ac4acb000 r-xp 00000000 08:03 395197                     /usr/lib64/libcom_err.so.2.1
+7f4ac4acb000-7f4ac4cca000 ---p 00003000 08:03 395197                     /usr/lib64/libcom_err.so.2.1
+7f4ac4cca000-7f4ac4ccb000 r--p 00002000 08:03 395197                     /usr/lib64/libcom_err.so.2.1
+7f4ac4ccb000-7f4ac4ccc000 rw-p 00003000 08:03 395197                     /usr/lib64/libcom_err.so.2.1
+7f4ac4ccc000-7f4ac4cfd000 r-xp 00000000 08:03 396289                     /usr/lib64/libk5crypto.so.3.1
+7f4ac4cfd000-7f4ac4efc000 ---p 00031000 08:03 396289                     /usr/lib64/libk5crypto.so.3.1
+7f4ac4efc000-7f4ac4efe000 r--p 00030000 08:03 396289                     /usr/lib64/libk5crypto.so.3.1
+7f4ac4efe000-7f4ac4eff000 rw-p 00032000 08:03 396289                     /usr/lib64/libk5crypto.so.3.1
+7f4ac4eff000-7f4ac4fd8000 r-xp 00000000 08:03 396295                     /usr/lib64/libkrb5.so.3.3
+7f4ac4fd8000-7f4ac51d7000 ---p 000d9000 08:03 396295                     /usr/lib64/libkrb5.so.3.3
+7f4ac51d7000-7f4ac51e5000 r--p 000d8000 08:03 396295                     /usr/lib64/libkrb5.so.3.3
+7f4ac51e5000-7f4ac51e8000 rw-p 000e6000 08:03 396295                     /usr/lib64/libkrb5.so.3.3
+7f4ac51e8000-7f4ac520d000 r-xp 00000000 08:03 450277                     /usr/lib64/libauksapi.so.0.0.1
+7f4ac520d000-7f4ac540c000 ---p 00025000 08:03 450277                     /usr/lib64/libauksapi.so.0.0.1
+7f4ac540c000-7f4ac540d000 r--p 00024000 08:03 450277                     /usr/lib64/libauksapi.so.0.0.1
+7f4ac540d000-7f4ac540e000 rw-p 00025000 08:03 450277                     /usr/lib64/libauksapi.so.0.0.1
+7f4ac540e000-7f4ac540f000 rw-p 00000000 00:00 0 
+7f4ac540f000-7f4ac55c5000 r-xp 00000000 08:03 450097                     /usr/lib64/libslurm.so.37.0.0
+7f4ac55c5000-7f4ac57c5000 ---p 001b6000 08:03 450097                     /usr/lib64/libslurm.so.37.0.0
+7f4ac57c5000-7f4ac57c8000 r--p 001b6000 08:03 450097                     /usr/lib64/libslurm.so.37.0.0
+7f4ac57c8000-7f4ac57d2000 rw-p 001b9000 08:03 450097                     /usr/lib64/libslurm.so.37.0.0
+7f4ac57d2000-7f4ac57d8000 rw-p 00000000 00:00 0 
+7f4ac57d8000-7f4ac57dc000 r-xp 00000000 08:03 1202984                    /usr/lib64/slurm/auks.so
+7f4ac57dc000-7f4ac59db000 ---p 00004000 08:03 1202984                    /usr/lib64/slurm/auks.so
+7f4ac59db000-7f4ac59dc000 r--p 00003000 08:03 1202984                    /usr/lib64/slurm/auks.so
+7f4ac59dc000-7f4ac59dd000 rw-p 00004000 08:03 1202984                    /usr/lib64/slurm/auks.so
+7f4ac59dd000-7f4ac59df000 r-xp 00000000 08:03 1202971                    /usr/lib64/slurm/switch_none.so
+7f4ac59df000-7f4ac5bde000 ---p 00002000 08:03 1202971                    /usr/lib64/slurm/switch_none.so
+7f4ac5bde000-7f4ac5bdf000 r--p 00001000 08:03 1202971                    /usr/lib64/slurm/switch_none.so
+7f4ac5bdf000-7f4ac5be0000 rw-p 00002000 08:03 1202971                    /usr/lib64/slurm/switch_none.so
+7f4ac5be0000-7f4ac5be3000 r-xp 00000000 08:03 1202969                    /usr/lib64/slurm/switch_cray_aries.so
+7f4ac5be3000-7f4ac5de2000 ---p 00003000 08:03 1202969                    /usr/lib64/slurm/switch_cray_aries.so
+7f4ac5de2000-7f4ac5de3000 r--p 00002000 08:03 1202969                    /usr/lib64/slurm/switch_cray_aries.so
+7f4ac5de3000-7f4ac5de4000 rw-p 00003000 08:03 1202969                    /usr/lib64/slurm/switch_cray_aries.so
+7f4ac5de4000-7f4ac5df1000 r-xp 00000000 08:03 1202959                    /usr/lib64/slurm/select_cray_aries.so
+7f4ac5df1000-7f4ac5ff0000 ---p 0000d000 08:03 1202959                    /usr/lib64/slurm/select_cray_aries.so
+7f4ac5ff0000-7f4ac5ff1000 r--p 0000c000 08:03 1202959                    /usr/lib64/slurm/select_cray_aries.so
+7f4ac5ff1000-7f4ac5ff2000 rw-p 0000d000 08:03 1202959                    /usr/lib64/slurm/select_cray_aries.so
+7f4ac5ff2000-7f4ac5ff3000 rw-p 00000000 00:00 0 
+7f4ac5ff3000-7f4ac6000000 r-xp 00000000 08:03 1202960                    /usr/lib64/slurm/select_linear.so
+7f4ac6000000-7f4ac61ff000 ---p 0000d000 08:03 1202960                    /usr/lib64/slurm/select_linear.so
+7f4ac61ff000-7f4ac6200000 r--p 0000c000 08:03 1202960                    /usr/lib64/slurm/select_linear.so
+7f4ac6200000-7f4ac6201000 rw-p 0000d000 08:03 1202960                    /usr/lib64/slurm/select_linear.so
+7f4ac6201000-7f4ac6227000 r-xp 00000000 08:03 1202956                    /usr/lib64/slurm/select_cons_res.so
+7f4ac6227000-7f4ac6426000 ---p 00026000 08:03 1202956                    /usr/lib64/slurm/select_cons_res.so
+7f4ac6426000-7f4ac6427000 r--p 00025000 08:03 1202956                    /usr/lib64/slurm/select_cons_res.so
+7f4ac6427000-7f4ac6428000 rw-p 00026000 08:03 1202956                    /usr/lib64/slurm/select_cons_res.so
+7f4ac6428000-7f4ac6453000 r-xp 00000000 08:03 1202957                    /usr/lib64/slurm/select_cons_tres.so
+7f4ac6453000-7f4ac6653000 ---p 0002b000 08:03 1202957                    /usr/lib64/slurm/select_cons_tres.so
+7f4ac6653000-7f4ac6654000 r--p 0002b000 08:03 1202957                    /usr/lib64/slurm/select_cons_tres.so
+7f4ac6654000-7f4ac6655000 rw-p 0002c000 08:03 1202957                    /usr/lib64/slurm/select_cons_tres.so
+7f4ac6655000-7f4ac6661000 r-xp 00000000 08:03 395083                     /usr/lib64/libnss_files-2.17.so
+7f4ac6661000-7f4ac6860000 ---p 0000c000 08:03 395083                     /usr/lib64/libnss_files-2.17.so
+7f4ac6860000-7f4ac6861000 r--p 0000b000 08:03 395083                     /usr/lib64/libnss_files-2.17.so
+7f4ac6861000-7f4ac6862000 rw-p 0000c000 08:03 395083                     /usr/lib64/libnss_files-2.17.so
+7f4ac6862000-7f4ac6868000 rw-p 00000000 00:00 0 
+7f4ac6868000-7f4ac687d000 r-xp 00000000 08:03 393236                     /usr/lib64/libgcc_s-4.8.5-20150702.so.1
+7f4ac687d000-7f4ac6a7c000 ---p 00015000 08:03 393236                     /usr/lib64/libgcc_s-4.8.5-20150702.so.1
+7f4ac6a7c000-7f4ac6a7d000 r--p 00014000 08:03 393236                     /usr/lib64/libgcc_s-4.8.5-20150702.so.1
+7f4ac6a7d000-7f4ac6a7e000 rw-p 00015000 08:03 393236                     /usr/lib64/libgcc_s-4.8.5-20150702.so.1
+7f4ac6a7e000-7f4ac6c42000 r-xp 00000000 08:03 394989                     /usr/lib64/libc-2.17.so
+7f4ac6c42000-7f4ac6e41000 ---p 001c4000 08:03 394989                     /usr/lib64/libc-2.17.so
+7f4ac6e41000-7f4ac6e45000 r--p 001c3000 08:03 394989                     /usr/lib64/libc-2.17.so
+7f4ac6e45000-7f4ac6e47000 rw-p 001c7000 08:03 394989                     /usr/lib64/libc-2.17.so
+7f4ac6e47000-7f4ac6e4c000 rw-p 00000000 00:00 0 
+7f4ac6e4c000-7f4ac6e63000 r-xp 00000000 08:03 395015                     /usr/lib64/libpthread-2.17.so
+7f4ac6e63000-7f4ac7062000 ---p 00017000 08:03 395015                     /usr/lib64/libpthread-2.17.so
+7f4ac7062000-7f4ac7063000 r--p 00016000 08:03 395015                     /usr/lib64/libpthread-2.17.so
+7f4ac7063000-7f4ac7064000 rw-p 00017000 08:03 395015                     /usr/lib64/libpthread-2.17.so
+7f4ac7064000-7f4ac7068000 rw-p 00000000 00:00 0 
+7f4ac7068000-7f4ac707e000 r-xp 00000000 08:03 395085                     /usr/lib64/libresolv-2.17.so
+7f4ac707e000-7f4ac727e000 ---p 00016000 08:03 395085                     /usr/lib64/libresolv-2.17.so
+7f4ac727e000-7f4ac727f000 r--p 00016000 08:03 395085                     /usr/lib64/libresolv-2.17.so
+7f4ac727f000-7f4ac7280000 rw-p 00017000 08:03 395085                     /usr/lib64/libresolv-2.17.so
+7f4ac7280000-7f4ac7282000 rw-p 00000000 00:00 0 
+7f4ac7282000-7f4ac7383000 r-xp 00000000 08:03 395081                     /usr/lib64/libm-2.17.so
+7f4ac7383000-7f4ac7582000 ---p 00101000 08:03 395081                     /usr/lib64/libm-2.17.so
+7f4ac7582000-7f4ac7583000 r--p 00100000 08:03 395081                     /usr/lib64/libm-2.17.so
+7f4ac7583000-7f4ac7584000 rw-p 00101000 08:03 395081                     /usr/lib64/libm-2.17.so
+7f4ac7584000-7f4ac7756000 r-xp 00000000 08:03 1202911                    /usr/lib64/slurm/libslurmfull.so
+7f4ac7756000-7f4ac7956000 ---p 001d2000 08:03 1202911                    /usr/lib64/slurm/libslurmfull.so
+7f4ac7956000-7f4ac7959000 r--p 001d2000 08:03 1202911                    /usr/lib64/slurm/libslurmfull.so
+7f4ac7959000-7f4ac7964000 rw-p 001d5000 08:03 1202911                    /usr/lib64/slurm/libslurmfull.so
+7f4ac7964000-7f4ac796a000 rw-p 00000000 00:00 0 
+7f4ac796a000-7f4ac796c000 r-xp 00000000 08:03 395080                     /usr/lib64/libdl-2.17.so
+7f4ac796c000-7f4ac7b6c000 ---p 00002000 08:03 395080                     /usr/lib64/libdl-2.17.so
+7f4ac7b6c000-7f4ac7b6d000 r--p 00002000 08:03 395080                     /usr/lib64/libdl-2.17.so
+7f4ac7b6d000-7f4ac7b6e000 rw-p 00003000 08:03 395080                     /usr/lib64/libdl-2.17.so
+7f4ac7b6e000-7f4ac7b90000 r-xp 00000000 08:03 394984                     /usr/lib64/ld-2.17.so
+7f4ac7c59000-7f4ac7c5a000 ---p 00000000 00:00 0 
+7f4ac7c5a000-7f4ac7d60000 rw-p 00000000 00:00 0 
+7f4ac7d8d000-7f4ac7d8f000 rw-p 00000000 00:00 0 
+7f4ac7d8f000-7f4ac7d90000 r--p 00021000 08:03 394984                     /usr/lib64/ld-2.17.so
+7f4ac7d90000-7f4ac7d91000 rw-p 00022000 08:03 394984                     /usr/lib64/ld-2.17.so
+7f4ac7d91000-7f4ac7d92000 rw-p 00000000 00:00 0 
+7ffe0d7cb000-7ffe0d7ed000 rw-p 00000000 00:00 0                          [stack]
+7ffe0d7fc000-7ffe0d7fe000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+/var/spool/slurmd/job11203282/slurm_script: line 55: 14733 Aborted                 srun apptainer exec --nv -C --env "ACCEPT_EULA=Y" --env "PRIVACY_CONSENT=Y" --env WANDB_API_KEY=$WANDB_API_KEY -B "/home/nfs/meesjansen/Options_In_Simulation:/workspace/Options_In_Simulation" -B "$data/cache/kit:/isaac-sim/kit/cache" -B "$data/cache/ov:$HOME/.cache/ov" -B "$data/cache/pip:$HOME/.cache/pip" -B "$data/cache/glcache:$HOME/.cache/nvidia/GLCache" -B "$data/cache/computecache:$HOME/.nv/ComputeCache" -B "$data/logs:$HOME/.nvidia-omniverse/logs" -B "$data/data:$HOME/.local/share/ov/data" -B "$data/documents:$HOME/Documents" $APPTAINER_ROOT/$APPTAINER_NAME /isaac-sim/python.sh /workspace/Options_In_Simulation/train_mixed_o10_r1.py
++ /usr/bin/nvidia-smi --query-accounted-apps=gpu_utilization,mem_utilization,max_memory_usage,time --format=csv
++ /usr/bin/grep -v -F '86 %, 9 %, 34344 MiB, 569685 ms
+86 %, 9 %, 34344 MiB, 570229 ms
+86 %, 9 %, 34344 MiB, 570106 ms
+90 %, 2 %, 34344 MiB, 1036840 ms
+90 %, 2 %, 34344 MiB, 1036871 ms
+90 %, 2 %, 34344 MiB, 1036142 ms
+90 %, 2 %, 34344 MiB, 1036074 ms
+92 %, 13 %, 34344 MiB, 1267686 ms
+92 %, 14 %, 34344 MiB, 1269570 ms
+92 %, 13 %, 34344 MiB, 1267564 ms
+92 %, 13 %, 34344 MiB, 1274157 ms
+84 %, 3 %, 34346 MiB, 528126 ms
+84 %, 3 %, 34346 MiB, 528313 ms
+84 %, 3 %, 34346 MiB, 528773 ms
+83 %, 3 %, 34346 MiB, 529231 ms
+85 %, 9 %, 34346 MiB, 598116 ms
+85 %, 8 %, 34346 MiB, 599366 ms
+85 %, 8 %, 34346 MiB, 598465 ms
+88 %, 2 %, 34346 MiB, 1108911 ms
+88 %, 2 %, 34346 MiB, 1108816 ms
+88 %, 2 %, 34346 MiB, 1107937 ms
+88 %, 2 %, 34346 MiB, 1107232 ms
+90 %, 12 %, 34346 MiB, 1378033 ms
+90 %, 12 %, 34346 MiB, 1373882 ms
+90 %, 12 %, 34346 MiB, 1377953 ms
+84 %, 3 %, 34344 MiB, 522571 ms
+85 %, 3 %, 34344 MiB, 519506 ms
+81 %, 3 %, 34344 MiB, 540591 ms
+86 %, 9 %, 34344 MiB, 586208 ms
+87 %, 9 %, 34344 MiB, 587882 ms
+87 %, 9 %, 34344 MiB, 584980 ms
+87 %, 9 %, 34344 MiB, 584967 ms
+90 %, 2 %, 34344 MiB, 1068515 ms
+90 %, 2 %, 34344 MiB, 1068650 ms
+90 %, 2 %, 34344 MiB, 1068127 ms
+92 %, 13 %, 34344 MiB, 1330974 ms
+92 %, 13 %, 34344 MiB, 1331089 ms
+92 %, 13 %, 34346 MiB, 1328421 ms
+98 %, 37 %, 34346 MiB, 6194478 ms
+97 %, 41 %, 34346 MiB, 4268777 ms
+94 %, 42 %, 34348 MiB, 1255891 ms
+93 %, 28 %, 34346 MiB, 2407807 ms
+93 %, 24 %, 34346 MiB, 1990339 ms
+97 %, 41 %, 34348 MiB, 5162465 ms
+97 %, 41 %, 34348 MiB, 5227884 ms
+95 %, 46 %, 34348 MiB, 1656190 ms
+95 %, 29 %, 34346 MiB, 2204563 ms
+98 %, 41 %, 34348 MiB, 6943079 ms
+97 %, 44 %, 34348 MiB, 4832457 ms
+89 %, 6 %, 34344 MiB, 743800 ms
+90 %, 2 %, 34344 MiB, 1092123 ms
+91 %, 2 %, 34344 MiB, 1072724 ms
+91 %, 7 %, 34344 MiB, 1159416 ms
+84 %, 3 %, 34346 MiB, 534395 ms
+87 %, 6 %, 34346 MiB, 780369 ms
+84 %, 3 %, 34346 MiB, 530983 ms
+88 %, 2 %, 34346 MiB, 1137562 ms
+89 %, 7 %, 34346 MiB, 1224322 ms
+88 %, 2 %, 34346 MiB, 1114009 ms
+85 %, 3 %, 34344 MiB, 514482 ms
+85 %, 3 %, 34344 MiB, 516151 ms
+85 %, 3 %, 34344 MiB, 512489 ms
+85 %, 3 %, 34344 MiB, 512125 ms
+90 %, 2 %, 34344 MiB, 1058722 ms
+91 %, 8 %, 34344 MiB, 1138970 ms
+91 %, 2 %, 34344 MiB, 1042328 ms
+83 %, 3 %, 34344 MiB, 525521 ms
+86 %, 6 %, 34344 MiB, 762382 ms
+83 %, 3 %, 34344 MiB, 522259 ms
+86 %, 6 %, 34344 MiB, 754521 ms
+88 %, 7 %, 34344 MiB, 1188584 ms
+88 %, 2 %, 34344 MiB, 1084262 ms
+88 %, 7 %, 34344 MiB, 1176799 ms
+21 %, 0 %, 1024 MiB, 16044730 ms
+22 %, 0 %, 1024 MiB, 15348826 ms
+23 %, 0 %, 1024 MiB, 23727206 ms
+22 %, 0 %, 1024 MiB, 24463443 ms
+23 %, 0 %, 1024 MiB, 24168167 ms
+43 %, 16 %, 1142 MiB, 14411099 ms
+21 %, 0 %, 1024 MiB, 16152442 ms
+36 %, 0 %, 7680 MiB, 20807432 ms
+89 %, 51 %, 2418 MiB, 9053503 ms
+1 %, 1 %, 4048 MiB, 136275141 ms
+88 %, 6 %, 34344 MiB, 726558 ms
+88 %, 6 %, 34344 MiB, 730777 ms
+90 %, 2 %, 34344 MiB, 1058584 ms
+90 %, 2 %, 34344 MiB, 1058532 ms
+91 %, 2 %, 34344 MiB, 1040848 ms
+90 %, 2 %, 34344 MiB, 1043430 ms
+91 %, 8 %, 34344 MiB, 1139302 ms
+91 %, 7 %, 34344 MiB, 1125110 ms
+91 %, 7 %, 34344 MiB, 1124742 ms
+91 %, 3 %, 34344 MiB, 1423481 ms
+92 %, 2 %, 34344 MiB, 1395851 ms
+92 %, 2 %, 34344 MiB, 1394112 ms
+92 %, 8 %, 34342 MiB, 1089294 ms
+93 %, 25 %, 34346 MiB, 1146748 ms
+93 %, 24 %, 34346 MiB, 1127937 ms
+93 %, 25 %, 34346 MiB, 1120064 ms
+93 %, 25 %, 34346 MiB, 1124744 ms
+94 %, 33 %, 34346 MiB, 1500238 ms
+95 %, 33 %, 34346 MiB, 1565874 ms
+95 %, 28 %, 34346 MiB, 2139868 ms
+95 %, 26 %, 34346 MiB, 1915496 ms
+96 %, 34 %, 34346 MiB, 2719226 ms
+96 %, 34 %, 34346 MiB, 3115554 ms
+96 %, 27 %, 34346 MiB, 2795218 ms
+95 %, 29 %, 34346 MiB, 2978199 ms
+97 %, 35 %, 34346 MiB, 4897476 ms
+92 %, 28 %, 34346 MiB, 614596 ms
+17 %, 0 %, 5321 MiB, 40822237 ms
+96 %, 29 %, 34346 MiB, 2959014 ms
+97 %, 33 %, 34346 MiB, 4578851 ms
+1 %, 0 %, 3152 MiB, 1906764 ms
+1 %, 0 %, 3152 MiB, 858419 ms
+1 %, 0 %, 3152 MiB, 810141 ms
+1 %, 0 %, 3152 MiB, 1905487 ms
+1 %, 0 %, 3152 MiB, 1843509 ms
+1 %, 0 %, 3152 MiB, 857310 ms
+1 %, 0 %, 3152 MiB, 794460 ms
+1 %, 0 %, 3152 MiB, 1969226 ms
+1 %, 0 %, 3152 MiB, 1884251 ms
+1 %, 0 %, 3152 MiB, 817430 ms
+1 %, 0 %, 3152 MiB, 815500 ms
+0 %, 0 %, 4211 MiB, 108625 ms
+17 %, 0 %, 5359 MiB, 72074844 ms
+23 %, 0 %, 1024 MiB, 23491134 ms
+22 %, 0 %, 1024 MiB, 24062589 ms'
