@@ -31,7 +31,7 @@ class AvularOrigin_v10(Robot):
         self._name = name
 
         if self._usd_path is None:
-            self._usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_assets/origin_v11_arms", "origin_v11_arms.usd"))
+            self._usd_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "my_assets/urdf/origin_v11_arms", "origin_v11_arms.usd"))
 
         add_reference_to_stage(self._usd_path, prim_path)
 
