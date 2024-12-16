@@ -472,10 +472,10 @@ class ReachingTargetTask(RLTask):
         # Create the quaternion tensor
         quat = torch.tensor([w, x, y, z], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
 
-        self.dof_vel[env_ids] = self.dof_init_state[4:8]
+        # self.dof_vel[env_ids] = self.dof_init_state[4:8]
         self.dof_vel_el[env_ids] = self.dof_init_state_el[8:]
 
-        self.dof_efforts[env_ids] = self.dof_init_state[0:4]
+        # self.dof_efforts[env_ids] = self.dof_init_state[0:4]
         self.dof_efforts_el[env_ids] = self.dof_init_state_el[0:8]
     
         pos[env_ids, :2] += self.env_origins[env_ids, :2].clone()  # Add only x and y entries from env_origins
