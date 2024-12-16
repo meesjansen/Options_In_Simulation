@@ -68,7 +68,7 @@ from my_envs.HW_PPOc_rooms_o10_r1 import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 16
+TASK_CFG["task"]["env"]["numEnvs"] = 9
 
 
 sim_config = SimConfig(TASK_CFG)
