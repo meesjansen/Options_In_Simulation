@@ -411,10 +411,10 @@ class ReachingTargetTask(RLTask):
         self.target_pos[:, :2] += self.env_origins[:, :2]
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
         # self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
-        self.dof_vel_el = torch.zeros((self.num_envs, self.num_dof_el), dtype=torch.float, device=self.device)
+        self.dof_vel_el = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
 
         # self.dof_efforts = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
-        self.dof_efforts_el = torch.zeros((self.num_envs, self.num_dof_el), dtype=torch.float, device=self.device)
+        self.dof_efforts_el = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
       
         indices = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.reset_idx(indices)
