@@ -194,7 +194,7 @@
         <child link="left_rear_wheel"/>
         <axis xyz="0 1 0"/>
         <dynamics damping="0.1" stiffness="0.5"/>
-        <limit effort="100000.0" velocity="10">
+        <limit effort="100000.0" velocity="10"/>
     </joint>
 
 
