@@ -20,7 +20,7 @@ from omni.isaac.core.prims import GeometryPrim, GeometryPrimView
 from pxr import PhysxSchema, UsdPhysics
 
 
-from my_robots.origin_v10_meshes import AvularOrigin_v10 as Robot_v10
+from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10
 from my_robots.origin_v11_fixed_arms import AvularOrigin_v10 as Robot_v11
 from my_robots.origin_elevated import AvularOrigin_v10 as Robot_v12
 
@@ -240,7 +240,10 @@ class ReachingTargetTask(RLTask):
         # robot view
         self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robot_view")
         scene.add(self._robots)
-
+        self._robots_v10 = RobotView(prim_paths_expr="/World/envs/.*/robot_v*", name="robot_view")
+        scene.add(self._robots_v10)
+        self._robots_elevated = RobotView(prim_paths_expr="/World/envs/.*/robot_e*", name="robot_view")
+        scene.add(self._robots_elevated)
                      
         # food view
         self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
@@ -279,10 +282,23 @@ class ReachingTargetTask(RLTask):
         )
         self.robot_v102.set_robot_properties(self._stage, self.robot_v102.prim)
 
-        self.robot_v111 = Robot_v11(
+        self.robot_v103 = Robot_v10(
             prim_path="/World/envs/env_2/robot_v10",
+            name="robot_v10",
+            translation=robot_translation + torch.tensor([4.0, 4.0, 0.0]),
+            orientation=robot_orientation,
+        )
+        self._sim_config.apply_articulation_settings(
+            "robot", get_prim_at_path(self.robot_v103.prim_path), self._sim_config.parse_actor_config("robot")
+        )
+        self.robot_v103.set_robot_properties(self._stage, self.robot_v103.prim)
+
+
+
+        self.robot_v111 = Robot_v11(
+            prim_path="/World/envs/env_3/robot_e11",
             name="robot_v11",
-            translation=robot_translation + torch.tensor([4.0, 0.0, 0.0]),
+            translation=robot_translation + torch.tensor([0.0, 0.0, 0.0]),
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
@@ -291,15 +307,64 @@ class ReachingTargetTask(RLTask):
         self.robot_v111.set_robot_properties(self._stage, self.robot_v111.prim)
 
         self.robot_v112 = Robot_v11(
-            prim_path="/World/envs/env_3/robot_v10",
+            prim_path="/World/envs/env_4/robot_e11",
             name="robot_v11",
-            translation=robot_translation + torch.tensor([4.0, 4.0, 0.0]),
+            translation=robot_translation + torch.tensor([0.0, 4.0, 0.0]),
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
             "robot", get_prim_at_path(self.robot_v112.prim_path), self._sim_config.parse_actor_config("robot")
         )
         self.robot_v112.set_robot_properties(self._stage, self.robot_v112.prim)
+
+        self.robot_v113 = Robot_v11(
+            prim_path="/World/envs/env_5/robot_e11",
+            name="robot_v11",
+            translation=robot_translation + torch.tensor([4.0, 4.0, 0.0]),
+            orientation=robot_orientation,
+        )
+        self._sim_config.apply_articulation_settings(
+            "robot", get_prim_at_path(self.robot_v113.prim_path), self._sim_config.parse_actor_config("robot")
+        )
+        self.robot_v113.set_robot_properties(self._stage, self.robot_v113.prim)
+
+
+
+        self.robot_v121 = Robot_v12(
+            prim_path="/World/envs/env_6/robot_e12",
+            name="robot_v10",
+            translation=robot_translation + torch.tensor([0.0, 0.0, 0.0]),
+            orientation=robot_orientation,
+        )
+        self._sim_config.apply_articulation_settings(
+            "robot", get_prim_at_path(self.robot_v121.prim_path), self._sim_config.parse_actor_config("robot")
+        )
+        self.robot_v121.set_robot_properties(self._stage, self.robot_v121.prim)
+
+        self.robot_v122 = Robot_v10(
+            prim_path="/World/envs/env_7/robot_e12",
+            name="robot_v10",
+            translation=robot_translation + torch.tensor([0.0, 4.0, 0.0]),
+            orientation=robot_orientation,
+        )
+        self._sim_config.apply_articulation_settings(
+            "robot", get_prim_at_path(self.robot_v122.prim_path), self._sim_config.parse_actor_config("robot")
+        )
+        self.robot_v122.set_robot_properties(self._stage, self.robot_v122.prim)
+
+        self.robot_v123 = Robot_v10(
+            prim_path="/World/envs/env_8/robot_e12",
+            name="robot_v10",
+            translation=robot_translation + torch.tensor([4.0, 4.0, 0.0]),
+            orientation=robot_orientation,
+        )
+        self._sim_config.apply_articulation_settings(
+            "robot", get_prim_at_path(self.robot_v123.prim_path), self._sim_config.parse_actor_config("robot")
+        )
+        self.robot_v123.set_robot_properties(self._stage, self.robot_v123.prim)
+
+
+
         
     def get_target(self):
         target = DynamicSphere(prim_path=self.default_zero_env_path + "/target",
@@ -488,27 +553,12 @@ class ReachingTargetTask(RLTask):
 
         updated_efforts = torch.clip(scaled_actions, -15.0, 15.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
 
+        joint_indices = torch.tensor([4, 5, 6, 7], dtype=torch.int32, device=self.device)
+
         if self.world.is_playing():
-            self._robots.set_joint_efforts(updated_efforts) 
+            self._robots_v10.set_joint_efforts(updated_efforts) 
+            self._robots_elevated.set_joint_efforts(updated_efforts, joint_indices=joint_indices)
             SimulationContext.step(self.world, render=False)
-
-        # joint_indices = torch.tensor([4, 5, 6, 7], dtype=torch.int32, device=self.device)
-
-        # if self.world.is_playing():
-        #     self._robots.set_joint_efforts(updated_efforts, joint_indices=joint_indices) 
-        #     print("Applied torques:", updated_efforts)
-
-        #     SimulationContext.step(self.world, render=False)
-
-
-        self.linear_acceleration, self.angular_acceleration = self.calculate_acceleration(self.dt)
-        joint_velocities = self._robots.get_joint_velocities(clone=True)
-
-          
-        for i in range(self.decimation):
-            if self.world.is_playing():
-                self._robots.set_joint_efforts(updated_efforts) 
-                SimulationContext.step(self.world, render=False)
 
         # print(self._robots.get_applied_joint_efforts(clone=True)) # [:, np.array([1,2,4,5])]
         dof_names = self._robots.dof_names
