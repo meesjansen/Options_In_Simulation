@@ -260,7 +260,7 @@ class ReachingTargetTask(RLTask):
         
         robot_translation = torch.tensor([-2.0, -2.0, 0.0])
         robot_orientation = torch.tensor([1.0, 0.0, 0.0, 0.0])
-        self.robot_v101 = Robot_v11(
+        self.robot_v101 = Robot_v12(
             prim_path=self.default_zero_env_path + "/robot_f10",
             name="robot_v10",
             translation=robot_translation,
