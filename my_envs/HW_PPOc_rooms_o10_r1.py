@@ -238,11 +238,11 @@ class ReachingTargetTask(RLTask):
 
 
         # robot view
-        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robot_view")
+        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robots_view")
         scene.add(self._robots)
         self._robots_v10 = RobotView(prim_paths_expr="/World/envs/.*/robot_v*", name="robot_view")
         scene.add(self._robots_v10)
-        self._robots_elevated = RobotView(prim_paths_expr="/World/envs/.*/robot_e*", name="robot_view")
+        self._robots_elevated = RobotView(prim_paths_expr="/World/envs/.*/robot_e*", name="robot_view_elevated")
         scene.add(self._robots_elevated)
                      
         # food view
