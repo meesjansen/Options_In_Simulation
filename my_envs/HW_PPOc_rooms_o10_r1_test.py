@@ -556,8 +556,8 @@ class ReachingTargetTask(RLTask):
         joint_indices = torch.tensor([4, 5, 6, 7], dtype=torch.int32, device=self.device)
 
         if self.world.is_playing():
-            self._robots.set_joint_efforts(updated_efforts) 
-            # self._robots_elevated.set_joint_efforts(updated_efforts, joint_indices=joint_indices)
+            # self._robots.set_joint_efforts(updated_efforts) 
+            self._robots.set_joint_efforts(updated_efforts, joint_indices=joint_indices)
             SimulationContext.step(self.world, render=False)
 
         # print(self._robots.get_applied_joint_efforts(clone=True)) # [:, np.array([1,2,4,5])]
