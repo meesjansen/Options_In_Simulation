@@ -240,7 +240,7 @@ class ReachingTargetTask(RLTask):
         # robot view
         self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robots_view")
         scene.add(self._robots)
-        self._robots_v10 = RobotView(prim_paths_expr="/World/envs/.*/robot_v*", name="robot_view")
+        self._robots_v10 = RobotView(prim_paths_expr="/World/envs/.*/robot_f*", name="robot_view")
         scene.add(self._robots_v10)
         self._robots_elevated = RobotView(prim_paths_expr="/World/envs/.*/robot_e*", name="robot_view_elevated")
         scene.add(self._robots_elevated)
@@ -261,7 +261,7 @@ class ReachingTargetTask(RLTask):
         robot_translation = torch.tensor([-2.0, -2.0, 0.0])
         robot_orientation = torch.tensor([1.0, 0.0, 0.0, 0.0])
         self.robot_v101 = Robot_v10(
-            prim_path=self.default_zero_env_path + "/robot_v10",
+            prim_path=self.default_zero_env_path + "/robot_f10",
             name="robot_v10",
             translation=robot_translation,
             orientation=robot_orientation,
@@ -272,8 +272,8 @@ class ReachingTargetTask(RLTask):
         self.robot_v101.set_robot_properties(self._stage, self.robot_v101.prim)
 
         self.robot_v102 = Robot_v10(
-            prim_path="/World/envs/env_1/robot_v10",
-            name="robot_v10",
+            prim_path="/World/envs/env_1/robot_f10",
+            name="robot_f10",
             translation=robot_translation + torch.tensor([0.0, 4.0, 0.0]),
             orientation=robot_orientation,
         )
@@ -283,8 +283,8 @@ class ReachingTargetTask(RLTask):
         self.robot_v102.set_robot_properties(self._stage, self.robot_v102.prim)
 
         self.robot_v103 = Robot_v10(
-            prim_path="/World/envs/env_2/robot_v10",
-            name="robot_v10",
+            prim_path="/World/envs/env_2/robot_f10",
+            name="robot_f10",
             translation=robot_translation + torch.tensor([4.0, 4.0, 0.0]),
             orientation=robot_orientation,
         )
@@ -296,8 +296,8 @@ class ReachingTargetTask(RLTask):
 
 
         self.robot_v111 = Robot_v11(
-            prim_path="/World/envs/env_3/robot_e11",
-            name="robot_v11",
+            prim_path="/World/envs/env_3/robot_f11",
+            name="robot_f11",
             translation=robot_translation + torch.tensor([0.0, 0.0, 0.0]),
             orientation=robot_orientation,
         )
@@ -307,8 +307,8 @@ class ReachingTargetTask(RLTask):
         self.robot_v111.set_robot_properties(self._stage, self.robot_v111.prim)
 
         self.robot_v112 = Robot_v11(
-            prim_path="/World/envs/env_4/robot_e11",
-            name="robot_v11",
+            prim_path="/World/envs/env_4/robot_f11",
+            name="robot_f11",
             translation=robot_translation + torch.tensor([0.0, 4.0, 0.0]),
             orientation=robot_orientation,
         )
@@ -318,8 +318,8 @@ class ReachingTargetTask(RLTask):
         self.robot_v112.set_robot_properties(self._stage, self.robot_v112.prim)
 
         self.robot_v113 = Robot_v11(
-            prim_path="/World/envs/env_5/robot_e11",
-            name="robot_v11",
+            prim_path="/World/envs/env_5/robot_f11",
+            name="robot_f11",
             translation=robot_translation + torch.tensor([4.0, 4.0, 0.0]),
             orientation=robot_orientation,
         )
@@ -332,7 +332,7 @@ class ReachingTargetTask(RLTask):
 
         self.robot_v121 = Robot_v12(
             prim_path="/World/envs/env_6/robot_e12",
-            name="robot_v10",
+            name="robot_e12",
             translation=robot_translation + torch.tensor([0.0, 0.0, 0.0]),
             orientation=robot_orientation,
         )
@@ -343,7 +343,7 @@ class ReachingTargetTask(RLTask):
 
         self.robot_v122 = Robot_v10(
             prim_path="/World/envs/env_7/robot_e12",
-            name="robot_v10",
+            name="robot_e12",
             translation=robot_translation + torch.tensor([0.0, 4.0, 0.0]),
             orientation=robot_orientation,
         )
@@ -354,7 +354,7 @@ class ReachingTargetTask(RLTask):
 
         self.robot_v123 = Robot_v10(
             prim_path="/World/envs/env_8/robot_e12",
-            name="robot_v10",
+            name="robot_e12",
             translation=robot_translation + torch.tensor([4.0, 4.0, 0.0]),
             orientation=robot_orientation,
         )
