@@ -196,6 +196,7 @@ class ReachingTargetTask(RLTask):
         torques = self._task_cfg["env"]["dofInitTorques"]
         dof_velocities = self._task_cfg["env"]["dofInitVelocities"]
         self.dof_init_state = torques + dof_velocities
+        self.dof_init_state_el = torques + torques + dof_velocities + dof_velocities
 
         self.decimation = 4
 
@@ -378,6 +379,7 @@ class ReachingTargetTask(RLTask):
     def post_reset(self):
         self.base_init_state = torch.tensor(self.base_init_state, dtype=torch.float, device=self.device, requires_grad=False)
         self.dof_init_state = torch.tensor(self.dof_init_state, dtype=torch.float, device=self.device, requires_grad=False)
+        self.dof_init_state_el = torch.tensor(self.dof_init_state_el, dtype=torch.float, device=self.device, requires_grad=False)
 
         self.timeout_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
         self.episode_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
@@ -401,13 +403,18 @@ class ReachingTargetTask(RLTask):
             self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False
         )
         self.num_dof = self._robots.num_dof 
+        # self.num_dof_el = self._robots_elevated.num_dof
+
         self.env_origins = self.terrain_origins.view(-1, 3)[:self.num_envs]
         self.target_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
         self.target_pos += torch.tensor([0.0, 0.0, 0.1], dtype=torch.float, device=self.device)
         self.target_pos[:, :2] += self.env_origins[:, :2]
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
-        self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
-        self.dof_efforts = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
+        # self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
+        self.dof_vel_el = torch.zeros((self.num_envs, self.num_dof_el), dtype=torch.float, device=self.device)
+
+        # self.dof_efforts = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
+        self.dof_efforts_el = torch.zeros((self.num_envs, self.num_dof_el), dtype=torch.float, device=self.device)
       
         indices = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.reset_idx(indices)
@@ -466,13 +473,19 @@ class ReachingTargetTask(RLTask):
         quat = torch.tensor([w, x, y, z], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
 
         self.dof_vel[env_ids] = self.dof_init_state[4:8]
+        self.dof_vel_el[env_ids] = self.dof_init_state_el[8:]
+
         self.dof_efforts[env_ids] = self.dof_init_state[0:4]
+        self.dof_efforts_el[env_ids] = self.dof_init_state_el[0:8]
     
         pos[env_ids, :2] += self.env_origins[env_ids, :2].clone()  # Add only x and y entries from env_origins
         self._robots.set_world_poses(pos[env_ids].clone(), orientations=quat[env_ids].clone(), indices=indices)
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
-        self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
-        self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
+        self._robots.set_joint_efforts(self.dof_efforts_el[env_ids].clone(), indices=indices) # !!!!!!!
+        # self._robots_elevated.set_joint_efforts(self.dof_efforts_el[env_ids].clone(), indices=indices)
+        self._robots.set_joint_velocities(velocities=self.dof_vel_el[env_ids].clone(), indices=indices)   
+
+
 
         self._targets.set_world_poses(positions=self.target_pos[env_ids].clone(), indices=indices)
 
