@@ -136,8 +136,8 @@ class ReachingTargetTask(RLTask):
             dtype=np.float32  # Ensure data type is consistent
         )
         # Define the action range for torques
-        self.min_torque = -10.0  # Example min torque value
-        self.max_torque = 10.0   # Example max torque value
+        self.min_torque = -7.5  # Example min torque value
+        self.max_torque = 7.5   # Example max torque value
 
 
         # Using the shape argument
@@ -157,8 +157,6 @@ class ReachingTargetTask(RLTask):
         self.height_points = self.init_height_points()  
         self.measured_heights = None
         self.bounds = torch.tensor([-3.0, 3.0, -3.0, 3.0], device=self.device, dtype=torch.float)
-
-
 
         self.still_steps = torch.zeros(self.num_envs)
         self.position_buffer = torch.zeros(self.num_envs, 2)  # Assuming 2D position still condition
@@ -196,6 +194,7 @@ class ReachingTargetTask(RLTask):
         torques = self._task_cfg["env"]["dofInitTorques"]
         dof_velocities = self._task_cfg["env"]["dofInitVelocities"]
         self.dof_init_state = torques + dof_velocities
+        self.dof_init_state_el = torques + torques + dof_velocities + dof_velocities
 
         self.decimation = 4
 
@@ -378,6 +377,7 @@ class ReachingTargetTask(RLTask):
     def post_reset(self):
         self.base_init_state = torch.tensor(self.base_init_state, dtype=torch.float, device=self.device, requires_grad=False)
         self.dof_init_state = torch.tensor(self.dof_init_state, dtype=torch.float, device=self.device, requires_grad=False)
+        self.dof_init_state_el = torch.tensor(self.dof_init_state_el, dtype=torch.float, device=self.device, requires_grad=False)
 
         self.timeout_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
         self.episode_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
@@ -401,14 +401,19 @@ class ReachingTargetTask(RLTask):
             self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False
         )
         self.num_dof = self._robots.num_dof 
+        self.num_dof_el = self._robots_elevated.num_dof
+
         self.env_origins = self.terrain_origins.view(-1, 3)[:self.num_envs]
         self.target_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
         self.target_pos += torch.tensor([0.0, 0.0, 0.1], dtype=torch.float, device=self.device)
         self.target_pos[:, :2] += self.env_origins[:, :2]
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
         self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
+        self.dof_vel_el = torch.zeros((self.num_envs, self.num_dof_el), dtype=torch.float, device=self.device)
+        
         self.dof_efforts = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
-      
+        self.dof_efforts_el = torch.zeros((self.num_envs, self.num_dof_el), dtype=torch.float, device=self.device)
+
         indices = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.reset_idx(indices)
         base_pos, base_quat = self._robots.get_world_poses(clone=False)
@@ -466,12 +471,17 @@ class ReachingTargetTask(RLTask):
         quat = torch.tensor([w, x, y, z], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
 
         self.dof_vel[env_ids] = self.dof_init_state[4:8]
+        self.dof_vel_el[env_ids] = self.dof_init_state_el[8:]
+
         self.dof_efforts[env_ids] = self.dof_init_state[0:4]
+        self.dof_efforts_el[env_ids] = self.dof_init_state_el[0:8]
     
         pos[env_ids, :2] += self.env_origins[env_ids, :2].clone()  # Add only x and y entries from env_origins
         self._robots.set_world_poses(pos[env_ids].clone(), orientations=quat[env_ids].clone(), indices=indices)
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
-        self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
+        self._robots_v10.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
+        self._robots_elevated.set_joint_efforts(self.dof_efforts_el[env_ids].clone(), indices=indices)
+
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
 
         self._targets.set_world_poses(positions=self.target_pos[env_ids].clone(), indices=indices)
@@ -551,7 +561,7 @@ class ReachingTargetTask(RLTask):
         # Apply the actions to the robot
         scaled_actions = self.min_torque + (actions + 1) * 0.5 * (self.max_torque - self.min_torque)
 
-        updated_efforts = torch.clip(scaled_actions, -15.0, 15.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
+        updated_efforts = torch.clip(scaled_actions, -7.5, 7.5) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
 
         joint_indices = torch.tensor([4, 5, 6, 7], dtype=torch.int32, device=self.device)
 
@@ -685,14 +695,10 @@ class ReachingTargetTask(RLTask):
     def get_observations(self):
         ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.measured_heights = self.get_heights(ids)
-        heights = self.measured_heights * self.terrain.vertical_scale 
+        heights = self.measured_heights 
 
         self.refresh_body_state_tensors()
         delta_pos = self.target_pos - self.base_pos
-
-        # Get current joint efforts (torques)
-        _efforts = self._robots.get_applied_joint_efforts(clone=True)
-        current_efforts = _efforts #[:, np.array([1,2,4,5])]
 
         # compute distance for calculate_metrics() and is_done()
         self._computed_distance = torch.norm(delta_pos, dim=-1)
@@ -701,11 +707,9 @@ class ReachingTargetTask(RLTask):
             (
                 self.base_vel[:, 0:3],
                 self.angle_difference.unsqueeze(-1),
-                # self.base_vel[:, 3:6],
                 self.projected_gravity,
                 delta_pos,
                 # heights,
-                # current_efforts 
             ),
             dim=-1,
         )
