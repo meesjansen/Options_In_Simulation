@@ -340,7 +340,7 @@ class ReachingTargetTask(RLTask):
         )
         self.robot_v121.set_robot_properties(self._stage, self.robot_v121.prim)
 
-        self.robot_v122 = Robot_v10(
+        self.robot_v122 = Robot_v12(
             prim_path="/World/envs/env_7/robot_e12",
             name="robot_e12",
             translation=robot_translation + torch.tensor([0.0, 4.0, 0.0]),
@@ -351,7 +351,7 @@ class ReachingTargetTask(RLTask):
         )
         self.robot_v122.set_robot_properties(self._stage, self.robot_v122.prim)
 
-        self.robot_v123 = Robot_v10(
+        self.robot_v123 = Robot_v12(
             prim_path="/World/envs/env_8/robot_e12",
             name="robot_e12",
             translation=robot_translation + torch.tensor([4.0, 4.0, 0.0]),
