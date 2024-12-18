@@ -261,12 +261,12 @@ class ReachingTargetTask(RLTask):
         robot_orientation = torch.tensor([1.0, 0.0, 0.0, 0.0])
         self.robot_v101 = Robot_v10(
             prim_path=self.default_zero_env_path + "/robot_f10",
-            name="robot_v10",
+            name="robot_f10",
             translation=robot_translation,
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot", get_prim_at_path(self.robot_v101.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot_f10", get_prim_at_path(self.robot_v101.prim_path), self._sim_config.parse_actor_config("robot")
         )
         self.robot_v101.set_robot_properties(self._stage, self.robot_v101.prim)
 
@@ -277,7 +277,7 @@ class ReachingTargetTask(RLTask):
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot", get_prim_at_path(self.robot_v102.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot_f10", get_prim_at_path(self.robot_v102.prim_path), self._sim_config.parse_actor_config("robot")
         )
         self.robot_v102.set_robot_properties(self._stage, self.robot_v102.prim)
 
@@ -288,7 +288,7 @@ class ReachingTargetTask(RLTask):
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot", get_prim_at_path(self.robot_v103.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot_f10", get_prim_at_path(self.robot_v103.prim_path), self._sim_config.parse_actor_config("robot")
         )
         self.robot_v103.set_robot_properties(self._stage, self.robot_v103.prim)
 
@@ -301,7 +301,7 @@ class ReachingTargetTask(RLTask):
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot", get_prim_at_path(self.robot_v111.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot_f11", get_prim_at_path(self.robot_v111.prim_path), self._sim_config.parse_actor_config("robot")
         )
         self.robot_v111.set_robot_properties(self._stage, self.robot_v111.prim)
 
@@ -312,7 +312,7 @@ class ReachingTargetTask(RLTask):
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot", get_prim_at_path(self.robot_v112.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot_f11", get_prim_at_path(self.robot_v112.prim_path), self._sim_config.parse_actor_config("robot")
         )
         self.robot_v112.set_robot_properties(self._stage, self.robot_v112.prim)
 
@@ -323,7 +323,7 @@ class ReachingTargetTask(RLTask):
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot", get_prim_at_path(self.robot_v113.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot_f11", get_prim_at_path(self.robot_v113.prim_path), self._sim_config.parse_actor_config("robot")
         )
         self.robot_v113.set_robot_properties(self._stage, self.robot_v113.prim)
 
@@ -336,29 +336,29 @@ class ReachingTargetTask(RLTask):
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot", get_prim_at_path(self.robot_v121.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot_e12", get_prim_at_path(self.robot_v121.prim_path), self._sim_config.parse_actor_config("robot")
         )
         self.robot_v121.set_robot_properties(self._stage, self.robot_v121.prim)
 
-        self.robot_v122 = Robot_v10(
+        self.robot_v122 = Robot_v12(
             prim_path="/World/envs/env_7/robot_e12",
             name="robot_e12",
             translation=robot_translation + torch.tensor([0.0, 4.0, 0.0]),
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot", get_prim_at_path(self.robot_v122.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot_e12", get_prim_at_path(self.robot_v122.prim_path), self._sim_config.parse_actor_config("robot")
         )
         self.robot_v122.set_robot_properties(self._stage, self.robot_v122.prim)
 
-        self.robot_v123 = Robot_v10(
+        self.robot_v123 = Robot_v12(
             prim_path="/World/envs/env_8/robot_e12",
             name="robot_e12",
             translation=robot_translation + torch.tensor([4.0, 4.0, 0.0]),
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot", get_prim_at_path(self.robot_v123.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot_e12", get_prim_at_path(self.robot_v123.prim_path), self._sim_config.parse_actor_config("robot")
         )
         self.robot_v123.set_robot_properties(self._stage, self.robot_v123.prim)
 
@@ -479,10 +479,11 @@ class ReachingTargetTask(RLTask):
         pos[env_ids, :2] += self.env_origins[env_ids, :2].clone()  # Add only x and y entries from env_origins
         self._robots.set_world_poses(pos[env_ids].clone(), orientations=quat[env_ids].clone(), indices=indices)
         self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
-        self._robots_v10.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
-        self._robots_elevated.set_joint_efforts(self.dof_efforts_el[env_ids].clone(), indices=indices)
+        self._robots_v10.set_joint_efforts(self.dof_efforts[:6].clone(), indices=indices)
+        self._robots_elevated.set_joint_efforts(self.dof_efforts_el[6:].clone(), indices=indices)
 
-        self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
+        self._robots_v10.set_joint_velocities(velocities=self.dof_vel[:6].clone(), indices=indices)   
+        self._robots_elevated.set_joint_velocities(velocities=self.dof_vel_el[6:].clone(), indices=indices)
 
         self._targets.set_world_poses(positions=self.target_pos[env_ids].clone(), indices=indices)
 
@@ -566,8 +567,8 @@ class ReachingTargetTask(RLTask):
         joint_indices = torch.tensor([4, 5, 6, 7], dtype=torch.int32, device=self.device)
 
         if self.world.is_playing():
-            self._robots_v10.set_joint_efforts(updated_efforts) 
-            self._robots_elevated.set_joint_efforts(updated_efforts, joint_indices=joint_indices)
+            self._robots_v10.set_joint_efforts(updated_efforts[:6]) 
+            self._robots_elevated.set_joint_efforts(updated_efforts[6:], joint_indices=joint_indices)
             SimulationContext.step(self.world, render=False)
 
         # print(self._robots.get_applied_joint_efforts(clone=True)) # [:, np.array([1,2,4,5])]
