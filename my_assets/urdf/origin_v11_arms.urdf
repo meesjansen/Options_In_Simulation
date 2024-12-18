@@ -1,24 +1,24 @@
 <?xml version='1.0'?>
 
-<robot name="avular_origin_v10">
+<robot name="avular_origin_v11">
 
     <material name="blue">
         <color rgba="0.2 0.2 1 1"/>
     </material>
 
     <!-- Main Body -->
-    <link name='main_body'>
+    <link name='main_body_v11'>
         <inertial>
             <mass value="21.0"/>
             <inertia ixx="0.4" ixy="0.0" ixz="0.0" iyy="0.77" iyz="0.0" izz="1.01"/>
         </inertial>
-        <collision name='main_body_collision'>
+        <collision name='main_body_v11_collision'>
             <origin xyz="0 0 0.3175" rpy="0 0 0.0"/>
             <geometry>
                 <box size=".65 .4 .125"/>
             </geometry>
         </collision>
-        <visual name='main_body_visual'>
+        <visual name='main_body_v11_visual'>
             <origin xyz="0 0 0.3175" rpy="0 0 0.0"/>
             <geometry>
                 <box size=".65 .4 .125"/>
@@ -29,10 +29,10 @@
 
 
     <!-- Main Body to Left Front Passive Arm -->
-    <joint type="revolute" name="main_body_left_front_passive_arm_joint">
+    <joint type="revolute" name="left_front_passive_arm_joint_v11">
         <origin xyz="0.205 0.2 0.3175" rpy="0 0 0"/>
-        <parent link="main_body"/>
-        <child link="left_front_passive_arm"/>
+        <parent link="main_body_v11"/>
+        <child link="left_front_passive_arm_v11"/>
         <axis xyz="0 1 0"/>
         <dynamics damping="5.0" stiffness="150.0"/>
         <limit effort="100000.0" velocity="10" lower="-0.7854" upper="0.0"/>
@@ -40,18 +40,18 @@
 
 
     <!-- Left Front Passive Arm -->
-    <link name="left_front_passive_arm">
+    <link name="left_front_passive_arm_v11">
         <inertial>
             <mass value="1.0"/>
             <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
         </inertial>
-        <collision name="left_front_passive_arm_collision">
+        <collision name="left_front_passive_arm_v11_collision">
             <origin xyz="0.0 0.02 -0.1" rpy="0 0 0"/>
             <geometry>
                 <box size="0.1 0.04 0.2"/>
             </geometry>
         </collision>
-        <visual name="left_front_passive_arm_visual">
+        <visual name="left_front_passive_arm_v11_visual">
             <origin xyz="0.0 0.02 -0.1" rpy="0 0 0"/>
             <geometry>
                 <box size="0.1 0.04 0.2"/>
@@ -61,28 +61,28 @@
 
 
     <!-- Left Front Passive Arm to Left Front Wheel -->
-    <joint type="continuous" name="left_front_passive_arm_left_front_wheel_joint">
+    <joint type="continuous" name="left_front_wheel_joint_v11">
         <origin xyz="0 0.04 -0.15" rpy="-1.5707 0 0"/>
-        <parent link="left_front_passive_arm"/>
-        <child link="left_front_wheel"/>
+        <parent link="left_front_passive_arm_v11"/>
+        <child link="left_front_wheel_v11"/>
         <axis xyz="0 1 0"/>
         <dynamics damping="0.1" stiffness="0.5"/>
         <limit effort="100000.0" velocity="10"/>
     </joint>
 
 
-    <link name="left_front_wheel">
+    <link name="left_front_wheel_v11">
         <inertial>
             <mass value="1"/>
             <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
         </inertial>
-        <collision name="left_front_wheel_collision">
+        <collision name="left_front_wheel_v11_collision">
             <origin xyz="0.0 0.0 0.035" rpy="0 0 0"/>
             <geometry>
                 <cylinder length=".07" radius=".1175"/>
             </geometry>
         </collision>
-        <visual name="left_front_wheel_visual">
+        <visual name="left_front_wheel_v11_visual">
             <origin xyz="0.0 0.0 0.035" rpy="0.0 0.0 0.0"/>
             <geometry>
                 <cylinder length=".07" radius=".1175"/>
@@ -93,10 +93,10 @@
 
 
     <!-- Main Body to Right Front Passive Arm -->
-    <joint type="revolute" name="main_body_right_front_passive_arm_joint">
+    <joint type="revolute" name="right_front_passive_arm_joint_v11">
         <origin xyz="0.205 -0.2 0.3175" rpy="0 0 0"/>
-        <parent link="main_body"/>
-        <child link="right_front_passive_arm"/>
+        <parent link="main_body_v11"/>
+        <child link="right_front_passive_arm_v11"/>
         <axis xyz="0 -1 0"/>
         <dynamics damping="5.0" stiffness="150.0"/>
         <limit effort="100000.0" velocity="10" lower="-0.7854" upper="0.0"/>
@@ -104,18 +104,18 @@
 
 
     <!-- Right Front Passive Arm -->
-    <link name="right_front_passive_arm">
+    <link name="right_front_passive_arm_v11">
         <inertial>
             <mass value="1.0"/>
             <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
         </inertial>
-        <collision name="right_front_passive_arm_collision">
+        <collision name="right_front_passive_arm_v11_collision">
             <origin xyz="0.0 -0.02 -0.1" rpy="0 0 0"/>
             <geometry>
                 <box size="0.1 0.04 0.2"/>
             </geometry>
         </collision>
-        <visual name="right_front_passive_arm_visual">
+        <visual name="right_front_passive_v11_arm_visual">
             <origin xyz="0.0 -0.02 -0.1" rpy="0 0 0"/>
             <geometry>
                 <box size="0.1 0.04 0.2"/>
@@ -125,28 +125,28 @@
 
 
     <!-- Right Front Passive Arm to Right Front Wheel -->
-    <joint type="continuous" name="right_front_passive_arm_right_front_wheel_joint">
+    <joint type="continuous" name="ight_front_wheel_joint_v11">
         <origin xyz="0 -0.04 -0.15" rpy="-1.5707 0 0"/>
-        <parent link="right_front_passive_arm"/>
-        <child link="right_front_wheel"/>
+        <parent link="right_front_passive_arm_v11"/>
+        <child link="right_front_wheel_v11"/>
         <axis xyz="0 1 0"/>
         <dynamics damping="0.1" stiffness="0.5"/>
         <limit effort="100000.0" velocity="10"/>
     </joint>
 
 
-    <link name="right_front_wheel">
+    <link name="right_front_wheel_v11">
         <inertial>
             <mass value="1"/>
             <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
         </inertial>
-        <collision name="right_front_wheel_collision">
+        <collision name="right_front_wheel_v11_collision">
             <origin xyz="0.0 0.0 -0.035" rpy="0 0 0"/>
             <geometry>
                 <cylinder length=".07" radius=".1175"/>
             </geometry>
         </collision>
-        <visual name="right_front_wheel_visual">
+        <visual name="right_front_wheel_v11_visual">
             <origin xyz="0.0 0.0 -0.035" rpy="0 0 0"/>
             <geometry>
                 <cylinder length=".07" radius=".1175"/>
@@ -156,10 +156,10 @@
 
 
     <!-- Main Body to Left Rear Passive Arm -->
-    <joint type="revolute" name="main_body_left_rear_passive_arm_joint">
+    <joint type="revolute" name="rear_passive_arm_joint_v11">
         <origin xyz="-0.205 0.2 0.3175" rpy="0 0 0"/>
-        <parent link="main_body"/>
-        <child link="left_rear_passive_arm"/>
+        <parent link="main_body_v11"/>
+        <child link="left_rear_passive_arm_v11"/>
         <axis xyz="0 1 0"/>
         <dynamics damping="5.0" stiffness="150.0"/>
         <limit effort="100000.0" velocity="10" lower="0.0" upper="0.7854"/>
@@ -167,18 +167,18 @@
 
 
     <!-- Left Rear Passive Arm -->
-    <link name="left_rear_passive_arm">
+    <link name="left_rear_passive_arm_v11">
         <inertial>
             <mass value="1.0"/>
             <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
         </inertial>
-        <collision name="left_rear_passive_arm_collision">
+        <collision name="left_rear_passive_arm_v11_collision">
             <origin xyz="0.0 0.02 -0.1" rpy="0 0 0"/>
             <geometry>
                 <box size="0.1 0.04 0.2"/>
             </geometry>
         </collision>
-        <visual name="left_rear_passive_arm_visual">
+        <visual name="left_rear_passive_arm_v11_visual">
             <origin xyz="0.0 0.02 -0.1" rpy="0 0 0"/>
             <geometry>
                 <box size="0.1 0.04 0.2"/>
@@ -188,28 +188,28 @@
 
 
     <!-- Left Rear Passive Arm to Left Rear Wheel -->
-    <joint type="continuous" name="left_rear_passive_arm_left_rear_wheel_joint">
+    <joint type="continuous" name="left_rear_wheel_joint_v11">
         <origin xyz="0 0.04 -0.15" rpy="-1.5707 0 0"/>
-        <parent link="left_rear_passive_arm"/>
-        <child link="left_rear_wheel"/>
+        <parent link="left_rear_passive_arm_v11"/>
+        <child link="left_rear_wheel_v11"/>
         <axis xyz="0 1 0"/>
         <dynamics damping="0.1" stiffness="0.5"/>
         <limit effort="100000.0" velocity="10"/>
     </joint>
 
 
-    <link name="left_rear_wheel">
+    <link name="left_rear_wheel_v11">
         <inertial>
             <mass value="1"/>
             <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
         </inertial>
-            <collision name="left_rear_wheel_collision">
+            <collision name="left_rear_wheel_v11_collision">
             <origin xyz="0.0 0.0 0.035" rpy="0 0 0"/>
             <geometry>
                 <cylinder length=".07" radius=".1175"/>
             </geometry>
         </collision>
-        <visual name="left_rear_wheel_visual">
+        <visual name="left_rear_wheel_v11_visual">
             <origin xyz="0.0 0.0 0.035" rpy="0 0 0"/>
             <geometry>
                 <cylinder length=".07" radius=".1175"/>
@@ -219,28 +219,28 @@
 
 
     <!-- Main Body to Right Rear Passive Arm -->
-    <joint type="revolute" name="main_body_right_rear_passive_arm_joint">
+    <joint type="revolute" name="right_rear_passive_arm_joint_v11">
         <origin xyz="-0.205 -0.2 0.3175" rpy="0 0 0"/>
-        <parent link="main_body"/>
-        <child link="right_rear_passive_arm"/>
+        <parent link="main_body_v11"/>
+        <child link="right_rear_passive_arm_v11"/>
         <axis xyz="0 -1 0"/>
         <dynamics damping="5.0" stiffness="150.0"/>
         <limit effort="100000.0" velocity="10" lower="0.0" upper="0.7854"/>
     </joint>
 
     <!-- Right Rear Passive Arm -->
-    <link name="right_rear_passive_arm">
+    <link name="right_rear_passive_arm_v11">
         <inertial>
             <mass value="1.0"/>
             <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
         </inertial>
-        <collision name="right_rear_passive_arm_collision">
+        <collision name="right_rear_passive_arm_v11_collision">
             <origin xyz="0.0 -0.02 -0.1" rpy="0 0 0"/>
             <geometry>
                 <box size="0.1 0.04 0.2"/>
             </geometry>
         </collision>
-        <visual name="right_rear_passive_arm_visual">
+        <visual name="right_rear_passive_arm_v11_visual">
             <origin xyz="0.0 -0.02 -0.1" rpy="0 0 0"/>
             <geometry>
                 <box size="0.1 0.04 0.2"/>
@@ -250,28 +250,28 @@
 
 
     <!-- Right Rear Passive Arm to Right Rear Wheel -->
-    <joint type="continuous" name="right_rear_passive_arm_right_rear_wheel_joint">
+    <joint type="continuous" name="right_rear_wheel_joint_v11">
         <origin xyz="0 -0.04 -0.15" rpy="-1.5707 0 0"/>
-        <parent link="right_rear_passive_arm"/>
-        <child link="right_rear_wheel"/>
+        <parent link="right_rear_passive_arm_v11"/>
+        <child link="right_rear_wheel_v11"/>
         <axis xyz="0 1 0"/>
         <dynamics damping="0.1" stiffness="0.5"/>
         <limit effort="100000.0" velocity="10"/>
     </joint>
 
 
-    <link name="right_rear_wheel">
+    <link name="right_rear_wheel_v11">
         <inertial>
             <mass value="1"/>
             <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
         </inertial>
-        <collision name="right_rear_wheel_collision">
+        <collision name="right_rear_wheel_v11_collision">
             <origin xyz="0.0 0.0 -0.035" rpy="0 0 0"/>
             <geometry>
                 <cylinder length=".07" radius=".1175"/>
             </geometry>
         </collision>
-        <visual name="right_rear_wheel_visual">
+        <visual name="right_rear_wheel_v11_visual">
             <origin xyz="0.0 0.0 -0.035" rpy="0 0 0"/>
             <geometry>
                 <cylinder length=".07" radius=".1175"/>
@@ -281,25 +281,25 @@
 
 
 
-    <joint type="fixed" name="ouster_platform_joint">
+    <joint type="fixed" name="ouster_platform_joint_v11">
         <origin xyz="0.272 0 0.38" rpy="0 0 0"/>
-        <child link="ouster_base" />
-        <parent link="main_body"/>
+        <child link="ouster_base_v11" />
+        <parent link="main_body_v11"/>
     </joint>
 
 
-    <link name="ouster_base">
+    <link name="ouster_base_v11">
         <inertial>
             <mass value="1"/>
             <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
         </inertial>
-        <visual name="ouster_base">
+        <visual name="ouster_base_v11_visual">
             <origin xyz="0.0 0.0 0.05" rpy="0.0 0.0 0.0"/>
             <geometry>
                 <box size="0.1 0.1 0.1"/>
             </geometry>
         </visual>
-        <collision name="ouster_base">
+        <collision name="ouster_base_v11_collision">
             <origin xyz="0.0 0.0 0.05" rpy="0.0 0.0 0.0"/>
             <geometry>
                 <box size="0.1 0.1 0.1"/>
@@ -308,19 +308,19 @@
     </link>
 
 
-    <joint type="fixed" name="lidar_joint_gazebo">
+    <joint type="fixed" name="lidar_joint_gazebo_v11">
         <origin xyz="0 0 0.035" rpy="0 0 0"/>
-        <child link="lidar_link_gazebo" />
-        <parent link="ouster_base"/>
+        <child link="lidar_link_gazebo_v11" />
+        <parent link="ouster_base_v11"/>
     </joint>
 
 
-    <link name="lidar_link_gazebo">
+    <link name="lidar_link_gazebo_v11">
         <inertial>
             <mass value="0.1"/>
             <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
         </inertial>
-        <collision name="lidar_link_gazebo">
+        <collision name="lidar_link_gazebo_v11_collision">
             <origin xyz="0 0 0.0" rpy="0 0 0"/>
             <geometry>
                 <cylinder length="0.07" radius="0.04"/>
@@ -328,19 +328,19 @@
         </collision>
     </link>
 
-    <joint type="fixed" name="realsense_joint">
+    <joint type="fixed" name="realsense_joint_v11">
         <origin xyz="0.32 0.03 0.3175" rpy="0 0 0"/>
-        <child link="camera_link"/>
-        <parent link="main_body"/>
+        <child link="camera_link_v11"/>
+        <parent link="main_body_v11"/>
     </joint>
 
 
-    <link name="camera_link">
+    <link name="camera_link_v11">
         <inertial>
             <mass value="0.035"/>
             <inertia ixx="0.001" ixy="0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
         </inertial>
-        <collision name="camera_link">
+        <collision name="camera_link_v11_collision">
             <origin xyz="0 0.047 0" rpy="0 0 0"/>
             <geometry>
                 <box size="0.008 0.13 0.022"/>
