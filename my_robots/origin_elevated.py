@@ -44,6 +44,10 @@ class AvularOrigin_v10(Robot):
 
         # Define the wheels and their corresponding DOF paths
         self._dof_names = [
+                "left_front_passive_arm_v11",
+                "right_front_passive_arm_v11",
+                "left_rear_passive_arm_v11",
+                "right_rear_passive_arm_v11",
                 "left_front_wheel",
                 "left_rear_wheel",
                 "right_front_wheel",
