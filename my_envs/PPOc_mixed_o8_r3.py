@@ -386,7 +386,7 @@ class ReachingTargetTask(RLTask):
         self.progress_buf[env_ids] = 0
         self.episode_buf[env_ids] = 0 
         # self.reset_buf[env_ids] = 0
-        
+
 
     def refresh_body_state_tensors(self):
         self.base_pos, self.base_quat = self._robots.get_world_poses(clone=False)
@@ -576,7 +576,7 @@ class ReachingTargetTask(RLTask):
         w_diff = 1.0
         delta_climb = torch.abs(current_efforts[:, 0] - current_efforts[:, 1]) + torch.abs(current_efforts[:, 2] - current_efforts[:, 3])
         w_climb = 1.0   
-        delta_torque = w_uniform * delta_uniform + w_diff * delta_diff  # + w_climb * delta_climb
+        delta_torque = w_uniform * delta_uniform + w_diff * delta_diff  + w_climb * delta_climb
 
         # Bonus for reaching the target
         target_reached = self.target_reached.float() * 1000.0
