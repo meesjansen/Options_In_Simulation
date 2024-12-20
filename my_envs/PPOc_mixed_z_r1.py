@@ -564,7 +564,7 @@ class ReachingTargetTask(RLTask):
         # Compute the alignment reward
         k = 1.25  # Curvature parameter for the exponential function
         alignment_reward = (1.0 - torch.exp(k * (angle_difference / np.pi)))
-        alignment_reward = alignment_reward.clamp(min=-15.0, max=0.0)
+        alignment_reward = alignment_reward.clamp(min=-4.0, max=0.0)
 
         # Efficiency penalty: Penalize large torques
         current_efforts = self._robots.get_applied_joint_efforts(clone=True)
@@ -573,6 +573,7 @@ class ReachingTargetTask(RLTask):
         # Bonus for reaching the target
         target_reached = self.target_reached.float() * 1000.0
         crashed = self.fallen.float() * 1000.0   # Penalty for crashing
+        OoB = self.out_of_bounds.float() * 1000.0
 
         # Combine rewards and penalties
         reward = (
@@ -581,6 +582,7 @@ class ReachingTargetTask(RLTask):
             - 0.25 * torque_penalty      # Small penalty for torque
             + target_reached      # Completion bonus
             - crashed
+            - OoB
         )
       
         # Normalize and handle resets

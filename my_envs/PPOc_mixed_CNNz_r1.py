@@ -434,13 +434,14 @@ class ReachingTargetTask(RLTask):
         angle_difference = torch.where(self.angle_difference > np.pi, 2 * np.pi - self.angle_difference, self.angle_difference)
         k = 1.25
         alignment_reward = (1.0 - torch.exp(k * (angle_difference / np.pi)))
-        alignment_reward = alignment_reward.clamp(min=-15.0, max=0.0)
+        alignment_reward = alignment_reward.clamp(min=-4.0, max=0.0)
 
         current_efforts = self._robots.get_applied_joint_efforts(clone=True)
         torque_penalty = torch.mean(torch.abs(current_efforts), dim=-1)
 
         target_reached = self.target_reached.float() * 1000.0
         crashed = self.fallen.float() * 1000.0
+        OoB = self.out_of_bounds.float() * 1000.0
 
         reward = (
             0.75 * dense_reward
@@ -448,6 +449,7 @@ class ReachingTargetTask(RLTask):
             - 0.25 * torque_penalty
             + target_reached
             - crashed
+            - OoB
         )
 
 
