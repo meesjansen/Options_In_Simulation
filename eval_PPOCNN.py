@@ -187,7 +187,7 @@ agent = PPO(models=models_ppo,
             action_space=env.action_space,
             device=device)
 
-agent.load("./my_runs/PPOc_mixed_CNNn_r1/PPOc_mixed_CNNn_r1/checkpoints/agent_350000.pt")
+agent.load("./my_runs/PPOc_mixed_CNNn_r1/PPOc_mixed_CNNn_r1/checkpoints/agent_400000.pt")
 
 
 
