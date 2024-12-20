@@ -20,7 +20,7 @@ from omni.isaac.core.prims import GeometryPrim, GeometryPrimView
 from pxr import PhysxSchema, UsdPhysics
 
 
-from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10
+from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10 
 
 from my_utils.terrain_generator import *
 from my_utils.terrain_utils import *
@@ -275,7 +275,7 @@ class ReachingTargetTask(RLTask):
     def get_target(self):
         target = DynamicSphere(prim_path=self.default_zero_env_path + "/target",
                                name="target",
-                               radius=0.05,
+                               radius=0.1,
                                color=torch.tensor([1, 0, 0]))
         self._sim_config.apply_articulation_settings("target", get_prim_at_path(target.prim_path), self._sim_config.parse_actor_config("target"))
         target.set_collision_enabled(False)
@@ -308,9 +308,9 @@ class ReachingTargetTask(RLTask):
         )
         self.num_dof = self._robots.num_dof 
         self.env_origins = self.terrain_origins.view(-1, 3)[:self.num_envs]
-        self.target_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
-        self.target_pos += torch.tensor([0.0, 0.0, 0.1], dtype=torch.float, device=self.device)
-        self.target_pos[:, :2] += self.env_origins[:, :2]
+        self._target_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
+        self._target_pos += torch.tensor([0.5, 2.0, 0.1], dtype=torch.float, device=self.device)
+        self._target_pos[:, :2] += self.env_origins[:, :2]
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
         self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
         self.dof_efforts = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
@@ -318,7 +318,7 @@ class ReachingTargetTask(RLTask):
         indices = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.reset_idx(indices)
         base_pos, base_quat = self._robots.get_world_poses(clone=False)
-        self.last_distance_to_target = torch.norm(base_pos - self.target_pos, dim=-1)
+        self.last_distance_to_target = torch.norm(base_pos - self._target_pos, dim=-1)
 
         self.init_done = True
 
@@ -330,25 +330,18 @@ class ReachingTargetTask(RLTask):
         square_size_x = 4.5  # Total width of the square
         square_size_y = 4.5  # Total length of the square
 
-        edge = random.randint(0, 3)
+        edge = random.randint(0, 2)
 
         # Generate x and y positions based on the edge
-        if edge == 0:  # Left edge
-            x_pos = -square_size_x / 2
+        if edge == 0:  # Left edge or Right edge
+            x_pos = -square_size_x / 2 
             y_pos = random.uniform(-square_size_y / 2, square_size_y / 2)
-        elif edge == 1:  # Right edge
-            x_pos = square_size_x / 2
-            y_pos = random.uniform(-square_size_y / 2, square_size_y / 2)
-        elif edge == 2:  # Top edge
+        elif edge == 1:  # Top edge
             y_pos = square_size_y / 2
-            x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
-            if -0.5 < x_pos < 0.5:
-                x_pos = 0.5
+            x_pos = random.uniform(-square_size_x / 2, -0.5)
         else:  # Bottom edge
             y_pos = -square_size_y / 2
-            x_pos = random.uniform(-square_size_x / 2, square_size_x / 2)
-            if -0.5 < x_pos < 0.5:
-                x_pos = 0.5
+            x_pos = random.uniform(-square_size_x / 2, -0.5)
 
         # Z position is fixed at 0.15
         z_pos = 0.15
@@ -380,7 +373,7 @@ class ReachingTargetTask(RLTask):
         self._robots.set_joint_efforts(self.dof_efforts[env_ids].clone(), indices=indices)
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
 
-        self._targets.set_world_poses(positions=self.target_pos[env_ids].clone(), indices=indices)
+        self._targets.set_world_poses(positions=self._target_pos[env_ids].clone(), indices=indices)
 
         self.last_actions[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
@@ -513,7 +506,7 @@ class ReachingTargetTask(RLTask):
         self._computed_distance = torch.norm(self.base_pos - self.target_pos, dim=-1)
 
         # target reached or lost
-        self.target_reached = self._computed_distance <= 0.6
+        self.target_reached = self._computed_distance <= 0.3
         self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
 
         # max episode length
@@ -553,7 +546,6 @@ class ReachingTargetTask(RLTask):
 
     
     def calculate_metrics(self) -> None:
-                
         # Define parameters
         gamma = 0.1  # Decay rate for the exponential reward
         dense_reward = 1.0 - torch.exp(gamma * self._computed_distance)  # Exponential decay otherwise
@@ -565,27 +557,33 @@ class ReachingTargetTask(RLTask):
         # Compute the alignment reward
         k = 1.25  # Curvature parameter for the exponential function
         alignment_reward = (1.0 - torch.exp(k * (angle_difference / np.pi)))
-        alignment_reward = alignment_reward.clamp(min=-4.0, max=0.0)
+        alignment_reward = alignment_reward.clamp(min=-5.0, max=0.0)
 
         # Efficiency penalty: Penalize large torques
         current_efforts = self._robots.get_applied_joint_efforts(clone=True)
-        torque_penalty = torch.mean(torch.abs(current_efforts), dim=-1) # max 20 Nm per wheel
+        torque_ref, _ = torch.max(current_efforts, dim=-1) # max 7.5 Nm per wheel
+        deltas_uniform = torque_ref.unsqueeze(-1) - current_efforts
+        delta_uniform = torch.sum(deltas_uniform, dim=-1)
+        w_uniform = 1.0
+        delta_diff = torch.abs(current_efforts[:, 0] - current_efforts[:, 2]) + torch.abs(current_efforts[:, 1] - current_efforts[:, 3])
+        w_diff = 3.0
+        delta_climb = torch.abs(current_efforts[:, 0] - current_efforts[:, 1]) + torch.abs(current_efforts[:, 2] - current_efforts[:, 3])
+        w_climb = 1.0   
+        delta_torque = (w_uniform * delta_uniform) * (w_diff * delta_diff)  # * (w_climb * delta_climb)
 
         # Bonus for reaching the target
-        target_reached = self.target_reached.float() * 800.0
-        crashed = self.fallen.float() * 800.0   # Penalty for crashing
+        target_reached = self.target_reached.float() * 1000.0
+        crashed = self.fallen.float() * 1000.0   # Penalty for crashing
 
         # Combine rewards and penalties
         reward = (
-            dense_reward    # Scale progress
-            + alignment_reward    # Scale alignment
-            - 0.25 * torque_penalty      # Small penalty for torque
+            0.75 * dense_reward    # Scale progress
+            - 0.01 * delta_torque      # Small penalty for torque
             + target_reached      # Completion bonus
             - crashed
         )
       
-        # Normalize and handle resets
-        # reward = torch.clip(reward, -50.0, 25.0)  # Clip rewards to avoid large gradients
+
         self.rew_buf[:] = reward
 
         return self.rew_buf
@@ -607,18 +605,15 @@ class ReachingTargetTask(RLTask):
         self._computed_distance = torch.norm(delta_pos, dim=-1)
 
         self.obs_buf = torch.cat(
-            (
-                self.base_vel[:, 0:3],
-                self.angle_difference.unsqueeze(-1),
-                # self.base_vel[:, 3:6],
-                self.projected_gravity,
-                delta_pos,
-                # heights,
-                # current_efforts 
-            ),
-            dim=-1,
-        )
-        
+                (
+                    self.base_vel[:, 0:3],
+                    self.angle_difference.unsqueeze(-1),
+                    self.projected_gravity,
+                    delta_pos,
+                ),
+                dim=-1,
+            )
+            
         # print(self.obs_buf)
 
         return {self._robots.name: {"obs_buf": self.obs_buf}}
