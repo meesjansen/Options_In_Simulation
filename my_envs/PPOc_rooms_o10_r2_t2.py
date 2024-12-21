@@ -453,6 +453,7 @@ class ReachingTargetTask(RLTask):
             return 
 
         self.actions = actions.clone().to(self.device)
+        print(self.actions)
 
         # Apply the actions to the robot
         scaled_actions = self.min_torque + (actions + 1) * 0.5 * (self.max_torque - self.min_torque)
