@@ -133,14 +133,14 @@ class ReachingTargetTask(RLTask):
             dtype=np.float32  # Ensure data type is consistent
         )
         # Define the action range for torques
-        self.min_torque = -10.0  # Example min torque value
-        self.max_torque = 10.0   # Example max torque value
+        self.min_torque = -7.5  # Example min torque value
+        self.max_torque = 7.5   # Example max torque value
 
 
         # Using the shape argument
         self.action_space = spaces.Box(
-            low=self.min_torque,
-            high=self.max_torque,
+            low=-1.0,
+            high=1.0,
             shape=(self.num_actions,),
             dtype=np.float32
         )

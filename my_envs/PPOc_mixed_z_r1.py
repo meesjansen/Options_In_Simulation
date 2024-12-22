@@ -139,8 +139,8 @@ class ReachingTargetTask(RLTask):
 
         # Using the shape argument
         self.action_space = spaces.Box(
-            low=self.min_torque,
-            high=self.max_torque,
+            low=-1.0,
+            high=1.0,
             shape=(self.num_actions,),
             dtype=np.float32
         )
