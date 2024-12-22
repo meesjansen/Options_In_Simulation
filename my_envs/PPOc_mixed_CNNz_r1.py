@@ -124,8 +124,8 @@ class ReachingTargetTask(RLTask):
         self._num_actions = 4
 
         self.observation_space = spaces.Box(low=-50, high=50, shape=(self._num_observations,), dtype=np.float32)
-        self.min_torque = -10.0
-        self.max_torque = 10.0
+        self.min_torque = -5.0
+        self.max_torque = 5.0
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(self._num_actions,), dtype=np.float32)
 
         self.common_step_counter = 0
@@ -360,7 +360,7 @@ class ReachingTargetTask(RLTask):
 
         self.actions = actions.clone().to(self.device)
         scaled_actions = self.min_torque + (actions + 1) * 0.5 * (self.max_torque - self.min_torque)
-        updated_efforts = torch.clip(scaled_actions, -10.0, 10.0)
+        updated_efforts = torch.clip(scaled_actions, -15.0, 15.0)
 
         if self.world.is_playing():
             self._robots.set_joint_efforts(updated_efforts) 

@@ -133,8 +133,8 @@ class ReachingTargetTask(RLTask):
             dtype=np.float32  # Ensure data type is consistent
         )
         # Define the action range for torques
-        self.min_torque = -10.0  # Example min torque value
-        self.max_torque = 10.0   # Example max torque value
+        self.min_torque = -5.0  # Example min torque value
+        self.max_torque = 5.0   # Example max torque value
 
 
         # Using the shape argument
@@ -457,7 +457,7 @@ class ReachingTargetTask(RLTask):
         # Apply the actions to the robot
         scaled_actions = self.min_torque + (actions + 1) * 0.5 * (self.max_torque - self.min_torque)
 
-        updated_efforts = torch.clip(scaled_actions, -10.0, 10.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
+        updated_efforts = torch.clip(scaled_actions, -15.0, 15.0) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
 
         if self.world.is_playing():
             self._robots.set_joint_efforts(updated_efforts) 
