@@ -125,7 +125,7 @@ class ReachingTargetTask(RLTask):
         self.observation_space = spaces.Box(low=-50, high=50, shape=(self._num_observations,), dtype=np.float32)
         self.min_torque = -10.0
         self.max_torque = 10.0
-        self.action_space = spaces.Box(low=self.min_torque, high=self.max_torque, shape=(self._num_actions,), dtype=np.float32)
+        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(self._num_actions,), dtype=np.float32)
 
         self.common_step_counter = 0
 

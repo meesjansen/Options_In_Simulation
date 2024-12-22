@@ -124,7 +124,7 @@ class ReachingTargetTask(RLTask):
 
         # observation and action space DQN
         self._num_observations = 10  # features (+ height points)
-        self._num_actions = 4  # Designed discrete action space see pre_physics_step()
+        self._num_actions = 2  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
             low=float("-50"),  # Replace with a specific lower bound if needed
@@ -448,9 +448,25 @@ class ReachingTargetTask(RLTask):
         self.actions = actions.clone().to(self.device)
 
         # Apply the actions to the robot
-        scaled_actions = self.min_torque + (actions + 1) * 0.5 * (self.max_torque - self.min_torque)
+        self.min_delta = -2.5
+        self.max_delta = 2.5
 
-        updated_efforts = torch.clip(scaled_actions, -7.5, 7.5) # 10 Nm ~ 100 N per wheel/ 10 kg per wheel
+        scaled_actions = self.min_torque + (actions[:, 0] + 1) * 0.5 * (self.max_torque - self.min_torque)
+        scaled_delta_diff = self.min_delta + (actions[:, 1] + 1) * 0.5 * (self.max_delta - self.min_delta)
+        # scaled_delta_climb = self.min_delta + (actions[:, 2] + 1) * 0.5 * (self.max_delta - self.min_delta)
+
+        updated_efforts = torch.zeros((self.num_envs, 4), device=self.device)
+
+        # Front left wheel
+        updated_efforts[:, 0] = scaled_actions + scaled_delta_diff # + scaled_delta_climb
+        # Front right wheel
+        updated_efforts[:, 1] = scaled_actions - scaled_delta_diff # + scaled_delta_climb
+        # Rear left wheel
+        updated_efforts[:, 2] = scaled_actions + scaled_delta_diff # - scaled_delta_climb
+        # Rear right wheel
+        updated_efforts[:, 3] = scaled_actions - scaled_delta_diff # - scaled_delta_climb
+
+        updated_efforts = torch.clip(updated_efforts, self.min_torque, self.max_torque)
 
         if self.world.is_playing():
             self._robots.set_joint_efforts(updated_efforts) 
@@ -464,8 +480,6 @@ class ReachingTargetTask(RLTask):
             if self.world.is_playing():
                 self._robots.set_joint_efforts(updated_efforts) 
                 SimulationContext.step(self.world, render=False)
-
-        # print(self._robots.get_applied_joint_efforts(clone=True)) # [:, np.array([1,2,4,5])]
 
                 
         
@@ -566,7 +580,7 @@ class ReachingTargetTask(RLTask):
         delta_uniform = torch.sum(deltas_uniform, dim=-1)
         w_uniform = 1.0
         delta_diff = torch.abs(current_efforts[:, 0] - current_efforts[:, 2]) + torch.abs(current_efforts[:, 1] - current_efforts[:, 3])
-        w_diff = 3.0
+        w_diff = 1.0
         delta_climb = torch.abs(current_efforts[:, 0] - current_efforts[:, 1]) + torch.abs(current_efforts[:, 2] - current_efforts[:, 3])
         w_climb = 1.0   
         delta_torque = (w_uniform * delta_uniform) * (w_diff * delta_diff)  # * (w_climb * delta_climb)
