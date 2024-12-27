@@ -572,8 +572,8 @@ class ReachingTargetTask(RLTask):
         torque_penalty = torch.mean(torch.abs(current_efforts), dim=-1) # max 20 Nm per wheel
 
         # Bonus for reaching the target
-        target_reached = self.target_reached.float() * 1200.0
-        crashed = self.fallen.float() * 1200.0   # Penalty for crashing
+        target_reached = self.target_reached.float() * 800.0
+        crashed = self.fallen.float() * 800.0   # Penalty for crashing
 
         # Combine rewards and penalties
         reward = (
