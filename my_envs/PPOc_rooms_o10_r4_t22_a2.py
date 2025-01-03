@@ -436,6 +436,10 @@ class ReachingTargetTask(RLTask):
         
 
     def pre_physics_step(self, actions):
+        self._robots.dof_properties
+        self._robots.get_dof_index("left_rear_wheel")
+        self._robots.dof_names
+
         if not self.world.is_playing():
             return
         
