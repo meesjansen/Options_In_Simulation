@@ -464,9 +464,9 @@ class ReachingTargetTask(RLTask):
         updated_efforts = torch.zeros((self.num_envs, 4), device=self.device)
 
         # Front left wheel
-        updated_efforts[:, 0] = scaled_actions + scaled_delta_diff # + scaled_delta_climb
+        updated_efforts[:, 0] = 0 # scaled_actions + scaled_delta_diff # + scaled_delta_climb
         # Front right wheel
-        updated_efforts[:, 1] = scaled_actions + scaled_delta_diff # + scaled_delta_climb
+        updated_efforts[:, 1] = 0 #scaled_actions + scaled_delta_diff # + scaled_delta_climb
         # Rear left wheel
         updated_efforts[:, 2] = scaled_actions - scaled_delta_diff # - scaled_delta_climb
         # Rear right wheel
