@@ -36,7 +36,7 @@ TASK_CFG = {"test": False,
                      "physics_engine": "physx",
                      "env": {"numEnvs": 64, # has to be perfect square
                              "envSpacing": 10.0,
-                             "episodeLength": 500,
+                             "episodeLength": 300,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
                              "controlFrequencyInv": 4,
@@ -436,10 +436,6 @@ class ReachingTargetTask(RLTask):
         
 
     def pre_physics_step(self, actions):
-        # self._robots.dof_properties
-        # self._robots.get_dof_index("right_front_wheel_joint")
-        # self._robots.get_dof_index("eft_rear_wheel_joint")
-        # self._robots.dof_names
 
         if not self.world.is_playing():
             return
@@ -454,23 +450,23 @@ class ReachingTargetTask(RLTask):
         print(f"Actions: {self.actions}")
 
         # Apply the actions to the robot
-        self.min_delta = -2.5
-        self.max_delta = 2.5
+        self.min_delta = -5.0
+        self.max_delta = 5.0
 
-        scaled_actions = self.min_torque + (actions[:, 0] + 1) * 0.5 * (self.max_torque - self.min_torque)
-        scaled_delta_diff = self.min_delta + (actions[:, 1] + 1) * 0.5 * (self.max_delta - self.min_delta)
-        # scaled_delta_climb = self.min_delta + (actions[:, 2] + 1) * 0.5 * (self.max_delta - self.min_delta)
+        self.scaled_actions = self.min_torque + (actions[:, 0] + 1) * 0.5 * (self.max_torque - self.min_torque)
+        self.scaled_delta_diff = self.min_delta + (actions[:, 1] + 1) * 0.5 * (self.max_delta - self.min_delta)
+        # self.scaled_delta_climb = self.min_delta + (self.actions[:, 2] + 1) * 0.5 * (self.max_delta - self.min_delta)
 
         updated_efforts = torch.zeros((self.num_envs, 4), device=self.device)
 
         # Front left wheel
-        updated_efforts[:, 0] = 0 # scaled_actions + scaled_delta_diff # + scaled_delta_climb
+        updated_efforts[:, 0] = self.scaled_actions + self.scaled_delta_diff # + self.scaled_delta_climb
         # Front right wheel
-        updated_efforts[:, 1] = 0 #scaled_actions + scaled_delta_diff # + scaled_delta_climb
+        updated_efforts[:, 1] = self.scaled_actions + self.scaled_delta_diff # + self.scaled_delta_climb
         # Rear left wheel
-        updated_efforts[:, 2] = scaled_actions - scaled_delta_diff # - scaled_delta_climb
+        updated_efforts[:, 2] = self.scaled_actions - self.scaled_delta_diff # - self.scaled_delta_climb
         # Rear right wheel
-        updated_efforts[:, 3] = scaled_actions - scaled_delta_diff # - scaled_delta_climb
+        updated_efforts[:, 3] = self.scaled_actions - self.scaled_delta_diff # - self.scaled_delta_climb
 
         print(f"Updated Efforts: {updated_efforts}")
         updated_efforts = torch.clip(updated_efforts, -15.0, 15.0)
@@ -572,41 +568,48 @@ class ReachingTargetTask(RLTask):
 
     
     def calculate_metrics(self) -> None:
-        # Define parameters
+        # Dense Rewards
+
+        # Vacinity reward
         gamma = 0.1  # Decay rate for the exponential reward
         dense_reward = 1.0 - torch.exp(gamma * self._computed_distance)  # Exponential decay otherwise
         dense_reward = torch.where(self.target_reached, torch.zeros_like(dense_reward), dense_reward)  # Set dense_reward to zero where target is reached
 
         # Alignment reward
         angle_difference = torch.where(self.angle_difference > np.pi, 2 * np.pi - self.angle_difference, self.angle_difference)
-
-        # Compute the alignment reward
         k = 1.25  # Curvature parameter for the exponential function
         alignment_reward = (1.0 - torch.exp(k * (angle_difference / np.pi)))
         alignment_reward = alignment_reward.clamp(min=-5.0, max=0.0)
 
         # Efficiency penalty: Penalize large torques
-        current_efforts = self._robots.get_applied_joint_efforts(clone=True)
-        torque_ref, _ = torch.max(current_efforts, dim=-1) # max 7.5 Nm per wheel
-        deltas_uniform = torque_ref.unsqueeze(-1) - current_efforts
-        delta_uniform = torch.sum(deltas_uniform, dim=-1)
-        w_uniform = 1.0
-        delta_diff = torch.abs(current_efforts[:, 0] - current_efforts[:, 2]) + torch.abs(current_efforts[:, 1] - current_efforts[:, 3])
-        w_diff = 1.0
-        delta_climb = torch.abs(current_efforts[:, 0] - current_efforts[:, 1]) + torch.abs(current_efforts[:, 2] - current_efforts[:, 3])
-        w_climb = 1.0   
-        delta_torque = (w_uniform * delta_uniform) * (w_diff * delta_diff)  # * (w_climb * delta_climb)
+        torque_uniform = torch.abs(self.scaled_actions)
+        delta_diff = torch.abs(self.scaled_delta_diff)
+        # delta_climb = torch.abs(self.scaled_delta_climb)
 
-        # Bonus for reaching the target
-        target_reached = self.target_reached.float() * 1000.0
-        crashed = self.fallen.float() * 1000.0   # Penalty for crashing
+        # Penalize mixing driving modes usefull when climb is active like in a3
+        delta_torque = delta_diff  # * delta_climb
+
+        # Still penalty: Penalize standing still
+        self.position_buffer = self.base_pos[:,:2].clone()
+        changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
+        still_penalty = changed_pos < 0.05 
+        still_penalty = torch.where(still_penalty)
+
+
+        # Sparse Rewards
+        target_reached = self.target_reached.float()
+        crashed = self.fallen.float()  # Penalty for crashing
+        standing_still_reset = self.standing_still.float() # Penalty for standing still
 
         # Combine rewards and penalties
         reward = (
-            0.75 * dense_reward    # Scale progress
-            - 0.01 * delta_torque      # Small penalty for torque
-            + target_reached      # Completion bonus
-            - crashed
+            1.0 * dense_reward    # Scale progress  ~ -0.5
+            - 0.02 * torque_uniform # Penalty for torque  ~ -0.3
+            - 0.02 * delta_torque      # Small penalty for diff drive ~ -0.1
+            - 0.3 * still_penalty   # Penalty for standing still per timestep
+            - 5.0 * standing_still_reset
+            + 100.0 * target_reached      # Completion bonus
+            - 50.0 * crashed
         )
       
 
