@@ -489,6 +489,10 @@ class ReachingTargetTask(RLTask):
                 self._robots.set_joint_efforts(updated_efforts) 
                 SimulationContext.step(self.world, render=False)
 
+        dof_names = self._robots.dof_names
+        print("DOF Names:", dof_names)
+        print("Named dof indices:", [self._robots.get_dof_index(dof) for dof in dof_names])
+
                 
         
     def post_physics_step(self):
