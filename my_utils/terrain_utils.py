@@ -3,9 +3,11 @@ import torch
 
 import numpy as np
 from numpy.random import choice
-from omni.isaac.core.prims import XFormPrim
-from pxr import Gf, PhysxSchema, Sdf, UsdPhysics
+from pxr import Gf, PhysxSchema, Sdf, UsdPhysics, UsdShade
 from scipy import interpolate
+
+import omni.isaac.core.utils.stage as stage_utils
+from omni.isaac.core.prims import XFormPrim
 
 
 def rooms_terrain(terrain, wall_height=1.0, wall_thickness=.2, passage_width=1.0):
@@ -501,6 +503,15 @@ def add_terrain_to_stage(stage, vertices, triangles, position=None, orientation=
     physx_collision_api = PhysxSchema.PhysxCollisionAPI.Apply(terrain.prim)
     physx_collision_api.GetContactOffsetAttr().Set(0.02)
     physx_collision_api.GetRestOffsetAttr().Set(0.00)
+
+
+    material_path = "/World/Looks/TerrainMaterial"
+    material_prim = stage.DefinePrim(material_path, "Material")
+    material_prim.GetReferences().AddReference(
+        "omniverse://localhost/NVIDIA/Materials/Base/Triplanar.mdl"
+    )
+    UsdShade.MaterialBindingAPI(terrain.prim).Bind(UsdShade.Material(material_prim))
+
 
 class SubTerrain:
     def __init__(self, terrain_name="terrain", width=256, length=256, vertical_scale=1.0, horizontal_scale=1.0):
