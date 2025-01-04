@@ -591,12 +591,17 @@ class ReachingTargetTask(RLTask):
         # Penalize mixing driving modes usefull when climb is active like in a3
         delta_torque = delta_diff  # * delta_climb
 
-        # Still penalty: Penalize standing still
-        self.position_buffer = self.base_pos[:,:2].clone()
-        changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
-        still_penalty = changed_pos < 0.05 
-        still_penalty = torch.where(still_penalty)
-        still_penalty = still_penalty.float()
+        # Check standing still condition every still_check_interval timesteps
+        self.still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+        if self.counter2 == 0:
+            self.position_buffer = self.base_pos[:,:2].clone()
+            self.counter2 += 1
+        else:
+            changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
+            self.still = changed_pos < 0.05 
+            self.counter2 = 0  # Reset counter
+
+        still_penalty = self.still.float()
 
 
         # Sparse Rewards
