@@ -158,6 +158,7 @@ class ReachingTargetTask(RLTask):
         self.still_steps = torch.zeros(self.num_envs)
         self.position_buffer = torch.zeros(self.num_envs, 2)  # Assuming 2D position still condition
         self.counter = 0 # still condition counter
+        self.counter2 = 0
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
 
         self.linear_acceleration = torch.zeros((self.num_envs, 3), device=self.device)
