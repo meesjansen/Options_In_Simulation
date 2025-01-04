@@ -595,7 +595,7 @@ class ReachingTargetTask(RLTask):
         self.position_buffer = self.base_pos[:,:2].clone()
         changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
         still_penalty = changed_pos < 0.05 
-        still_penalty = torch.where(still_penalty)
+        still_penalty = torch.where(still_penalty).float()
 
 
         # Sparse Rewards
