@@ -456,9 +456,9 @@ class ReachingTargetTask(RLTask):
         self.min_delta = -5.0
         self.max_delta = 5.0
 
-        self.scaled_actions = self.min_torque + (actions[:, 0] + 1) * 0.5 * (self.max_torque - self.min_torque)
-        self.scaled_delta_diff = self.min_delta + (actions[:, 1] + 1) * 0.5 * (self.max_delta - self.min_delta)
-        # self.scaled_delta_climb = self.min_delta + (self.actions[:, 2] + 1) * 0.5 * (self.max_delta - self.min_delta)
+        self.scaled_actions = self.min_torque + (actions[:, 0] + 1.0) * 0.5 * (self.max_torque - self.min_torque)
+        self.scaled_delta_diff = self.min_delta + (actions[:, 1] + 1.0) * 0.5 * (self.max_delta - self.min_delta)
+        # self.scaled_delta_climb = self.min_delta + (self.actions[:, 2] + 1.0) * 0.5 * (self.max_delta - self.min_delta)
 
         updated_efforts = torch.zeros((self.num_envs, 4), device=self.device)
 
