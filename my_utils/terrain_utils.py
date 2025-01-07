@@ -33,7 +33,7 @@ def rooms_terrain(terrain, wall_height=1.0, wall_thickness=.2, passage_width=1.0
     center_y = int(terrain_length // 2)
 
     # Fill the entire height_field_raw with zeros (representing the floor)
-    terrain.height_field_raw[:, :] = 0
+    terrain.height_field_raw[:, :] = -1.0
 
     # Create walls around the perimeter of the terrain
     terrain.height_field_raw[:, 0:wall_thickness] = wall_height/terrain.vertical_scale  # Left wall
@@ -508,7 +508,7 @@ def add_terrain_to_stage(stage, vertices, triangles, position=None, orientation=
     material_path = "/World/Looks/TerrainMaterial"
     material_prim = stage.DefinePrim(material_path, "Material")
     material_prim.GetReferences().AddReference(
-        "omniverse://localhost/NVIDIA/Materials/2023_1/vMaterials_2/Masonry/Facade_Brick_Red_Clinker.mdl"
+        "file://./Facade_Brick_Red_Clinker.mdl"
     )
     UsdShade.MaterialBindingAPI(terrain.prim).Bind(UsdShade.Material(material_prim))
 

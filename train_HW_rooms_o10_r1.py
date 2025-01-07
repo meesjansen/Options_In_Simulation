@@ -61,14 +61,14 @@ class Value(DeterministicMixin, Model):
 # instantiate and configure the task
 headless = True  # set headless to False for rendering
 
-env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
+env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
 from my_envs.HW_PPOc_rooms_o10_r1 import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 9
+TASK_CFG["task"]["env"]["numEnvs"] = 6
 
 
 sim_config = SimConfig(TASK_CFG)
@@ -137,7 +137,7 @@ PPO_DEFAULT_CONFIG = {
         "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
         "store_separately": False,          # whether to store checkpoints separately
 
-        "wandb": True,             # whether to use Weights & Biases
+        "wandb": False,             # whether to use Weights & Biases
         "wandb_kwargs": {"project":     "PPOc",
                         "entity":       "meesjansen-Delft Technical University",
                         "name":         "PPOc_rooms_o10_r1",
