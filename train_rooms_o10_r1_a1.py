@@ -61,7 +61,7 @@ class Value(DeterministicMixin, Model):
 # instantiate and configure the task
 headless = True  # set headless to False for rendering
 
-env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
+env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
 from my_envs.PPOc_rooms_o10_r1_a1 import ReachingTargetTask, TASK_CFG
@@ -156,7 +156,7 @@ cfg_ppo["learning_rate"] = 5e-4
 cfg_ppo["learning_rate_scheduler"] = KLAdaptiveRL
 cfg_ppo["learning_rate_scheduler_kwargs"] = {"kl_threshold": 0.008}
 cfg_ppo["random_timesteps"] = 5000
-cfg_ppo["learning_starts"] = 0 # cfg_ppo["rollouts"] * env.num_envs * 4
+cfg_ppo["learning_starts"] = 5000 # cfg_ppo["rollouts"] * env.num_envs * 4
 cfg_ppo["grad_norm_clip"] = 1.0
 cfg_ppo["ratio_clip"] = 0.2
 cfg_ppo["value_clip"] = 0.2

@@ -554,20 +554,20 @@ class ReachingTargetTask(RLTask):
                         ((self.base_pos[:, 1] - self.env_origins[:, 1]) < self.bounds[2]) | ((self.base_pos[:, 1] - self.env_origins[:, 1]) > self.bounds[3])
         self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
 
-        # Check standing still condition every still_check_interval timesteps
-        self.standing_still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        if self.counter == 0:
-            self.position_buffer = self.base_pos[:,:2].clone()
-            self.counter += 1
-        elif self.counter == 20:
-            changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
-            self.standing_still = changed_pos < 0.05 
-            self.counter = 0  # Reset counter
-        else:
-            self.counter += 1
+        # # Check standing still condition every still_check_interval timesteps
+        # self.standing_still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+        # if self.counter == 0:
+        #     self.position_buffer = self.base_pos[:,:2].clone()
+        #     self.counter += 1
+        # elif self.counter == 20:
+        #     changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
+        #     self.standing_still = changed_pos < 0.05 
+        #     self.counter = 0  # Reset counter
+        # else:
+        #     self.counter += 1
 
-        # Update reset_buf based on standing_still condition
-        self.reset_buf = torch.where(self.standing_still, torch.ones_like(self.reset_buf), self.reset_buf)
+        # # Update reset_buf based on standing_still condition
+        # self.reset_buf = torch.where(self.standing_still, torch.ones_like(self.reset_buf), self.reset_buf)
 
     
     def calculate_metrics(self) -> None:
@@ -608,7 +608,7 @@ class ReachingTargetTask(RLTask):
         # Sparse Rewards
         target_reached = self.target_reached.float()
         crashed = self.fallen.float()  # Penalty for crashing
-        standing_still_reset = self.standing_still.float() # Penalty for standing still
+        # standing_still_reset = self.standing_still.float() # Penalty for standing still
 
         # Combine rewards and penalties
         reward = (
@@ -616,7 +616,7 @@ class ReachingTargetTask(RLTask):
             # - 0.02 * torque_uniform # Penalty for torque  ~ -0.3
             # - 0.02 * delta_torque      # Small penalty for diff drive ~ -0.1
             - 0.3 * still_penalty   # Penalty for standing still per timestep
-            - 5.0 * standing_still_reset
+            # - 5.0 * standing_still_reset
             + 100.0 * target_reached      # Completion bonus
             - 50.0 * crashed
         )
