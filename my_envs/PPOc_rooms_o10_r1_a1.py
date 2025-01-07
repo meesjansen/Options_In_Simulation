@@ -461,6 +461,8 @@ class ReachingTargetTask(RLTask):
         # self.scaled_delta_climb = self.min_delta + (self.actions[:, 2] + 1.0) * 0.5 * (self.max_delta - self.min_delta)
 
         updated_efforts = torch.zeros((self.num_envs, 4), device=self.device)
+        # Remove the singleton dimension
+        self.scaled_delta_diff = self.scaled_delta_diff.squeeze()
 
         # Front left wheel
         updated_efforts[:, 0] = self.scaled_delta_diff # + self.scaled_actions - self.scaled_delta_climb
