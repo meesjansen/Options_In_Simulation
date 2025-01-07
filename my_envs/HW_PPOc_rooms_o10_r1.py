@@ -23,7 +23,7 @@ from pxr import PhysxSchema, UsdPhysics
 # from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10
 # from my_robots.origin_v11_fixed_arms import AvularOrigin_v10 as Robot_v11
 from my_robots.origin_elevated import AvularOrigin_v10 as Robot_v11
-from my_robots.origin_v12 import AvularOrigin_v12 as Robot_v12
+from my_robots.origin_v12 import AvularOrigin_v10 as Robot_v12
 
 
 from my_utils.terrain_generator import *
