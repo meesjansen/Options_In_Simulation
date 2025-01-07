@@ -158,9 +158,9 @@ agent = PPO(models=models_ppo,
             action_space=env.action_space,
             device=device)
 
-agent.load("./my_runs/PPOc_rooms_o10_r1_a2/PPOc_rooms_o10_r1_a2/checkpoints/agent_300000.pt")
-# agent.load("./my_runs/PPOc_rooms_o10_r4_t22_a2/PPOc_rooms_o10_r4_t22_a2/checkpoints/checkpoint_300000.pt")
-# agent.load("./my_runs/PPOc_terrain_r4_v21/PPOc_terrain_r4_v21/checkpoints/checkpoint_100000.pt")
+# agent.load("./my_runs/PPOc_rooms_o10_r1_a2/PPOc_rooms_o10_r1_a2/checkpoints/agent_300000.pt")
+agent.load("./my_runs/PPOc_rooms_o10_r4_t22_a2/PPOc_rooms_o10_r4_t22_a2/checkpoints/agent_150000.pt")
+# agent.load("./my_runs/PPOc_terrain_r4_v21/PPOc_terrain_r4_v21/checkpoints/agent_100000.pt")
 
 
 
