@@ -559,7 +559,7 @@ class ReachingTargetTask(RLTask):
         if self.counter == 0:
             self.position_buffer = self.base_pos[:,:2].clone()
             self.counter += 1
-        elif self.counter == 20:
+        elif self.counter == 100:
             changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
             self.standing_still = changed_pos < 0.05 
             self.counter = 0  # Reset counter

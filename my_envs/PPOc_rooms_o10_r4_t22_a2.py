@@ -559,7 +559,7 @@ class ReachingTargetTask(RLTask):
         if self.counter == 0:
             self.position_buffer = self.base_pos[:,:2].clone()
             self.counter += 1
-        elif self.counter == 20:
+        elif self.counter == 100:
             changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
             self.standing_still = changed_pos < 0.05 
             self.counter = 0  # Reset counter
@@ -607,7 +607,7 @@ class ReachingTargetTask(RLTask):
         # Sparse Rewards
         target_reached = self.target_reached.float()
         crashed = self.fallen.float()  # Penalty for crashing
-        standing_still_reset = self.standing_still.float() # Penalty for standing still
+        # standing_still_reset = self.standing_still.float() # Penalty for standing still
 
         # Combine rewards and penalties
         reward = (
@@ -615,7 +615,7 @@ class ReachingTargetTask(RLTask):
             - 0.02 * torque_uniform # Penalty for torque  ~ -0.3
             - 0.02 * delta_torque      # Small penalty for diff drive ~ -0.1
             - 0.3 * still_penalty   # Penalty for standing still per timestep
-            - 5.0 * standing_still_reset
+            # - 5.0 * standing_still_reset
             + 100.0 * target_reached      # Completion bonus
             - 50.0 * crashed
         )
