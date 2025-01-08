@@ -450,7 +450,7 @@ class ReachingTargetTask(RLTask):
             return 
 
         self.actions = actions.clone().to(self.device)
-        print(f"Actions: {self.actions}")
+        # print(f"Actions: {self.actions}")
 
         # Apply the actions to the robot
         self.min_delta = -5.0
