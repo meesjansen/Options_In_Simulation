@@ -46,7 +46,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.PPOc_rooms_o10_r1_a2 import ReachingTargetTask, TASK_CFG
+from my_envs.PPOc_rooms_o10_r2_a2 import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
@@ -158,7 +158,7 @@ agent = PPO(models=models_ppo,
             action_space=env.action_space,
             device=device)
 
-agent.load("./my_runs/PPOc_rooms_o10_r5_a2/PPOc_rooms_o10_r5_a2/checkpoints/agent_150000.pt")
+agent.load("./my_runs/PPOc_rooms_o10_r2_a2/PPOc_rooms_o10_r2_a2/checkpoints/agent_150000.pt")
 # agent.load("./my_runs/PPOc_rooms_o10_r4_t22_a2/PPOc_rooms_o10_r4_t22_a2/checkpoints/agent_150000.pt")
 # agent.load("./my_runs/PPOc_terrain_r4_v21/PPOc_terrain_r4_v21/checkpoints/agent_100000.pt")
 
