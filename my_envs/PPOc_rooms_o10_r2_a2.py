@@ -473,7 +473,7 @@ class ReachingTargetTask(RLTask):
 
         # print(f"Updated Efforts: {updated_efforts}")
         updated_efforts = torch.clip(updated_efforts, -15.0, 15.0)
-        print(f"Clipped Efforts: {updated_efforts}")
+        # print(f"Clipped Efforts: {updated_efforts}")
 
 
         if self.world.is_playing():
