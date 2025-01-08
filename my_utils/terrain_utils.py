@@ -505,12 +505,12 @@ def add_terrain_to_stage(stage, vertices, triangles, position=None, orientation=
     physx_collision_api.GetRestOffsetAttr().Set(0.00)
 
 
-    material_path = "/World/Looks/TerrainMaterial"
-    material_prim = stage.DefinePrim(material_path, "Material")
-    material_prim.GetReferences().AddReference(
-        "omniverse://localhost/NVIDIA/Materials/2023_1/vMaterials_2/Masonry/Facade_Brick_Red_Clinker.mdl"
-    )
-    UsdShade.MaterialBindingAPI(terrain.prim).Bind(UsdShade.Material(material_prim))
+    # material_path = "/World/Looks/TerrainMaterial"
+    # material_prim = stage.DefinePrim(material_path, "Material")
+    # material_prim.GetReferences().AddReference(
+    #     "omniverse://localhost/NVIDIA/Materials/2023_1/vMaterials_2/Masonry/Facade_Brick_Red_Clinker.mdl"
+    # )
+    # UsdShade.MaterialBindingAPI(terrain.prim).Bind(UsdShade.Material(material_prim))
 
 
 class SubTerrain:
