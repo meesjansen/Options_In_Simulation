@@ -450,7 +450,7 @@ class ReachingTargetTask(RLTask):
             return 
 
         self.actions = actions.clone().to(self.device)
-        # print(f"Actions: {self.actions}")
+        print(f"Actions: {self.actions}")
 
         # Apply the actions to the robot
         self.min_delta = -10.0
@@ -471,9 +471,9 @@ class ReachingTargetTask(RLTask):
         # Rear right wheel
         updated_efforts[:, 3] = self.scaled_actions - self.scaled_delta_diff # + self.scaled_delta_climb
 
-        # print(f"Updated Efforts: {updated_efforts}")
+        print(f"Updated Efforts: {updated_efforts}")
         updated_efforts = torch.clip(updated_efforts, -15.0, 15.0)
-        # print(f"Clipped Efforts: {updated_efforts}")
+        print(f"Clipped Efforts: {updated_efforts}")
 
         if self.world.is_playing():
             self._robots.set_joint_efforts(updated_efforts) 
