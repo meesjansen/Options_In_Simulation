@@ -123,7 +123,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 10  # features (+ height points)
+        self._num_observations = 3  # features (+ height points)
         self._num_actions = 1  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
@@ -312,7 +312,7 @@ class ReachingTargetTask(RLTask):
         self.num_dof = self._robots.num_dof 
         self.env_origins = self.terrain_origins.view(-1, 3)[:self.num_envs]
         self._target_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
-        self._target_pos += torch.tensor([0.5, 2.0, 0.1], dtype=torch.float, device=self.device)
+        self._target_pos += torch.tensor([2.5, 0.0, 0.1], dtype=torch.float, device=self.device)
         self._target_pos[:, :2] += self.env_origins[:, :2]
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
         self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
@@ -396,7 +396,7 @@ class ReachingTargetTask(RLTask):
         z = self.base_quat[:, 3]
 
         # Compute yaw angle from quaternion
-        yaw = torch.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y ** 2 + z ** 2))
+        self.yaw = torch.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y ** 2 + z ** 2))
 
         # Compute target direction vector (only x and y components)
         target_direction = self.target_pos - self.base_pos  # Shape: [batch_size, 3]
@@ -407,7 +407,7 @@ class ReachingTargetTask(RLTask):
         target_angle = torch.atan2(target_direction_y, target_direction_x)
 
         # Compute angle difference and wrap to [0, π]
-        angle_difference = torch.abs(target_angle - yaw)
+        angle_difference = torch.abs(target_angle - self.yaw)
         self.angle_difference = torch.fmod(angle_difference, 2 * np.pi)
 
         # Compute linear and angular velocities in the robot's ergo frame
@@ -617,8 +617,8 @@ class ReachingTargetTask(RLTask):
             1.0 * dense_reward    # Scale progress  ~ -0.5
             # - 0.02 * torque_uniform # Penalty for torque  ~ -0.3
             # - 0.02 * delta_torque      # Small penalty for diff drive ~ -0.1
-            - 0.3 * still_penalty   # Penalty for standing still per timestep
-            - 5.0 * standing_still_reset
+            - 0.04 * still_penalty   # Penalty for standing still per timestep
+            - 50.0 * standing_still_reset
             + 100.0 * target_reached      # Completion bonus
             - 50.0 * crashed
         )
@@ -646,10 +646,11 @@ class ReachingTargetTask(RLTask):
 
         self.obs_buf = torch.cat(
                 (
-                    self.base_vel[:, 0:3],
-                    self.angle_difference.unsqueeze(-1),
-                    self.projected_gravity,
-                    delta_pos,
+                    delta_pos[:, 0:2],
+                    self.yaw.unsqueeze(-1),
+                    # self.angle_difference.unsqueeze(-1),
+                    # self.projected_gravity,
+                    # self.base_vel[:, 0],
                 ),
                 dim=-1,
             )
