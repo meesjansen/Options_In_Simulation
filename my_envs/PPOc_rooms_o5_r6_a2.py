@@ -614,12 +614,10 @@ class ReachingTargetTask(RLTask):
         still_penalty = self.still.float()
 
         # Calculate yaw rotation (assuming self.base_ang_vel[:, 2] is the yaw rate)
-        yaw_rate = self.base_ang_vel[:, 2]
+        yaw_rate = torch.abs(self.base_ang_vel[:, 2])
 
         # Define a reward for yaw rotation when standing still
         yaw_reward = torch.where(self.still, yaw_rate, torch.zeros_like(yaw_rate))
-
-        print(f"Yaw Rewar: {yaw_reward}")
 
         # Sparse Rewards
         target_reached = self.target_reached.float()
@@ -633,7 +631,7 @@ class ReachingTargetTask(RLTask):
             # - 0.02 * delta_torque      # Small penalty for diff drive ~ -0.1
             - 0.1 * still_penalty   # Penalty for standing still per timestep
             - 50.0 * standing_still_reset
-            + yaw_reward 
+            + 0.5 * yaw_reward 
             + 100.0 * target_reached      # Completion bonus
             - 50.0 * crashed
         )

@@ -123,7 +123,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 5  # features (+ height points)
+        self._num_observations = 3  # features (+ height points)
         self._num_actions = 2  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
@@ -613,10 +613,9 @@ class ReachingTargetTask(RLTask):
         # Combine rewards and penalties
         reward = (
             1.0 * dense_reward    # Scale progress  ~ -0.5
-            - 0.02 * torque_uniform # Penalty for torque  ~ -0.3
-            - 0.002 * delta_diff      # Penalty for diff drive ~ -0.03
+            # - 0.02 * torque_uniform # Penalty for torque  ~ -0.3
             - 0.0001 * delta_torque      # Small penalty for diff drive ~ -0.2
-            # - 0.04 * still_penalty   # Penalty for standing still per timestep
+            - 0.04 * still_penalty   # Penalty for standing still per timestep
             - 50.0 * standing_still_reset
             + 100.0 * target_reached      # Completion bonus
             - 50.0 * crashed
@@ -650,7 +649,10 @@ class ReachingTargetTask(RLTask):
                     # self.angle_difference.unsqueeze(-1),
                     # self.projected_gravity,
                     self.base_vel[:, 0].unsqueeze(-1),
-                    self.base_ang_vel[:, 2].unsqueeze(-1)
+                    self.base_ang_vel[:, 2].unsqueeze(-1),
+                    self.scaled_actions.unsqueeze(-1),
+                    self.scaled_delta_diff.unsqueeze(-1),
+
                 ),
                 dim=-1,
             )

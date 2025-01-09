@@ -158,7 +158,7 @@ class ReachingTargetTask(RLTask):
         self.still_steps = torch.zeros(self.num_envs)
         self.position_buffer = torch.zeros(self.num_envs, 2)  # Assuming 2D position still condition
         self.counter = 0 # still condition counter
-        self.counter2 = 0
+        self.counter2 = torch.zeros(self.num_envs, dtype=torch.int64)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
 
         self.linear_acceleration = torch.zeros((self.num_envs, 3), device=self.device)
@@ -453,12 +453,12 @@ class ReachingTargetTask(RLTask):
         # print(f"Actions: {self.actions}")
 
         # Apply the actions to the robot
-        self.min_delta = -10.0
-        self.max_delta = 10.0
+        self.min_delta = -5.0
+        self.max_delta = 5.0
 
-        self.scaled_actions = self.min_torque + (actions[:, 0] + 1) * 0.5 * (self.max_torque - self.min_torque)
-        self.scaled_delta_diff = self.min_delta + (actions[:, 1] + 1) * 0.5 * (self.max_delta - self.min_delta)
-        # self.scaled_delta_climb = self.min_delta + (self.actions[:, 2] + 1) * 0.5 * (self.max_delta - self.min_delta)
+        self.scaled_actions = self.min_torque + (actions[:, 0] + 1.0) * 0.5 * (self.max_torque - self.min_torque)
+        self.scaled_delta_diff = self.min_delta + (actions[:, 1] + 1.0) * 0.5 * (self.max_delta - self.min_delta)
+        # self.scaled_delta_climb = self.min_delta + (self.actions[:, 2] + 1.0) * 0.5 * (self.max_delta - self.min_delta)
 
         updated_efforts = torch.zeros((self.num_envs, 4), device=self.device)
 
@@ -594,16 +594,30 @@ class ReachingTargetTask(RLTask):
 
         # Check standing still condition every still_check_interval timesteps
         self.still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        if self.counter2 == 0:
-            self.position_buffer = self.base_pos[:,:2].clone()
-            self.counter2 += 1
-        else:
-            changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
-            self.still = changed_pos < 0.05 
-            self.counter2 = 0  # Reset counter
+        
+        for i in range(self.num_envs):
+            if self.counter2[i] == 0:
+                self.counter2[i] += 1
+            elif self.counter2[i] < 5:
+                changed_pos = torch.norm((self.position_buffer[i] - self.base_pos[i, :2].clone()), dim=0)
+                if changed_pos < 0.05:
+                    self.still[i] = True
+                    self.counter2[i] = 0  # Reset counter
+                else:
+                    self.still[i] = False
+                    self.counter2[i] += 1
+            else:
+                changed_pos = torch.norm((self.position_buffer[i] - self.base_pos[i, :2].clone()), dim=0)
+                self.still[i] = changed_pos < 0.05
+                self.counter2[i] = 0  # Reset counter
 
         still_penalty = self.still.float()
 
+        # Calculate yaw rotation (assuming self.base_ang_vel[:, 2] is the yaw rate)
+        yaw_rate = torch.abs(self.base_ang_vel[:, 2])
+
+        # Define a reward for yaw rotation when standing still
+        yaw_reward = torch.where(self.still, yaw_rate, torch.zeros_like(yaw_rate))
 
         # Sparse Rewards
         target_reached = self.target_reached.float()
@@ -614,14 +628,26 @@ class ReachingTargetTask(RLTask):
         reward = (
             1.0 * dense_reward    # Scale progress  ~ -0.5
             - 0.02 * torque_uniform # Penalty for torque  ~ -0.3
-            - 0.002 * delta_diff      # Penalty for diff drive ~ -0.03
+            - 0.02 * delta_diff      # Small penalty for diff drive ~ -0.1
             - 0.0001 * delta_torque      # Small penalty for diff drive ~ -0.2
-            # - 0.04 * still_penalty   # Penalty for standing still per timestep
+            - 0.1 * still_penalty   # Penalty for standing still per timestep
             - 50.0 * standing_still_reset
+            + 0.5 * yaw_reward   # Reward for yaw rotation when standing still ~ 0.1
             + 100.0 * target_reached      # Completion bonus
             - 50.0 * crashed
         )
       
+
+        print(f"Dense reward: {1.0 * dense_reward}")
+        print(f"Torque uniform penalty: {-0.02 * torque_uniform}")
+        print(f"Delta diff penalty: {-0.02 * delta_diff}")
+        print(f"Delta torque penalty: {-0.0001 * delta_torque}")
+        print(f"Still penalty: {-0.1 * still_penalty}")
+        print(f"Standing still reset penalty: {-50.0 * standing_still_reset}")
+        print(f"Yaw reward: {0.5 * yaw_reward}")
+        print(f"Target reached reward: {100.0 * target_reached}")
+        print(f"Crashed penalty: {-50.0 * crashed}")
+        print(f"Total reward: {reward}")
 
         self.rew_buf[:] = reward
 
