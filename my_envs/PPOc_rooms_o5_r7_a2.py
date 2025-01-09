@@ -649,8 +649,8 @@ class ReachingTargetTask(RLTask):
                     self.yaw.unsqueeze(-1),
                     # self.angle_difference.unsqueeze(-1),
                     # self.projected_gravity,
-                    self.base_vel[:, 0],
-                    self.base_ang_vel[:, 2]
+                    self.base_vel[:, 0].unsqueeze(-1),
+                    self.base_ang_vel[:, 2].unsqueeze(-1)
                 ),
                 dim=-1,
             )
