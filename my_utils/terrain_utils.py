@@ -10,7 +10,7 @@ import omni.isaac.core.utils.stage as stage_utils
 from omni.isaac.core.prims import XFormPrim
 
 
-def rooms_terrain(terrain, wall_height=1.0, wall_thickness=.2, passage_width=2.0):
+def rooms_terrain(terrain, wall_height=1.0, wall_thickness=.2, passage_width=3.0):
     """
     Generate a terrain with two fully enclosed rooms connected by a passage, based on the grid setup provided.
 
