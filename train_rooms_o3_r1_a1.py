@@ -64,7 +64,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.PPOc_rooms_o10_r1_a1 import ReachingTargetTask, TASK_CFG
+from my_envs.PPOc_rooms_o3_r1_a1 import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
@@ -130,8 +130,8 @@ PPO_DEFAULT_CONFIG = {
     "time_limit_bootstrap": False,  # bootstrap at timeout termination (episode truncation)
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_rooms_o10_r1_a1",            # experiment's parent directory
-        "experiment_name": "PPOc_rooms_o10_r1_a1",      # experiment name
+        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_rooms_o3_r1_a1",            # experiment's parent directory
+        "experiment_name": "PPOc_rooms_o3_r1_a1",      # experiment name
         "write_interval": "auto",   # TensorBoard writing interval (timesteps)
 
         "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
@@ -140,7 +140,7 @@ PPO_DEFAULT_CONFIG = {
         "wandb": True,             # whether to use Weights & Biases
         "wandb_kwargs": {"project":     "PPOc",
                         "entity":       "meesjansen-Delft Technical University",
-                        "name":         "PPOc_rooms_o10_r1_a1",
+                        "name":         "PPOc_rooms_o3_r1_a1",
                         "tags":         ["PPOc", "Rooms"],
                         "dir":          "/workspace/Options_In_Simulation/my_runs"}    # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
                     }          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
