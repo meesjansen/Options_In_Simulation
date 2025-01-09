@@ -158,7 +158,7 @@ class ReachingTargetTask(RLTask):
         self.still_steps = torch.zeros(self.num_envs)
         self.position_buffer = torch.zeros(self.num_envs, 2)  # Assuming 2D position still condition
         self.counter = 0 # still condition counter
-        self.counter2 = 0
+        self.counter2 = torch.zeros(self.num_envs, dtype=torch.int64)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
 
         self.linear_acceleration = torch.zeros((self.num_envs, 3), device=self.device)
@@ -594,13 +594,22 @@ class ReachingTargetTask(RLTask):
 
         # Check standing still condition every still_check_interval timesteps
         self.still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        if self.counter2 == 0:
-            self.position_buffer = self.base_pos[:,:2].clone()
-            self.counter2 += 1
-        else:
-            changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
-            self.still = changed_pos < 0.05 
-            self.counter2 = 0  # Reset counter
+        
+        for i in range(self.num_envs):
+            if self.counter2[i] == 0:
+                self.counter2[i] += 1
+            elif self.counter2[i] < 5:
+                changed_pos = torch.norm((self.position_buffer[i] - self.base_pos[i, :2].clone()), dim=0)
+                if changed_pos < 0.05:
+                    self.still[i] = True
+                    self.counter2[i] = 0  # Reset counter
+                else:
+                    self.still[i] = False
+                    self.counter2[i] += 1
+            else:
+                changed_pos = torch.norm((self.position_buffer[i] - self.base_pos[i, :2].clone()), dim=0)
+                self.still[i] = changed_pos < 0.05
+                self.counter2[i] = 0  # Reset counter
 
         still_penalty = self.still.float()
 
@@ -610,7 +619,7 @@ class ReachingTargetTask(RLTask):
         # Define a reward for yaw rotation when standing still
         yaw_reward = torch.where(self.still, yaw_rate, torch.zeros_like(yaw_rate))
 
-
+        print(f"Yaw Rewar: {yaw_reward}")
 
         # Sparse Rewards
         target_reached = self.target_reached.float()
@@ -624,7 +633,7 @@ class ReachingTargetTask(RLTask):
             # - 0.02 * delta_torque      # Small penalty for diff drive ~ -0.1
             - 0.1 * still_penalty   # Penalty for standing still per timestep
             - 50.0 * standing_still_reset
-            + yaw_reward
+            + yaw_reward 
             + 100.0 * target_reached      # Completion bonus
             - 50.0 * crashed
         )
