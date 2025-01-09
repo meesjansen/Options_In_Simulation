@@ -626,9 +626,9 @@ class ReachingTargetTask(RLTask):
 
         # Combine rewards and penalties
         reward = (
-            1.0 * dense_reward    # Scale progress  ~ -0.5
-            - 0.02 * torque_uniform # Penalty for torque  ~ -0.3
-            - 0.02 * delta_diff      # Small penalty for diff drive ~ -0.1
+            1.0 * dense_reward    # Scale progress  ~ -0.6
+            # - 0.02 * torque_uniform # Penalty for torque  ~ -0.3  0.01
+            # - 0.02 * delta_diff      # Small penalty for diff drive ~ -0.1  0.01
             - 0.0001 * delta_torque      # Small penalty for diff drive ~ -0.2
             - 0.1 * still_penalty   # Penalty for standing still per timestep
             - 50.0 * standing_still_reset
@@ -636,18 +636,7 @@ class ReachingTargetTask(RLTask):
             + 100.0 * target_reached      # Completion bonus
             - 50.0 * crashed
         )
-      
 
-        print(f"Dense reward: {1.0 * dense_reward}")
-        print(f"Torque uniform penalty: {-0.02 * torque_uniform}")
-        print(f"Delta diff penalty: {-0.02 * delta_diff}")
-        print(f"Delta torque penalty: {-0.0001 * delta_torque}")
-        print(f"Still penalty: {-0.1 * still_penalty}")
-        print(f"Standing still reset penalty: {-50.0 * standing_still_reset}")
-        print(f"Yaw reward: {0.5 * yaw_reward}")
-        print(f"Target reached reward: {100.0 * target_reached}")
-        print(f"Crashed penalty: {-50.0 * crashed}")
-        print(f"Total reward: {reward}")
 
         self.rew_buf[:] = reward
 
