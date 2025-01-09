@@ -453,8 +453,8 @@ class ReachingTargetTask(RLTask):
         # print(f"Actions: {self.actions}")
 
         # Apply the actions to the robot
-        self.min_delta = -5.0
-        self.max_delta = 5.0
+        self.min_delta = -10.0
+        self.max_delta = 10.0
 
         # self.scaled_actions = self.min_torque + (actions[:, 0] + 1.0) * 0.5 * (self.max_torque - self.min_torque)
         self.scaled_delta_diff = self.min_delta + (actions + 1.0) * 0.5 * (self.max_delta - self.min_delta)

@@ -64,7 +64,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.PPOc_rooms_o10_r1_a2 import ReachingTargetTask, TASK_CFG
+from my_envs.PPOc_rooms_o3_r2_a2 import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
@@ -113,7 +113,7 @@ PPO_DEFAULT_CONFIG = {
     "value_preprocessor": None,             # value preprocessor class (see skrl.resources.preprocessors)
     "value_preprocessor_kwargs": {},        # value preprocessor's kwargs (e.g. {"size": 1})
 
-    "random_timesteps": 5000,          # random exploration steps
+    "random_timesteps": 0,          # random exploration steps
     "learning_starts": 0,           # learning starts after this many steps
 
     "grad_norm_clip": 0.5,              # clipping coefficient for the norm of the gradients
@@ -121,7 +121,7 @@ PPO_DEFAULT_CONFIG = {
     "value_clip": 0.2,                  # clipping coefficient for computing the value loss (if clip_predicted_values is True)
     "clip_predicted_values": False,     # clip predicted values during value loss computation
 
-    "entropy_loss_scale": 0.01,      # entropy loss scaling factor
+    "entropy_loss_scale": 0.0,      # entropy loss scaling factor
     "value_loss_scale": 1.0,        # value loss scaling factor
 
     "kl_threshold": 0,              # KL divergence threshold for early stopping
@@ -130,8 +130,8 @@ PPO_DEFAULT_CONFIG = {
     "time_limit_bootstrap": False,  # bootstrap at timeout termination (episode truncation)
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_rooms_o10_r1_a2",            # experiment's parent directory
-        "experiment_name": "PPOc_rooms_o10_r1_a2",      # experiment name
+        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_rooms_o3_r2_a2",            # experiment's parent directory
+        "experiment_name": "PPOc_rooms_o3_r2_a2",      # experiment name
         "write_interval": "auto",   # TensorBoard writing interval (timesteps)
 
         "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
@@ -140,7 +140,7 @@ PPO_DEFAULT_CONFIG = {
         "wandb": True,             # whether to use Weights & Biases
         "wandb_kwargs": {"project":     "PPOc",
                         "entity":       "meesjansen-Delft Technical University",
-                        "name":         "PPOc_rooms_o10_r1_a2",
+                        "name":         "PPOc_rooms_o3_r2_a2",
                         "tags":         ["PPOc", "Rooms"],
                         "dir":          "/workspace/Options_In_Simulation/my_runs"}    # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
                     }          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
