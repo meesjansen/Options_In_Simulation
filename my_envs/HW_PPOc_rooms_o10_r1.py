@@ -3,7 +3,7 @@ import numpy as np
 import gym
 from gym import spaces
 
-from my_envs.rl_task import RLTask 
+from my_envs.rl_task_HW import RLTask 
 
 from omni.isaac.core.prims import RigidPrim, RigidPrimView
 from omni.isaac.core.articulations import ArticulationView
@@ -331,35 +331,35 @@ class ReachingTargetTask(RLTask):
 
 
         self.robot_v121 = Robot_v12(
-            prim_path="/World/envs/env_3/robot_v11",
-            name="robot_v11",
+            prim_path="/World/envs/env_3/robot_v12",
+            name="robot_v12",
             translation=robot_translation + torch.tensor([0.0, 0.0, 0.0]),
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot_v11", get_prim_at_path(self.robot_v121.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot_v12", get_prim_at_path(self.robot_v121.prim_path), self._sim_config.parse_actor_config("robot")
         )
         self.robot_v121.set_robot_properties(self._stage, self.robot_v121.prim)
 
         self.robot_v122 = Robot_v12(
-            prim_path="/World/envs/env_4/robot_v11",
-            name="robot_v11",
+            prim_path="/World/envs/env_4/robot_v12",
+            name="robot_v12",
             translation=robot_translation + torch.tensor([0.0, 4.0, 0.0]),
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot_v11", get_prim_at_path(self.robot_v122.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot_v12", get_prim_at_path(self.robot_v122.prim_path), self._sim_config.parse_actor_config("robot")
         )
         self.robot_v122.set_robot_properties(self._stage, self.robot_v122.prim)
 
         self.robot_v123 = Robot_v12(
-            prim_path="/World/envs/env_5/robot_v11",
-            name="robot_v11",
+            prim_path="/World/envs/env_5/robot_v12",
+            name="robot_v12",
             translation=robot_translation + torch.tensor([4.0, 4.0, 0.0]),
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot_v11", get_prim_at_path(self.robot_v123.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot_v12", get_prim_at_path(self.robot_v123.prim_path), self._sim_config.parse_actor_config("robot")
         )
         self.robot_v123.set_robot_properties(self._stage, self.robot_v123.prim)
 
