@@ -404,9 +404,10 @@ class World(SimulationContext):
             self.stop()
         for task in self._current_tasks.values():
             task.cleanup()
-        SimulationContext.reset(self, soft=soft)
 
         task.get_robot()
+
+        SimulationContext.reset(self, soft=soft)
 
         self._scene._finalize(self.physics_sim_view)
         self.scene.post_reset()
