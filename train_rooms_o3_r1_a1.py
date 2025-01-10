@@ -82,7 +82,7 @@ env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
 # instantiate a memory as experience replay 
-memory = RandomMemory(memory_size=520, num_envs=env.num_envs, device=device, replacement=False)
+memory = RandomMemory(memory_size=20, num_envs=env.num_envs, device=device, replacement=False)
 
 
 # Instantiate the agent's models (function approximators).
@@ -155,7 +155,7 @@ cfg_ppo["lambda"] = 0.95
 cfg_ppo["learning_rate"] = 5e-4
 cfg_ppo["learning_rate_scheduler"] = KLAdaptiveRL
 cfg_ppo["learning_rate_scheduler_kwargs"] = {"kl_threshold": 0.008}
-cfg_ppo["random_timesteps"] = 20
+cfg_ppo["random_timesteps"] = 0
 cfg_ppo["learning_starts"] = 0 # cfg_ppo["rollouts"] * env.num_envs * 4
 cfg_ppo["grad_norm_clip"] = 1.0
 cfg_ppo["ratio_clip"] = 0.2
