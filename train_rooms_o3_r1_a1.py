@@ -81,8 +81,8 @@ env = wrap_env(env, "omniverse-isaacgym")
 
 device = env.device
 
-# instantiate a memory as experience replay 202
-memory = RandomMemory(memory_size=20, num_envs=env.num_envs, device=device, replacement=False)
+# instantiate a memory as experience replay 
+memory = RandomMemory(memory_size=520, num_envs=env.num_envs, device=device, replacement=False)
 
 
 # Instantiate the agent's models (function approximators).
@@ -113,7 +113,7 @@ PPO_DEFAULT_CONFIG = {
     "value_preprocessor": None,             # value preprocessor class (see skrl.resources.preprocessors)
     "value_preprocessor_kwargs": {},        # value preprocessor's kwargs (e.g. {"size": 1})
 
-    "random_timesteps": 5000,          # random exploration steps
+    "random_timesteps": 0,          # random exploration steps
     "learning_starts": 0,           # learning starts after this many steps
 
     "grad_norm_clip": 0.5,              # clipping coefficient for the norm of the gradients
@@ -155,7 +155,7 @@ cfg_ppo["lambda"] = 0.95
 cfg_ppo["learning_rate"] = 5e-4
 cfg_ppo["learning_rate_scheduler"] = KLAdaptiveRL
 cfg_ppo["learning_rate_scheduler_kwargs"] = {"kl_threshold": 0.008}
-cfg_ppo["random_timesteps"] = 0
+cfg_ppo["random_timesteps"] = 500
 cfg_ppo["learning_starts"] = 0 # cfg_ppo["rollouts"] * env.num_envs * 4
 cfg_ppo["grad_norm_clip"] = 1.0
 cfg_ppo["ratio_clip"] = 0.2
