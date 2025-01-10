@@ -233,7 +233,7 @@ class ReachingTargetTask(RLTask):
         
         super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"], copy_from_source=True)
 
-        self.get_robot()
+        # self.get_robot()
         print_stage_prim_paths()
 
 
