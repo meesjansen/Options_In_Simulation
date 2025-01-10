@@ -237,13 +237,13 @@ class ReachingTargetTask(RLTask):
         print_stage_prim_paths()
 
 
-        # robot view
-        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robots_view")
-        scene.add(self._robots)
-        # self._robots_v10 = RobotView(prim_paths_expr="/World/envs/.*/robot_f*", name="robot_view")
-        # scene.add(self._robots_v10)
-        # self._robots_elevated = RobotView(prim_paths_expr="/World/envs/.*/robot_e*", name="robot_view_elevated")
-        # scene.add(self._robots_elevated)
+        # # robot view
+        # self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robots_view")
+        # scene.add(self._robots)
+        # # self._robots_v10 = RobotView(prim_paths_expr="/World/envs/.*/robot_f*", name="robot_view")
+        # # scene.add(self._robots_v10)
+        # # self._robots_elevated = RobotView(prim_paths_expr="/World/envs/.*/robot_e*", name="robot_view_elevated")
+        # # scene.add(self._robots_elevated)
                      
         # food view
         self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
@@ -363,7 +363,13 @@ class ReachingTargetTask(RLTask):
         )
         self.robot_v123.set_robot_properties(self._stage, self.robot_v123.prim)
 
-
+        # robot view
+        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robots_view")
+        self.scene.add(self._robots)
+        # self._robots_v10 = RobotView(prim_paths_expr="/World/envs/.*/robot_f*", name="robot_view")
+        # scene.add(self._robots_v10)
+        # self._robots_elevated = RobotView(prim_paths_expr="/World/envs/.*/robot_e*", name="robot_view_elevated")
+        # scene.add(self._robots_elevated)
 
         
     def get_target(self):
