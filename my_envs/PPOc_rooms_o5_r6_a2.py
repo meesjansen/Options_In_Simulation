@@ -626,13 +626,13 @@ class ReachingTargetTask(RLTask):
 
         # Combine rewards and penalties
         reward = (
-            1.0 * dense_reward    # Scale progress  ~ -0.5
+            10.0 * dense_reward    # Scale progress  ~ -0.5
             - 0.02 * torque_uniform # Penalty for torque  ~ -0.3
             # - 0.02 * delta_torque      # Small penalty for diff drive ~ -0.1
             - 0.1 * still_penalty   # Penalty for standing still per timestep
             - 50.0 * standing_still_reset
             + 0.5 * yaw_reward 
-            + 100.0 * target_reached      # Completion bonus
+            + 1000.0 * target_reached      # Completion bonus
             - 50.0 * crashed
         )
       
