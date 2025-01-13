@@ -615,10 +615,6 @@ class ReachingTargetTask(RLTask):
         self.refresh_body_state_tensors()
         delta_pos = self.target_pos - self.base_pos
 
-        # Get current joint efforts (torques)
-        _efforts = self._robots.get_applied_joint_efforts(clone=True)
-        current_efforts = _efforts #[:, np.array([1,2,4,5])]
-
         # compute distance for calculate_metrics() and is_done()
         self._computed_distance = torch.norm(delta_pos, dim=-1)
 
@@ -631,6 +627,18 @@ class ReachingTargetTask(RLTask):
                 ),
                 dim=-1,
             )
+        
+        print(f"Observations: {self.obs_buf}")
+
+        self.obs_buf = torch.cat(
+                (
+                    delta_pos[:, 0].unsqueeze(-1)/6.0,
+                    delta_pos[:, 1].unsqueeze(-1)/6.0,
+                    self.yaw_diff.unsqueeze(-1)/np.pi,
+                    self.base_vel[:, 0].unsqueeze(-1)/5.0,
+                    self.base_ang_vel[:, 2].unsqueeze(-1)/5.0,
+                ),
+                dim=-1,)
             
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     
