@@ -570,8 +570,8 @@ class ReachingTargetTask(RLTask):
         # Check standing still condition every still_check_interval timesteps
         k_still = -0.2  # Penalty for standing still
         self.still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        self.still_lin = self.base_vel[:, 0] < 0.01 
-        self.still_ang = self.base_ang_vel[:, 2] < 0.01
+        self.still_lin = self.base_vel[:, 0] < 0.005 
+        self.still_ang = self.base_ang_vel[:, 2] < 0.005
         still = torch.where(self.still_lin & self.still_ang, torch.ones_like(self.still), torch.zeros_like(self.still))
         r_still = k_still * still.float()
         print(f"r_still: {r_still}")
@@ -633,12 +633,14 @@ class ReachingTargetTask(RLTask):
         self.obs_buf = torch.cat(
                 (
                     delta_pos[:, 0].unsqueeze(-1)/6.0,
-                    delta_pos[:, 1].unsqueeze(-1)/6.0,
-                    self.yaw_diff.unsqueeze(-1)/np.pi,
-                    self.base_vel[:, 0].unsqueeze(-1)/5.0,
-                    self.base_ang_vel[:, 2].unsqueeze(-1)/5.0,
+                    delta_pos[:, 1].unsqueeze(-1)/3.0,
+                    self.yaw_diff.unsqueeze(-1)/(2*np.pi),
+                    self.base_vel[:, 0].unsqueeze(-1)/1.5,
+                    self.base_ang_vel[:, 2].unsqueeze(-1)/2.5,
                 ),
                 dim=-1,)
+        
+        print(f"Observations: {self.obs_buf}")
             
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     
