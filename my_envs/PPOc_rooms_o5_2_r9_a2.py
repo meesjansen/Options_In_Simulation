@@ -468,20 +468,19 @@ class ReachingTargetTask(RLTask):
         updated_efforts[:, 3] = self.scaled_actions - self.scaled_delta_diff # + self.scaled_delta_climb
 
         updated_efforts = torch.clip(updated_efforts, -15.0, 15.0)
-
           
         for i in range(self.decimation):
             if self.world.is_playing():
                 self._robots.set_joint_efforts(updated_efforts) 
                 SimulationContext.step(self.world, render=False)
-
-          
+        
+        
     def post_physics_step(self):
         self.progress_buf[:] += 1
         self.episode_buf[:] += 1
         
         ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
-       
+        
         if self.world.is_playing():
 
             self.refresh_body_state_tensors()
@@ -610,17 +609,6 @@ class ReachingTargetTask(RLTask):
                 ),
                 dim=-1,
             )
-        
-
-        self.obs_buf = torch.cat(
-                (
-                    delta_pos[:, 0].unsqueeze(-1)/6.0,
-                    delta_pos[:, 1].unsqueeze(-1)/3.0,
-                    self.yaw_diff.unsqueeze(-1)/(2*np.pi),
-                    self.base_vel[:, 0].unsqueeze(-1)/1.5,
-                    self.base_ang_vel[:, 2].unsqueeze(-1)/2.5,
-                ),
-                dim=-1,)
         
             
         return {self._robots.name: {"obs_buf": self.obs_buf}}
