@@ -570,8 +570,8 @@ class ReachingTargetTask(RLTask):
         # Check standing still condition every still_check_interval timesteps
         k_still = -0.2  # Penalty for standing still
         self.still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        self.still_lin = self.base_vel[:, 0] < 0.02 
-        self.still_ang = self.base_ang_vel[:, 2] < 0.05
+        self.still_lin = self.base_vel[:, 0] < 0.01 
+        self.still_ang = self.base_ang_vel[:, 2] < 0.01
         still = torch.where(self.still_lin & self.still_ang, torch.ones_like(self.still), torch.zeros_like(self.still))
         r_still = k_still * still.float()
         print(f"r_still: {r_still}")
@@ -583,7 +583,7 @@ class ReachingTargetTask(RLTask):
         print(f"r_tar: {r_tar}")
 
         # Progress reward
-        r_prog = (self.dist_t - self._computed_distance) * self.decimation * self.dt  
+        r_prog = (self.dist_t - self._computed_distance) * 1/(self.decimation * self.dt)  
         print(f"r_prog: {r_prog}")
 
         # Alignment reward
@@ -601,7 +601,7 @@ class ReachingTargetTask(RLTask):
             + r_prog * r_head 
         )
       
-
+        print(f"Reward: {reward}")
         self.rew_buf[:] = reward
 
         return self.rew_buf
