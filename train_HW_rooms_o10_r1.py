@@ -14,6 +14,8 @@ from skrl.utils import set_seed
 
 from my_models.categorical import CategoricalMixin
 from my_agents.ppo import PPO
+from my_utils.omniverse_isaacgym_utils import get_env_instance
+
 
 # set the seed for reproducibility
 seed = set_seed(42)
