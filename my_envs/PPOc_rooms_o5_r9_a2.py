@@ -447,6 +447,7 @@ class ReachingTargetTask(RLTask):
             return 
 
         self.actions = actions.clone().to(self.device)
+        print(f"actions: {self.actions}")
 
         # Apply the actions to the robot
         self.min_delta = -10.0
@@ -455,6 +456,10 @@ class ReachingTargetTask(RLTask):
         self.scaled_actions = self.min_torque + (actions[:, 0] + 1) * 0.5 * (self.max_torque - self.min_torque)
         self.scaled_delta_diff = self.min_delta + (actions[:, 1] + 1) * 0.5 * (self.max_delta - self.min_delta)
         # self.scaled_delta_climb = self.min_delta + (self.actions[:, 2] + 1) * 0.5 * (self.max_delta - self.min_delta)
+
+        print(f"scaled_actions: {self.scaled_actions}")
+        print(f"scaled_delta_diff: {self.scaled_delta_diff}")
+
 
         updated_efforts = torch.zeros((self.num_envs, 4), device=self.device)
 
@@ -468,6 +473,7 @@ class ReachingTargetTask(RLTask):
         updated_efforts[:, 3] = self.scaled_actions - self.scaled_delta_diff # + self.scaled_delta_climb
 
         updated_efforts = torch.clip(updated_efforts, -15.0, 15.0)
+        print(f"updated_efforts: {updated_efforts}")
 
           
         for i in range(self.decimation):
@@ -584,6 +590,13 @@ class ReachingTargetTask(RLTask):
             + r_tar
             + r_prog * r_head 
         )
+
+        print(f"r_mode: {r_mode}")
+        print(f"r_still: {r_still}")
+        print(f"r_tar: {r_tar}")
+        print(f"r_prog: {r_prog}")
+        print(f"r_head: {r_head}")
+        print(f"reward: {reward}")
       
         self.rew_buf[:] = reward
 
@@ -611,6 +624,7 @@ class ReachingTargetTask(RLTask):
                 dim=-1,
             )
         
+        print(f"obs_buf: {self.obs_buf}")
 
         self.obs_buf = torch.cat(
                 (
@@ -622,6 +636,8 @@ class ReachingTargetTask(RLTask):
                 ),
                 dim=-1,)
         
+
+        print(f"normalized obs_buf: {self.obs_buf}")
             
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     
