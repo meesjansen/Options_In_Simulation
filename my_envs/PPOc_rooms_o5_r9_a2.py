@@ -591,6 +591,7 @@ class ReachingTargetTask(RLTask):
         print(f"r_still: {r_still}")
         print(f"r_tar: {r_tar}")
         print(f"r_prog: {r_prog}")
+        print(f"self.yaw_diff: {self.yaw_diff}")
         print(f"r_head: {r_head}")
         print(f"reward: {reward}")
       
