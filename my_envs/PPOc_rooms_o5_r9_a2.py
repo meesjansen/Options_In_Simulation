@@ -127,14 +127,14 @@ class ReachingTargetTask(RLTask):
         self._num_actions = 2  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
-            low=float("-50"),  # Replace with a specific lower bound if needed
-            high=float("50"),  # Replace with a specific upper bound if needed
+            low=float("-10"),  # Replace with a specific lower bound if needed
+            high=float("10"),  # Replace with a specific upper bound if needed
             shape=(self.num_observations,),
             dtype=np.float32  # Ensure data type is consistent
         )
         # Define the action range for torques
-        self.min_torque = -5.0  # Example min torque value
-        self.max_torque = 5.0   # Example max torque value
+        self.min_torque = -10.0  # Example min torque value
+        self.max_torque = 10.0   # Example max torque value
 
 
         # Using the shape argument
@@ -157,8 +157,6 @@ class ReachingTargetTask(RLTask):
 
         self.still_steps = torch.zeros(self.num_envs)
         self.position_buffer = torch.zeros(self.num_envs, 2)  # Assuming 2D position still condition
-        self.counter = 0 # still condition counter
-        self.counter2 = 0
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
 
         self.linear_acceleration = torch.zeros((self.num_envs, 3), device=self.device)
@@ -541,15 +539,17 @@ class ReachingTargetTask(RLTask):
 
         # Check standing still condition every still_check_interval timesteps
         self.standing_still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        if self.counter == 0:
-            self.position_buffer = self.base_pos[:,:2].clone()
-            self.counter += 1
-        elif self.counter == 100:
-            changed_pos = torch.norm((self.position_buffer - self.base_pos[:,:2].clone()), dim=1)
-            self.standing_still = changed_pos < 0.05 
-            self.counter = 0  # Reset counter
-        else:
-            self.counter += 1
+        if not hasattr(self, "still_counter"):
+            self.still_counter = torch.zeros(self.num_envs, dtype=torch.int64, device=self.device)
+
+        still_lin = (self.base_vel[:, 0].abs() < 0.01)
+        still_ang = (self.base_ang_vel[:, 2].abs() < 0.01)
+        still_mask = still_lin & still_ang
+
+        self.still_counter[still_mask] += 1
+        self.still_counter[~still_mask] = 0
+
+        self.standing_still = (self.still_counter >= 30)
 
         # Update reset_buf based on standing_still condition
         self.reset_buf = torch.where(self.standing_still, torch.ones_like(self.reset_buf), self.reset_buf)
@@ -562,10 +562,10 @@ class ReachingTargetTask(RLTask):
         r_mode = -(self.base_vel[:, 0]**2 * self.base_ang_vel[:, 2]**2)  # * self.base_ang_vel[:, 1]**2
 
         # Check standing still condition every still_check_interval timesteps
-        k_still = -0.2  # Penalty for standing still
+        k_still = -0.5  # Penalty for standing still
         self.still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        self.still_lin = self.base_vel[:, 0] < 0.005 
-        self.still_ang = self.base_ang_vel[:, 2] < 0.005
+        self.still_lin = self.base_vel[:, 0].abs() < 0.01 
+        self.still_ang = self.base_ang_vel[:, 2].abs() < 0.01
         still = torch.where(self.still_lin & self.still_ang, torch.ones_like(self.still), torch.zeros_like(self.still))
         r_still = k_still * still.float()
 
@@ -575,7 +575,8 @@ class ReachingTargetTask(RLTask):
         r_tar = k_tar * target_reached
 
         # Progress reward
-        r_prog = (self.dist_t - self._computed_distance) * 1/(self.decimation * self.dt)  
+        k_prog = 5.0
+        r_prog = (self.dist_t - self._computed_distance) * k_prog/(self.decimation * self.dt)  
 
         # Alignment reward
         self.dist_t = self._computed_distance
@@ -626,19 +627,7 @@ class ReachingTargetTask(RLTask):
         
         print(f"obs_buf: {self.obs_buf}")
 
-        self.obs_buf = torch.cat(
-                (
-                    delta_pos[:, 0].unsqueeze(-1)/6.0,
-                    delta_pos[:, 1].unsqueeze(-1)/3.0,
-                    self.yaw_diff.unsqueeze(-1)/(2*np.pi),
-                    self.base_vel[:, 0].unsqueeze(-1)/1.5,
-                    self.base_ang_vel[:, 2].unsqueeze(-1)/2.5,
-                ),
-                dim=-1,)
-        
-
-        print(f"normalized obs_buf: {self.obs_buf}")
-            
+                    
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     
 
