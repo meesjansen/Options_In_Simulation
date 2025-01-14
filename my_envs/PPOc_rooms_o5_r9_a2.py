@@ -384,7 +384,7 @@ class ReachingTargetTask(RLTask):
 
         # Compute target angle from target direction
         self.target_yaw = torch.atan2(target_direction_y, target_direction_x)
-        self.yaw_diff = self.target_yaw - self.yaw
+        self.yaw_diff = (self.target_yaw - self.yaw + np.pi) % (2 * np.pi) - np.pi
 
         # Compute linear and angular velocities in the robot's ergo frame
         self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_vel[:, 0:3])
@@ -502,14 +502,14 @@ class ReachingTargetTask(RLTask):
         if not hasattr(self, "still_counter"):
             self.still_counter = torch.zeros(self.num_envs, dtype=torch.int64, device=self.device)
 
-        still_lin = (self.base_vel[:, 0].abs() < 0.01)
-        still_ang = (self.base_ang_vel[:, 2].abs() < 0.01)
+        still_lin = (self.base_vel[:, 0].abs() < 0.05)
+        still_ang = (self.base_ang_vel[:, 2].abs() < 0.05)
         still_mask = still_lin & still_ang
 
         self.still_counter[still_mask] += 1
         self.still_counter[~still_mask] = 0
 
-        self.standing_still = (self.still_counter >= 30)
+        self.standing_still = (self.still_counter >= 20)
 
         print(f"still_counter: {self.still_counter}")
 
@@ -526,8 +526,8 @@ class ReachingTargetTask(RLTask):
         # Check standing still condition every still_check_interval timesteps
         k_still = -0.5  # Penalty for standing still
         self.still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        self.still_lin = self.base_vel[:, 0].abs() < 0.01 
-        self.still_ang = self.base_ang_vel[:, 2].abs() < 0.01
+        self.still_lin = self.base_vel[:, 0].abs() < 0.05 
+        self.still_ang = self.base_ang_vel[:, 2].abs() < 0.05
         still = torch.where(self.still_lin & self.still_ang, torch.ones_like(self.still), torch.zeros_like(self.still))
         r_still = k_still * still.float()
 
