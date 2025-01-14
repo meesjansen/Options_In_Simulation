@@ -327,31 +327,25 @@ class ReachingTargetTask(RLTask):
     def reset_idx(self, env_ids):
         indices = env_ids.to(dtype=torch.int32)
 
-        # Define square boundary size with some margin to reduce instant resets
-        square_size_x = 4.5  # Total width of the square
-        square_size_y = 4.5  # Total length of the square
+        # Other reset code...
 
-        edge = random.randint(0, 2)
+        # Generate random positions for each environment
+        num_envs = self.num_envs
+        random_positions = []
+        for _ in range(num_envs):
+            x = random.uniform(-2.5, -0.5)  # Adjust range as needed
+            y = random.uniform(-2.25, 2.25)  # Adjust range as needed
+            z = 0.15  # Assuming a flat terrain
+            random_positions.append([x, y, z])
 
-        # Generate x and y positions based on the edge
-        if edge == 0:  # Left edge or Right edge
-            x_pos = -square_size_x / 2 
-            y_pos = random.uniform(-square_size_y / 2, square_size_y / 2)
-        elif edge == 1:  # Top edge
-            y_pos = square_size_y / 2
-            x_pos = random.uniform(-square_size_x / 2, -0.5)
-        else:  # Bottom edge
-            y_pos = -square_size_y / 2
-            x_pos = random.uniform(-square_size_x / 2, -0.5)
+        # Convert to tensor
+        random_positions = torch.tensor(random_positions, device=self.device)
 
-        # Z position is fixed at 0.15
-        z_pos = 0.15
-
-        # Store the position in a list
-        pos = torch.tensor([x_pos, y_pos, z_pos], device=self.device).unsqueeze(0).repeat(self.num_envs, 1)
+        # Set the initial positions of the environments
+        pos = random_positions
 
         # Generate a random rotation angle around the Z-axis
-        theta = random.uniform(-math.pi, math.pi)  # Angle between -π and π
+        theta = random.uniform(-math.pi/2, math.pi/2)  # Angle between -π/2 and π/2
         half_theta = theta / 2.0
         cos_half_theta = math.cos(half_theta)
         sin_half_theta = math.sin(half_theta)
@@ -379,7 +373,6 @@ class ReachingTargetTask(RLTask):
         self.last_actions[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
         self.episode_buf[env_ids] = 0 
-        # self.reset_buf[env_ids] = 0
         
 
     def refresh_body_state_tensors(self):
@@ -550,6 +543,8 @@ class ReachingTargetTask(RLTask):
         self.still_counter[~still_mask] = 0
 
         self.standing_still = (self.still_counter >= 30)
+
+        print(f"still_counter: {self.still_counter}")
 
         # Update reset_buf based on standing_still condition
         self.reset_buf = torch.where(self.standing_still, torch.ones_like(self.reset_buf), self.reset_buf)
