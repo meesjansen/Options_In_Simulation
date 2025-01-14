@@ -116,7 +116,6 @@ class RobotView(ArticulationView):
 
 class ReachingTargetTask(RLTask):
     def __init__(self, name, sim_config, env, offset=None) -> None:
-
         self.height_samples = None
         self.init_done = False
         
@@ -155,8 +154,6 @@ class ReachingTargetTask(RLTask):
         self.measured_heights = None
         self.bounds = torch.tensor([-3.0, 3.0, -3.0, 3.0], device=self.device, dtype=torch.float)
 
-        self.still_steps = torch.zeros(self.num_envs)
-        self.position_buffer = torch.zeros(self.num_envs, 2)  # Assuming 2D position still condition
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
 
         self.linear_acceleration = torch.zeros((self.num_envs, 3), device=self.device)
@@ -197,6 +194,7 @@ class ReachingTargetTask(RLTask):
 
         self.decimation = 4
 
+
     def init_height_points(self):
         # 6mx6m rectangle (without center line) 13x13=169 points
         y = 0.5 * torch.tensor(
@@ -212,17 +210,21 @@ class ReachingTargetTask(RLTask):
         points[:, :, 0] = grid_x.flatten()
         points[:, :, 1] = grid_y.flatten()
         return points
+    
 
     def _create_trimesh(self, create_mesh=True):
         self.terrain = Terrain(num_robots=self.num_envs, terrain_type=self.terrain_type)
         vertices = self.terrain.vertices
         triangles = self.terrain.triangles
         position = torch.tensor([-self.terrain.border_size, -self.terrain.border_size, 0.0])
+        
         if create_mesh:
             add_terrain_to_stage(stage=self._stage, vertices=vertices, triangles=triangles, position=position)
+        
         self.height_samples = (
             torch.tensor(self.terrain.heightsamples).view(self.terrain.tot_rows, self.terrain.tot_cols).to(self.device)
         )
+
 
     def set_up_scene(self, scene) -> None:
         self._stage = get_current_stage()
@@ -230,21 +232,11 @@ class ReachingTargetTask(RLTask):
         self.get_target()
         self.get_robot()
 
-
         super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"], copy_from_source=True)
-
-        # Define the relative wheel paths for each robot instance
-        wheel_prim_paths = [
-            "left_front_wheel",
-            "left_rear_wheel",
-            "right_front_wheel",
-            "right_rear_wheel",
-        ] 
 
         # robot view
         self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot_*", name="robot_view")
         scene.add(self._robots)
-
                      
         # food view
         self._targets = RigidPrimView(prim_paths_expr="/World/envs/.*/target", name="target_view", reset_xform_properties=False)
@@ -258,7 +250,6 @@ class ReachingTargetTask(RLTask):
 
 
     def get_robot(self):
-        
         robot_translation = torch.tensor([0.0, 0.0, 0.0])
         robot_orientation = torch.tensor([1.0, 0.0, 0.0, 0.0])
         self.robot_v101 = Robot_v10(
@@ -292,7 +283,6 @@ class ReachingTargetTask(RLTask):
         # initialize some data used later on
         self.up_axis_idx = 2
         self.extras = {}
-        # self.noise_scale_vec = self._get_noise_scale_vec(self._task_cfg)
         
         self.gravity_vec = torch.tensor(
             get_axis_params(-1.0, self.up_axis_idx), dtype=torch.float, device=self.device
@@ -310,7 +300,7 @@ class ReachingTargetTask(RLTask):
         self.num_dof = self._robots.num_dof 
         self.env_origins = self.terrain_origins.view(-1, 3)[:self.num_envs]
         self._target_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
-        self._target_pos += torch.tensor([2.5, 0.0, 0.1], dtype=torch.float, device=self.device)
+        self._target_pos += torch.tensor([2.0, 0.0, 0.1], dtype=torch.float, device=self.device)
         self._target_pos[:, :2] += self.env_origins[:, :2]
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
         self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
@@ -326,8 +316,6 @@ class ReachingTargetTask(RLTask):
 
     def reset_idx(self, env_ids):
         indices = env_ids.to(dtype=torch.int32)
-
-        # Other reset code...
 
         # Generate random positions for each environment
         num_envs = self.num_envs
@@ -402,29 +390,10 @@ class ReachingTargetTask(RLTask):
         self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_vel[:, 0:3])
         self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_vel[:, 3:6])
 
+        self._computed_distance = torch.norm(self.base_pos - self.target_pos, dim=-1)
+
         return self.base_lin_vel, self.base_ang_vel
 
-
-    def calculate_acceleration(self, dt):
-        # Get current velocities
-        current_linear_velocity, current_angular_velocity = self.refresh_body_state_tensors()
-
-        # Calculate accelerations if previous velocities are available
-        if self.previous_linear_velocity is not None:
-            linear_acceleration = (current_linear_velocity - self.previous_linear_velocity) / dt
-            angular_acceleration = (current_angular_velocity - self.previous_angular_velocity) / dt
-        else:
-            # Set accelerations to zero if it's the first frame
-            linear_acceleration = np.zeros(3)
-            angular_acceleration = np.zeros(3)
-
-        # Update previous velocities
-        self.previous_linear_velocity = current_linear_velocity
-        self.previous_angular_velocity = current_angular_velocity
-
-        return linear_acceleration, angular_acceleration
-
-        
 
     def pre_physics_step(self, actions):
 
@@ -504,10 +473,8 @@ class ReachingTargetTask(RLTask):
     def is_done(self):
         self.reset_buf.fill_(0)
 
-        self._computed_distance = torch.norm(self.base_pos - self.target_pos, dim=-1)
-
         # target reached or lost
-        self.target_reached = self._computed_distance <= 0.3
+        self.target_reached = self._computed_distance <= 0.5
         self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
 
         # max episode length
@@ -607,9 +574,6 @@ class ReachingTargetTask(RLTask):
 
         self.refresh_body_state_tensors()
         delta_pos = self.target_pos - self.base_pos
-
-        # compute distance for calculate_metrics() and is_done()
-        self._computed_distance = torch.norm(delta_pos, dim=-1)
 
         self.obs_buf = torch.cat(
                 (
