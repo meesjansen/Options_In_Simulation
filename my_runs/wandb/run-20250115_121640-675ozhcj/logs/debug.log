@@ -1,0 +1,28 @@
+2025-01-15 12:16:40,264 INFO    MainThread:17 [wandb_setup.py:_flush():76] Configure stats pid to 17
+2025-01-15 12:16:40,264 INFO    MainThread:17 [wandb_setup.py:_flush():76] Loading settings from /home/nfs/meesjansen/.config/wandb/settings
+2025-01-15 12:16:40,264 INFO    MainThread:17 [wandb_setup.py:_flush():76] Loading settings from /home/nfs/meesjansen/wandb/settings
+2025-01-15 12:16:40,264 INFO    MainThread:17 [wandb_setup.py:_flush():76] Loading settings from environment variables: {'api_key': '***REDACTED***'}
+2025-01-15 12:16:40,264 WARNING MainThread:17 [wandb_setup.py:_flush():76] Could not save program above cwd: /workspace/Options_In_Simulation/train_rooms_r9_k_prog_HIGH.py
+2025-01-15 12:16:40,264 INFO    MainThread:17 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': None, 'program': '/workspace/Options_In_Simulation/train_rooms_r9_k_prog_HIGH.py'}
+2025-01-15 12:16:40,264 INFO    MainThread:17 [wandb_init.py:_log_setup():461] Logging user logs to /workspace/Options_In_Simulation/my_runs/wandb/run-20250115_121640-675ozhcj/logs/debug.log
+2025-01-15 12:16:40,264 INFO    MainThread:17 [wandb_init.py:_log_setup():462] Logging internal logs to /workspace/Options_In_Simulation/my_runs/wandb/run-20250115_121640-675ozhcj/logs/debug-internal.log
+2025-01-15 12:16:40,264 INFO    MainThread:17 [wandb_init.py:init():495] calling init triggers
+2025-01-15 12:16:40,264 INFO    MainThread:17 [wandb_init.py:init():498] wandb.init called with sweep_config: {}
+config: {'rollouts': 1280, 'learning_epochs': 10, 'mini_batches': 64, 'discount_factor': 0.99, 'lambda': 0.95, 'learning_rate': 0.0005, 'learning_rate_scheduler': <class 'skrl.resources.schedulers.torch.kl_adaptive.KLAdaptiveLR'>, 'learning_rate_scheduler_kwargs': {'kl_threshold': 0.02}, 'state_preprocessor': <class 'skrl.resources.preprocessors.torch.running_standard_scaler.RunningStandardScaler'>, 'state_preprocessor_kwargs': {'size': Box(-10.0, 10.0, (5,), float32), 'device': device(type='cuda', index=0)}, 'value_preprocessor': <class 'skrl.resources.preprocessors.torch.running_standard_scaler.RunningStandardScaler'>, 'value_preprocessor_kwargs': {'size': 1, 'device': device(type='cuda', index=0)}, 'random_timesteps': 0, 'learning_starts': 0, 'grad_norm_clip': 1.0, 'ratio_clip': 0.2, 'value_clip': 0.2, 'clip_predicted_values': True, 'entropy_loss_scale': 0.03, 'value_loss_scale': 0.5, 'kl_threshold': 0, 'rewards_shaper': None, 'time_limit_bootstrap': False, 'experiment': {'directory': '/workspace/Options_In_Simulation/my_runs/PPOc_rooms_r9_k_prog_HIGH', 'experiment_name': 'PPOc_rooms_r9_k_prog_HIGH', 'write_interval': 500, 'checkpoint_interval': 50000, 'store_separately': False, 'wandb': True, 'wandb_kwargs': {'project': 'PPO_rooms', 'entity': 'meesjansen-Delft Technical University', 'name': 'PPOc_rooms_r9_k_prog_HIGH', 'tags': ['PPOc', 'Rooms'], 'dir': '/workspace/Options_In_Simulation/my_runs'}}, 'timesteps': 500000, 'headless': True, 'disable_progressbar': False, 'close_environment_at_exit': True, 'environment_info': 'episode', 'policy': OrderedDict([('0', Linear(in_features=5, out_features=256, bias=True)), ('1', ReLU()), ('2', Linear(in_features=256, out_features=128, bias=True)), ('3', ReLU()), ('4', Linear(in_features=128, out_features=64, bias=True)), ('5', ReLU()), ('6', Linear(in_features=64, out_features=2, bias=True))]), 'value': OrderedDict([('0', Linear(in_features=5, out_features=256, bias=True)), ('1', ReLU()), ('2', Linear(in_features=256, out_features=128, bias=True)), ('3', ReLU()), ('4', Linear(in_features=128, out_features=64, bias=True)), ('5', ReLU()), ('6', Linear(in_features=64, out_features=1, bias=True))])}
+2025-01-15 12:16:40,265 INFO    MainThread:17 [wandb_init.py:init():548] starting backend
+2025-01-15 12:16:40,265 INFO    MainThread:17 [backend.py:_multiprocessing_setup():97] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2025-01-15 12:16:40,279 INFO    MainThread:17 [backend.py:ensure_launched():217] starting backend process...
+2025-01-15 12:16:40,284 INFO    MainThread:17 [backend.py:ensure_launched():222] started backend process with pid: 477
+2025-01-15 12:16:40,285 INFO    MainThread:17 [wandb_init.py:init():558] backend started and connected
+2025-01-15 12:16:40,295 INFO    MainThread:17 [wandb_init.py:init():634] updated telemetry
+2025-01-15 12:16:40,296 INFO    MainThread:17 [wandb_init.py:init():665] communicating run to backend with 30 second timeout
+2025-01-15 12:16:42,028 INFO    MainThread:17 [wandb_run.py:_on_init():1919] communicating current version
+2025-01-15 12:16:42,099 INFO    MainThread:17 [wandb_run.py:_on_init():1923] got version response upgrade_message: "wandb version 0.19.3 is available!  To upgrade, please run:\n $ pip install wandb --upgrade"
+
+2025-01-15 12:16:42,099 INFO    MainThread:17 [wandb_init.py:init():700] starting run threads in backend
+2025-01-15 12:16:42,466 INFO    MainThread:17 [wandb_run.py:_console_start():1893] atexit reg
+2025-01-15 12:16:42,485 INFO    MainThread:17 [wandb_run.py:_redirect():1766] redirect: SettingsConsole.REDIRECT
+2025-01-15 12:16:42,485 INFO    MainThread:17 [wandb_run.py:_redirect():1771] Redirecting console.
+2025-01-15 12:16:42,501 INFO    MainThread:17 [wandb_run.py:_redirect():1827] Redirects installed.
+2025-01-15 12:16:42,501 INFO    MainThread:17 [wandb_init.py:init():732] run started, returning control to user process
+2025-01-15 12:16:42,502 INFO    MainThread:17 [wandb_run.py:_tensorboard_callback():1239] tensorboard callback: /workspace/Options_In_Simulation/my_runs/PPOc_rooms_r9_k_prog_HIGH/PPOc_rooms_r9_k_prog_HIGH, True
