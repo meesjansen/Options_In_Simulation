@@ -581,6 +581,10 @@ class ReachingTargetTask(RLTask):
 
         print(f"heights: {heights}")
 
+        # Count the number of non-zero values in height_samples
+        non_zero_count = torch.nonzero(self.height_samples).size(0)
+        print(f"Number of non-zero height samples: {non_zero_count}")
+
         print(f"all heightsamples: {self.height_samples}")
 
         self.refresh_body_state_tensors()
