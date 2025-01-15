@@ -197,12 +197,12 @@ class ReachingTargetTask(RLTask):
 
 
     def init_height_points(self):
-        # 1mx1m rectangle (without center line)
+        # 0.2mx1m rectangle (without center line)
         y = 0.1 * torch.tensor(
-            [ -2, -1, 1, 2,], device=self.device, requires_grad=False
+            [ -4, -3, 3, 4], device=self.device, requires_grad=False
         )  # 10-20cm on each side
         x = 0.1 * torch.tensor(
-            [-3, -2, 2, 3,], device=self.device, requires_grad=False
+            [-5, -4, 4, 5,], device=self.device, requires_grad=False
         )  # 20-30cm on each side 
         grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
 
