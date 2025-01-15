@@ -1,0 +1,17 @@
+{
+    "os": "Linux-3.10.0-1160.119.1.el7.x86_64-x86_64-with-glibc2.35",
+    "python": "3.10.14",
+    "heartbeatAt": "2025-01-15T11:14:39.341784",
+    "startedAt": "2025-01-15T11:14:32.568418",
+    "docker": null,
+    "gpu": "NVIDIA A40",
+    "gpu_count": 1,
+    "cpu_count": 96,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/workspace/Options_In_Simulation/train_rooms_r11.py",
+    "host": "gpu09.hpc.tudelft.nl",
+    "username": "meesjansen",
+    "executable": "/isaac-sim/kit/python/bin/python3"
+}
