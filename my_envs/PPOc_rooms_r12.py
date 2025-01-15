@@ -132,8 +132,8 @@ class ReachingTargetTask(RLTask):
             dtype=np.float32  # Ensure data type is consistent
         )
         # Define the action range for torques
-        self.min_torque = -10.0  # Example min torque value
-        self.max_torque = 10.0   # Example max torque value
+        self.min_torque = -5.0  # Example min torque value
+        self.max_torque = 5.0   # Example max torque value
 
 
         # Using the shape argument
@@ -411,8 +411,8 @@ class ReachingTargetTask(RLTask):
         # print(f"actions: {self.actions}")
 
         # Apply the actions to the robot
-        self.min_delta = -10.0
-        self.max_delta = 10.0
+        self.min_delta = -5.0
+        self.max_delta = 5.0
 
         self.scaled_actions = self.min_torque + (actions[:, 0] + 1) * 0.5 * (self.max_torque - self.min_torque)
         self.scaled_delta_diff = self.min_delta + (actions[:, 1] + 1) * 0.5 * (self.max_delta - self.min_delta)
@@ -573,7 +573,7 @@ class ReachingTargetTask(RLTask):
         # self.measured_heights = self.get_heights(ids)
         self.measured_heights = self.get_heights()
         print(f"measured_heights: {self.measured_heights}")
-        
+
         heights = (
             torch.clip(self.base_pos[:, 2].unsqueeze(1) - 0.5 - self.measured_heights, -1, 1.0) * self.height_meas_scale
         ) 
