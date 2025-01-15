@@ -585,7 +585,7 @@ class ReachingTargetTask(RLTask):
                 dim=-1,
             )
         
-        # print(f"obs_buf: {self.obs_buf}")
+        print(f"obs_buf: {self.obs_buf}")
 
                     
         return {self._robots.name: {"obs_buf": self.obs_buf}}
