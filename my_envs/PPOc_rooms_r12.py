@@ -408,7 +408,7 @@ class ReachingTargetTask(RLTask):
             return 
 
         self.actions = actions.clone().to(self.device)
-        # print(f"actions: {self.actions}")
+        print(f"actions: {self.actions}")
 
         # Apply the actions to the robot
         self.min_delta = -5.0
@@ -418,8 +418,8 @@ class ReachingTargetTask(RLTask):
         self.scaled_delta_diff = self.min_delta + (actions[:, 1] + 1) * 0.5 * (self.max_delta - self.min_delta)
         # self.scaled_delta_climb = self.min_delta + (self.actions[:, 2] + 1) * 0.5 * (self.max_delta - self.min_delta)
 
-        # print(f"scaled_actions: {self.scaled_actions}")
-        # print(f"scaled_delta_diff: {self.scaled_delta_diff}")
+        print(f"scaled_actions: {self.scaled_actions}")
+        print(f"scaled_delta_diff: {self.scaled_delta_diff}")
 
 
         updated_efforts = torch.zeros((self.num_envs, 4), device=self.device)
@@ -434,7 +434,7 @@ class ReachingTargetTask(RLTask):
         updated_efforts[:, 3] = self.scaled_actions - self.scaled_delta_diff # + self.scaled_delta_climb
 
         updated_efforts = torch.clip(updated_efforts, -15.0, 15.0)
-        # print(f"updated_efforts: {updated_efforts}")
+        print(f"updated_efforts: {updated_efforts}")
 
           
         for i in range(self.decimation):
@@ -512,7 +512,7 @@ class ReachingTargetTask(RLTask):
 
         self.standing_still = (self.still_counter >= 20)
 
-        # print(f"still_counter: {self.still_counter}")
+        print(f"still_counter: {self.still_counter}")
 
         # Update reset_buf based on standing_still condition
         self.reset_buf = torch.where(self.standing_still, torch.ones_like(self.reset_buf), self.reset_buf)
@@ -523,7 +523,7 @@ class ReachingTargetTask(RLTask):
         # Efficiency penalty: Penalize large velocities and driving mode mixing
         # Penalize mixing driving modes usefull when climb is active like in a3 environments
         k_mode = -1.0  # Penalty for mixing driving modes
-        r_mode = k_mode * (self.base_vel[:, 0] * self.base_ang_vel[:, 2])  # * self.base_ang_vel[:, 1]**2
+        r_mode = k_mode * (self.base_vel[:, 0]**2 * self.base_ang_vel[:, 2])  # * self.base_ang_vel[:, 1]**2
 
         # Check standing still condition every still_check_interval timesteps
         k_still = -0.5  # Penalty for standing still
@@ -555,13 +555,13 @@ class ReachingTargetTask(RLTask):
             + r_prog * r_head 
         )
 
-        # print(f"r_mode: {r_mode}")
-        # print(f"r_still: {r_still}")
-        # print(f"r_tar: {r_tar}")
-        # print(f"r_prog: {r_prog}")
-        # print(f"self.yaw_diff: {self.yaw_diff}")
-        # print(f"r_head: {r_head}")
-        # print(f"reward: {reward}")
+        print(f"r_mode: {r_mode}")
+        print(f"r_still: {r_still}")
+        print(f"r_tar: {r_tar}")
+        print(f"r_prog: {r_prog}")
+        print(f"self.yaw_diff: {self.yaw_diff}")
+        print(f"r_head: {r_head}")
+        print(f"reward: {reward}")
       
         self.rew_buf[:] = reward
 

@@ -24,7 +24,7 @@ seed = set_seed(42)
 # - Value: takes the state as input and provides a state value to guide the policy
 class Policy(GaussianMixin, Model):
     def __init__(self, observation_space, action_space, device, clip_actions=True,
-                 clip_log_std=True, min_log_std=-6, max_log_std=0):
+                 clip_log_std=True, min_log_std=-6, max_log_std=-4):
         Model.__init__(self, observation_space, action_space, device)
         GaussianMixin.__init__(self, clip_actions, clip_log_std, min_log_std, max_log_std)
 
