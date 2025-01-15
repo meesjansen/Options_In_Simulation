@@ -571,9 +571,8 @@ class ReachingTargetTask(RLTask):
 
 
     def get_observations(self):
-        # ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
-        # self.measured_heights = self.get_heights(ids)
-        self.measured_heights = self.get_heights()
+        ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
+        self.measured_heights = self.get_heights(ids)
         print(f"measured_heights: {self.measured_heights}")
 
         heights = (
