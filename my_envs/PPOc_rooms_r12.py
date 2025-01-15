@@ -572,7 +572,7 @@ class ReachingTargetTask(RLTask):
 
     def get_observations(self):
         ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
-        self.measured_heights = self.get_heights(ids)
+        self.measured_heights = self.get_heights(env_ids=ids)
         print(f"measured_heights: {self.measured_heights}")
 
         heights = (
@@ -602,7 +602,7 @@ class ReachingTargetTask(RLTask):
     
 
     def get_heights(self, env_ids=None):
-        if env_ids:
+        if env_ids.numel() > 0:
             points = quat_apply_yaw(
                 self.base_quat[env_ids].repeat(1, self.num_height_points), self.height_points[env_ids]
             ) + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
