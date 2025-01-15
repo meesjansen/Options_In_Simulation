@@ -510,7 +510,9 @@ class ReachingTargetTask(RLTask):
         self.still_counter[still_mask] += 1
         self.still_counter[~still_mask] = 0
 
-        self.standing_still = (self.still_counter >= 20)
+        self.standing_still = (self.still_counter >= 30)
+        # Reset the still_counter for environments that have been standing still
+        self.still_counter[self.standing_still] = 0
 
         print(f"still_counter: {self.still_counter}")
 
@@ -522,8 +524,8 @@ class ReachingTargetTask(RLTask):
 
         # Efficiency penalty: Penalize large velocities and driving mode mixing
         # Penalize mixing driving modes usefull when climb is active like in a3 environments
-        k_mode = -0.01  # Penalty for mixing driving modes
-        r_mode = k_mode * (((10*self.base_vel[:, 0])**2) * (10*self.base_ang_vel[:, 2].abs()))  # * self.base_ang_vel[:, 1]**2
+        k_mode = -10.0  # Penalty for mixing driving modes
+        r_mode = k_mode * ((self.base_vel[:, 0].abs()/1) * (self.base_ang_vel[:, 2].abs()/0.3))  # * self.base_ang_vel[:, 1]**2
 
         # Check standing still condition every still_check_interval timesteps
         k_still = -0.5  # Penalty for standing still
@@ -539,7 +541,7 @@ class ReachingTargetTask(RLTask):
         r_tar = k_tar * target_reached
 
         # Progress reward
-        k_prog = 5.0
+        k_prog = 1.0
         r_prog = (self.dist_t - self._computed_distance) * k_prog/(self.decimation * self.dt)  
 
         # Alignment reward
@@ -575,7 +577,7 @@ class ReachingTargetTask(RLTask):
         print(f"measured_heights: {self.measured_heights}")
 
         heights = (
-            torch.clip(self.base_pos[:, 2].unsqueeze(1) - 0.5 - self.measured_heights, -1, 1.0) * self.height_meas_scale
+            torch.clip(self.measured_heights, -1, 1.0) #* self.height_meas_scale
         ) 
 
         print(f"heights: {heights}")

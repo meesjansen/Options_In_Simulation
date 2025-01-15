@@ -33,7 +33,7 @@ def rooms_terrain(terrain, wall_height=1.0, wall_thickness=.2, passage_width=3.0
     center_y = int(terrain_length // 2)
 
     # Fill the entire height_field_raw with zeros (representing the floor)
-    terrain.height_field_raw[:, :] = -1.0
+    terrain.height_field_raw[:, :] = 0.0
 
     # Create walls around the perimeter of the terrain
     terrain.height_field_raw[:, 0:wall_thickness] = wall_height/terrain.vertical_scale  # Left wall
