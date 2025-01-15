@@ -581,6 +581,8 @@ class ReachingTargetTask(RLTask):
 
         print(f"heights: {heights}")
 
+        print(f"all heightsamples: {self.height_samples}")
+
         self.refresh_body_state_tensors()
         delta_pos = self.target_pos - self.base_pos
 
