@@ -577,6 +577,15 @@ class ReachingTargetTask(RLTask):
         print(f"self.yaw_diff: {self.yaw_diff}")
         print(f"r_head: {r_head}")
         print(f"reward: {reward}")
+
+        # Store reward components for tracking
+        self.reward_components = {
+            "r_mode": r_mode.mean().item(),
+            "r_still": r_still.mean().item(),
+            "r_tar": r_tar.mean().item(),
+            "r_prog": r_prog.mean().item(),
+            "r_head": r_head.mean().item()
+        }
       
         self.rew_buf[:] = reward
 
