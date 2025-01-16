@@ -7,13 +7,13 @@ from skrl.memories.torch import RandomMemory
 # from skrl.agents.torch.ppo import PPO, PPO_DEFAULT_CONFIG
 from skrl.resources.schedulers.torch import KLAdaptiveRL
 from skrl.resources.preprocessors.torch import RunningStandardScaler
-from skrl.trainers.torch import SequentialTrainer
 from skrl.utils.omniverse_isaacgym_utils import get_env_instance
 from skrl.envs.torch import wrap_env
 from skrl.utils import set_seed
 
 from my_models.categorical import CategoricalMixin
 from my_agents.ppo import PPO
+from my_trainers.sequential import SequentialTrainer
 
 # set the seed for reproducibility
 seed = set_seed(42)
