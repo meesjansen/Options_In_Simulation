@@ -122,7 +122,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 21  # features (+ height points)
+        self._num_observations = 91  # features (+ height points)
         self._num_actions = 2  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
@@ -197,19 +197,32 @@ class ReachingTargetTask(RLTask):
 
 
     def init_height_points(self):
-        # 0.2mx1m rectangle (without center line)
-        y = 0.1 * torch.tensor(
-            [ -4, -3, 3, 4], device=self.device, requires_grad=False
-        )  # 10-20cm on each side
-        x = 0.1 * torch.tensor(
-            [-5, -4, 4, 5,], device=self.device, requires_grad=False
-        )  # 20-30cm on each side 
+        # Define y-coordinates
+        y = 0.1 * torch.arange(-5, 6, requires_grad=False)  # From -0.5 to 0.5
+
+        # Define x-coordinates
+        x = 0.1 * torch.arange(-5, 6, requires_grad=False)  # From -0.5 to 0.5
+
+        # Create meshgrid
         grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
 
-        self.num_height_points = grid_x.numel()
+        # Flatten the grid for filtering
+        x_flat = grid_x.flatten()
+        y_flat = grid_y.flatten()
+
+        # Filter out points within the gap
+        mask = ~((x_flat >= -0.3) & (x_flat <= 0.3) & (y_flat >= -0.2) & (y_flat <= 0.2))
+        x_filtered = x_flat[mask]
+        y_filtered = y_flat[mask]
+
+        # Update the number of height points
+        self.num_height_points = x_filtered.numel()
+
+        # Initialize the points tensor with the filtered points
         points = torch.zeros(self.num_envs, self.num_height_points, 3, device=self.device, requires_grad=False)
-        points[:, :, 0] = grid_x.flatten()
-        points[:, :, 1] = grid_y.flatten()
+        points[:, :, 0] = x_filtered
+        points[:, :, 1] = y_filtered
+
         return points
     
 
