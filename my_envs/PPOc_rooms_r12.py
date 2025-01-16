@@ -36,7 +36,7 @@ TASK_CFG = {"test": False,
                      "physics_engine": "physx",
                      "env": {"numEnvs": 64, # has to be perfect square
                              "envSpacing": 10.0,
-                             "episodeLength": 300,
+                             "episodeLength": 500,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
                              "controlFrequencyInv": 4,
@@ -516,8 +516,8 @@ class ReachingTargetTask(RLTask):
         if not hasattr(self, "still_counter"):
             self.still_counter = torch.zeros(self.num_envs, dtype=torch.int64, device=self.device)
 
-        still_lin = (self.base_vel[:, 0].abs() < 0.05)
-        still_ang = (self.base_ang_vel[:, 2].abs() < 0.05)
+        still_lin = (self.base_vel[:, 0].abs() < 0.01)
+        still_ang = (self.base_ang_vel[:, 2].abs() < 0.01)
         still_mask = still_lin & still_ang
 
         self.still_counter[still_mask] += 1
@@ -543,8 +543,8 @@ class ReachingTargetTask(RLTask):
         # Check standing still condition every still_check_interval timesteps
         k_still = -0.5  # Penalty for standing still
         self.still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        self.still_lin = self.base_vel[:, 0].abs() < 0.05 
-        self.still_ang = self.base_ang_vel[:, 2].abs() < 0.05
+        self.still_lin = self.base_vel[:, 0].abs() < 0.01 
+        self.still_ang = self.base_ang_vel[:, 2].abs() < 0.01
         still = torch.where(self.still_lin & self.still_ang, torch.ones_like(self.still), torch.zeros_like(self.still))
         r_still = k_still * still.float()
 
