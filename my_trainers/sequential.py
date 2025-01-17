@@ -108,12 +108,7 @@ class SequentialTrainer(Trainer):
                     r_prog_mean = self.env.reward_components["r_prog"].mean().item()
                     r_head_mean = self.env.reward_components["r_head"].mean().item()
 
-                    agent.track_data("Reward / r_mode", r_mode_mean)
-                    agent.track_data("Reward / r_still", r_still_mean)
-                    agent.track_data("Reward / r_tar", r_tar_mean)
-                    agent.track_data("Reward / r_prog", r_prog_mean)
-                    agent.track_data("Reward / r_head", r_head_mean)
-
+                    
                 # render scene
                 if not self.headless:
                     self.env.render()
@@ -136,6 +131,11 @@ class SequentialTrainer(Trainer):
                         if isinstance(v, torch.Tensor) and v.numel() == 1:
                             for agent in self.agents:
                                 agent.track_data(f"Info / {k}", v.item())
+                                agent.track_data(f"Reward / r_mode", r_mode_mean)
+                                agent.track_data(f"Reward / r_still", r_still_mean)
+                                agent.track_data(f"Reward / r_tar", r_tar_mean)
+                                agent.track_data(f"Reward / r_prog", r_prog_mean)
+                                agent.track_data(f"Reward / r_head", r_head_mean)
 
             # post-interaction
             for agent in self.agents:
