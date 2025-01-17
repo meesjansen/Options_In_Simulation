@@ -36,7 +36,7 @@ TASK_CFG = {"test": False,
                      "physics_engine": "physx",
                      "env": {"numEnvs": 64, # has to be perfect square
                              "envSpacing": 10.0,
-                             "episodeLength": 300,
+                             "episodeLength": 500,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
                              "controlFrequencyInv": 4,
@@ -122,7 +122,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 5  # features (+ height points)
+        self._num_observations = 91  # features (+ height points)
         self._num_actions = 2  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
@@ -132,8 +132,8 @@ class ReachingTargetTask(RLTask):
             dtype=np.float32  # Ensure data type is consistent
         )
         # Define the action range for torques
-        self.min_torque = -10.0  # Example min torque value
-        self.max_torque = 10.0   # Example max torque value
+        self.min_torque = -5.0  # Example min torque value
+        self.max_torque = 5.0   # Example max torque value
 
 
         # Using the shape argument
@@ -180,6 +180,7 @@ class ReachingTargetTask(RLTask):
         self._env_spacing = self._task_cfg["env"]["envSpacing"]
         self._max_episode_length = self._task_cfg["env"]["episodeLength"]
         self.dt = self._task_cfg["sim"]["dt"]
+        self.height_meas_scale = 5.0
 
         # base init state
         pos = self._task_cfg["env"]["baseInitState"]["pos"]
@@ -196,19 +197,32 @@ class ReachingTargetTask(RLTask):
 
 
     def init_height_points(self):
-        # 6mx6m rectangle (without center line) 13x13=169 points
-        y = 0.5 * torch.tensor(
-            [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6], device=self.device, requires_grad=False
-        )  # 50cm on each side
-        x = 0.5 * torch.tensor(
-            [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6], device=self.device, requires_grad=False
-        )  
+        # Define y-coordinates
+        y = 0.1 * torch.arange(-5, 6, requires_grad=False)  # From -0.5 to 0.5
+
+        # Define x-coordinates
+        x = 0.1 * torch.arange(-5, 6, requires_grad=False)  # From -0.5 to 0.5
+
+        # Create meshgrid
         grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
 
-        self.num_height_points = grid_x.numel()
+        # Flatten the grid for filtering
+        x_flat = grid_x.flatten()
+        y_flat = grid_y.flatten()
+
+        # Filter out points within the gap
+        mask = ~((x_flat >= -0.3) & (x_flat <= 0.3) & (y_flat >= -0.2) & (y_flat <= 0.2))
+        x_filtered = x_flat[mask]
+        y_filtered = y_flat[mask]
+
+        # Update the number of height points
+        self.num_height_points = x_filtered.numel()
+
+        # Initialize the points tensor with the filtered points
         points = torch.zeros(self.num_envs, self.num_height_points, 3, device=self.device, requires_grad=False)
-        points[:, :, 0] = grid_x.flatten()
-        points[:, :, 1] = grid_y.flatten()
+        points[:, :, 0] = x_filtered
+        points[:, :, 1] = y_filtered
+
         return points
     
 
@@ -410,8 +424,8 @@ class ReachingTargetTask(RLTask):
         print(f"actions: {self.actions}")
 
         # Apply the actions to the robot
-        self.min_delta = -10.0
-        self.max_delta = 10.0
+        self.min_delta = -5.0
+        self.max_delta = 5.0
 
         self.scaled_actions = self.min_torque + (actions[:, 0] + 1) * 0.5 * (self.max_torque - self.min_torque)
         self.scaled_delta_diff = self.min_delta + (actions[:, 1] + 1) * 0.5 * (self.max_delta - self.min_delta)
@@ -502,16 +516,18 @@ class ReachingTargetTask(RLTask):
         if not hasattr(self, "still_counter"):
             self.still_counter = torch.zeros(self.num_envs, dtype=torch.int64, device=self.device)
 
-        still_lin = (self.base_vel[:, 0].abs() < 0.05)
-        still_ang = (self.base_ang_vel[:, 2].abs() < 0.05)
+        still_lin = (self.base_vel[:, 0].abs() < 0.01)
+        still_ang = (self.base_ang_vel[:, 2].abs() < 0.01)
         still_mask = still_lin & still_ang
 
         self.still_counter[still_mask] += 1
         self.still_counter[~still_mask] = 0
 
-        self.standing_still = (self.still_counter >= 20)
+        self.standing_still = (self.still_counter >= 30)
+        # Reset the still_counter for environments that have been standing still
+        self.still_counter[self.standing_still] = 0
 
-        # print(f"still_counter: {self.still_counter}")
+        print(f"still_counter: {self.still_counter}")
 
         # Update reset_buf based on standing_still condition
         self.reset_buf = torch.where(self.standing_still, torch.ones_like(self.reset_buf), self.reset_buf)
@@ -521,13 +537,14 @@ class ReachingTargetTask(RLTask):
 
         # Efficiency penalty: Penalize large velocities and driving mode mixing
         # Penalize mixing driving modes usefull when climb is active like in a3 environments
-        r_mode = -(self.base_vel[:, 0])**2 * (self.base_ang_vel[:, 2]**2)  # * self.base_ang_vel[:, 1]**2
+        k_mode = -10.0  # Penalty for mixing driving modes
+        r_mode = k_mode * ((self.base_vel[:, 0].abs()/1) * (self.base_ang_vel[:, 2].abs()/0.3))  # * self.base_ang_vel[:, 1]**2
 
         # Check standing still condition every still_check_interval timesteps
         k_still = -0.5  # Penalty for standing still
         self.still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
-        self.still_lin = self.base_vel[:, 0].abs() < 0.05 
-        self.still_ang = self.base_ang_vel[:, 2].abs() < 0.05
+        self.still_lin = self.base_vel[:, 0].abs() < 0.01 
+        self.still_ang = self.base_ang_vel[:, 2].abs() < 0.01
         still = torch.where(self.still_lin & self.still_ang, torch.ones_like(self.still), torch.zeros_like(self.still))
         r_still = k_still * still.float()
 
@@ -537,13 +554,12 @@ class ReachingTargetTask(RLTask):
         r_tar = k_tar * target_reached
 
         # Progress reward
-        k_prog = 5.0
+        k_prog = 1.0
         r_prog = (self.dist_t - self._computed_distance) * k_prog/(self.decimation * self.dt)  
 
         # Alignment reward
-        self.dist_t = self._computed_distance
         k_d = 2.0  # Curvature parameter for the exponential function
-        r_head =  torch.exp(-0.5 * (self.yaw_diff / (self.dist_t / k_d))**2)
+        r_head =  torch.exp(-0.5 * (self.yaw_diff / (self._computed_distance / k_d))**2)
 
         
         # Combine rewards and penalties
@@ -561,6 +577,15 @@ class ReachingTargetTask(RLTask):
         print(f"self.yaw_diff: {self.yaw_diff}")
         print(f"r_head: {r_head}")
         print(f"reward: {reward}")
+
+        # Store reward components for tracking
+        self.reward_components = {
+            "r_mode": r_mode.mean().item(),
+            "r_still": r_still.mean().item(),
+            "r_tar": r_tar.mean().item(),
+            "r_prog": r_prog.mean().item(),
+            "r_head": r_head.mean().item()
+        }
       
         self.rew_buf[:] = reward
 
@@ -569,8 +594,20 @@ class ReachingTargetTask(RLTask):
 
     def get_observations(self):
         ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
-        self.measured_heights = self.get_heights(ids)
-        heights = self.measured_heights * self.terrain.vertical_scale 
+        self.measured_heights = self.get_heights(env_ids=ids)
+        print(f"measured_heights: {self.measured_heights}")
+
+        heights = (
+            torch.clip(self.measured_heights, -1, 1.0) #* self.height_meas_scale
+        ) 
+
+        print(f"heights: {heights}")
+
+        # Count the number of non-zero values in height_samples
+        non_zero_count = torch.nonzero(self.height_samples).size(0)
+        print(f"Number of non-zero height samples: {non_zero_count}")
+
+        print(f"all heightsamples: {self.height_samples}")
 
         self.refresh_body_state_tensors()
         delta_pos = self.target_pos - self.base_pos
@@ -581,6 +618,7 @@ class ReachingTargetTask(RLTask):
                     self.yaw_diff.unsqueeze(-1),
                     self.base_vel[:, 0].unsqueeze(-1),
                     self.base_ang_vel[:, 2].unsqueeze(-1),
+                    heights
                 ),
                 dim=-1,
             )
@@ -592,7 +630,14 @@ class ReachingTargetTask(RLTask):
     
 
     def get_heights(self, env_ids=None):
-        points = self.height_points[env_ids] + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
+        if env_ids.numel() > 0:
+            points = quat_apply_yaw(
+                self.base_quat[env_ids].repeat(1, self.num_height_points), self.height_points[env_ids]
+            ) + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
+        else:
+            points = quat_apply_yaw(self.base_quat.repeat(1, self.num_height_points), self.height_points) + (
+                self.base_pos[:, 0:3]
+            ).unsqueeze(1)
 
         # Add terrain border size
         points += self.terrain.border_size
@@ -618,3 +663,16 @@ class ReachingTargetTask(RLTask):
         # Return the heights, scaled by the vertical scale
         return heights.view(self.num_envs, -1) * self.terrain.vertical_scale
 
+@torch.jit.script
+def quat_apply_yaw(quat, vec):
+    quat_yaw = quat.clone().view(-1, 4)
+    quat_yaw[:, 1:3] = 0.0
+    quat_yaw = normalize(quat_yaw)
+    return quat_apply(quat_yaw, vec)
+
+
+@torch.jit.script
+def wrap_to_pi(angles):
+    angles %= 2 * np.pi
+    angles -= 2 * np.pi * (angles > np.pi)
+    return angles
