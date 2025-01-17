@@ -22,7 +22,7 @@ from pxr import PhysxSchema, UsdPhysics
 
 from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10 
 
-from my_utils.terrain_generator import *
+from my_utils.terrain_generator_v2 import *
 from my_utils.terrain_utils import *
 
 TASK_CFG = {"test": False,
@@ -47,7 +47,7 @@ TASK_CFG = {"test": False,
                                                 },
                             "dofInitTorques": [0.0, 0.0, 0.0, 0.0],
                             "dofInitVelocities": [0.0, 0.0, 0.0, 0.0],
-                            "TerrainType": "rooms", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed                         
+                            "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed                         
 
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
