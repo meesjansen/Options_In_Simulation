@@ -186,8 +186,6 @@ class Trainer:
                 r_tar_mean = self.env.task.reward_components["r_tar"]
                 r_prog_mean = self.env.task.reward_components["r_prog"]
                 r_head_mean = self.env.task.reward_components["r_head"]
-                print(f"r_mode_mean: {r_mode_mean}, r_still_mean: {r_still_mean}, r_tar_mean: {r_tar_mean}, r_prog_mean: {r_prog_mean}, r_head_mean: {r_head_mean}")
-
 
                 # render scene
                 if not self.headless:
