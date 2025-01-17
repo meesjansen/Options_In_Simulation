@@ -56,7 +56,7 @@ class Terrain:
                 horizontal_scale=self.horizontal_scale,
             )
 
-            if terrain_type == "rooms":
+            if terrain_type == "rooms1":
                 rooms_terrain(terrain, wall_height=1.0, wall_thickness=.2, passage_width=3.0)
             if terrain_type == "rooms2":
                 rooms_terrain(terrain, wall_height=1.0, wall_thickness=.2, passage_width=0.0)
