@@ -203,19 +203,19 @@ class Trainer:
                                               infos=infos,
                                               timestep=timestep,
                                               timesteps=self.timesteps)
+                
+                self.agents.track_data(f"Reward_comp / r_mode", r_mode_mean)
+                self.agents.track_data(f"Reward_comp / r_still", r_still_mean)
+                self.agents.track_data(f"Reward_comp / r_tar", r_tar_mean)
+                self.agents.track_data(f"Reward_comp / r_prog", r_prog_mean)
+                self.agents.track_data(f"Reward_comp / r_head", r_head_mean)
 
                 # log environment info
                 if self.environment_info in infos:
                     for k, v in infos[self.environment_info].items():
                         if isinstance(v, torch.Tensor) and v.numel() == 1:
                             self.agents.track_data(f"Info / {k}", v.item())
-                            print(f"Info / {k}: {v.item()}")
-                            self.agents.track_data(f"Reward_comp / r_mode", r_mode_mean)
-                            self.agents.track_data(f"Reward_comp / r_still", r_still_mean)
-                            self.agents.track_data(f"Reward_comp / r_tar", r_tar_mean)
-                            self.agents.track_data(f"Reward_comp / r_prog", r_prog_mean)
-                            self.agents.track_data(f"Reward_comp / r_head", r_head_mean)
-
+                            
             # post-interaction
             self.agents.post_interaction(timestep=timestep, timesteps=self.timesteps)
 
