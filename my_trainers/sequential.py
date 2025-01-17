@@ -101,12 +101,11 @@ class SequentialTrainer(Trainer):
                 # step the environments
                 next_states, rewards, terminated, truncated, infos = self.env.step(actions)
 
-                if hasattr(self.env, 'reward_components'):
-                    r_mode_mean = self.env.reward_components["r_mode"]
-                    r_still_mean = self.env.reward_components["r_still"]
-                    r_tar_mean = self.env.reward_components["r_tar"]
-                    r_prog_mean = self.env.reward_components["r_prog"]
-                    r_head_mean = self.env.reward_components["r_head"]
+                r_mode_mean = self.env.reward_components["r_mode"]
+                r_still_mean = self.env.reward_components["r_still"]
+                r_tar_mean = self.env.reward_components["r_tar"]
+                r_prog_mean = self.env.reward_components["r_prog"]
+                r_head_mean = self.env.reward_components["r_head"]
 
                     
                 # render scene
