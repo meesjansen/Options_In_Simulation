@@ -108,11 +108,11 @@ class SequentialTrainer(Trainer):
                     r_prog_mean = self.env.reward_components["r_prog"].mean().item()
                     r_head_mean = self.env.reward_components["r_head"].mean().item()
 
-                    self.track_data("Reward / r_mode", r_mode_mean)
-                    self.track_data("Reward / r_still", r_still_mean)
-                    self.track_data("Reward / r_tar", r_tar_mean)
-                    self.track_data("Reward / r_prog", r_prog_mean)
-                    self.track_data("Reward / r_head", r_head_mean)
+                    agent.track_data("Reward / r_mode", r_mode_mean)
+                    agent.track_data("Reward / r_still", r_still_mean)
+                    agent.track_data("Reward / r_tar", r_tar_mean)
+                    agent.track_data("Reward / r_prog", r_prog_mean)
+                    agent.track_data("Reward / r_head", r_head_mean)
 
                 # render scene
                 if not self.headless:

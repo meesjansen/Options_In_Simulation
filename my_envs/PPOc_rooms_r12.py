@@ -550,11 +550,11 @@ class ReachingTargetTask(RLTask):
 
         # Sparse Rewards
         target_reached = self.target_reached.float()
-        k_tar = 50.0  # Completion bonus
+        k_tar = 100.0  # Completion bonus
         r_tar = k_tar * target_reached
 
         # Progress reward
-        k_prog = 1.0
+        k_prog = 0.05
         r_prog = (self.dist_t - self._computed_distance) * k_prog/(self.decimation * self.dt)  
 
         # Alignment reward
@@ -573,8 +573,9 @@ class ReachingTargetTask(RLTask):
         print(f"r_mode: {r_mode}")
         print(f"r_still: {r_still}")
         print(f"r_tar: {r_tar}")
+        print(f"progress: {self.dist_t - self._computed_distance} [m]")
         print(f"r_prog: {r_prog}")
-        print(f"self.yaw_diff: {self.yaw_diff}")
+        print(f"self.yaw_diff: {self.yaw_diff} [rad]")
         print(f"r_head: {r_head}")
         print(f"reward: {reward}")
 
@@ -623,7 +624,7 @@ class ReachingTargetTask(RLTask):
                 dim=-1,
             )
         
-        print(f"obs_buf: {self.obs_buf}")
+        print(f"obs_vel: {self.base_vel[:, 0].unsqueeze(-1)}, obs_ang_vel: {self.base_ang_vel[:, 2].unsqueeze(-1)}")
 
                     
         return {self._robots.name: {"obs_buf": self.obs_buf}}
