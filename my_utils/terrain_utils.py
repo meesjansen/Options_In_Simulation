@@ -54,6 +54,50 @@ def rooms_terrain(terrain, wall_height=1.0, wall_thickness=.2, passage_width=3.0
     # Return updated terrain
     return terrain
 
+def rooms_terrain2(terrain, wall_height=1.0, wall_thickness=.2, passage_width=0.0):
+    """
+    Generate a terrain with two fully enclosed rooms connected by a passage, based on the grid setup provided.
+
+    Parameters:
+        terrain (SubTerrain): the terrain object
+        wall_height (int): height of the walls enclosing the rooms (default: 200 units)
+        wall_thickness (int): thickness of the walls (default: 1 unit)
+        passage_width (int): width of the passage connecting the rooms (default: 2 units)
+    Returns:
+        terrain (SubTerrain): updated terrain
+    """
+    # Get the terrain dimensions
+    terrain_width = terrain.width
+    terrain_length = terrain.length
+    wall_thickness = int(wall_thickness/terrain.horizontal_scale)
+    passage_width = int(passage_width/terrain.horizontal_scale)
+
+    # Determine center points for room division and passage
+    center_x = int(terrain_width // 2)
+    center_y = int(terrain_length // 2)
+
+    # Fill the entire height_field_raw with zeros (representing the floor)
+    terrain.height_field_raw[:, :] = 0.0
+
+    # Create walls around the perimeter of the terrain
+    terrain.height_field_raw[:, 0:wall_thickness] = wall_height/terrain.vertical_scale  # Left wall
+    terrain.height_field_raw[:, -wall_thickness:] = wall_height/terrain.vertical_scale  # Right wall
+    terrain.height_field_raw[0:wall_thickness, :] = wall_height/terrain.vertical_scale  # Top wall
+    terrain.height_field_raw[-wall_thickness:, :] = wall_height/terrain.vertical_scale  # Bottom wall
+
+    # Create the internal wall separating the two rooms (leaving a passage in the middle)
+    wall_start = center_y - wall_thickness // 2
+    wall_end = center_y + wall_thickness // 2
+    passage_start = center_x - passage_width // 2
+    passage_end = center_x + passage_width // 2
+
+    # Internal wall for the left and right rooms, except for the passage
+    terrain.height_field_raw[wall_start:wall_end, :passage_start] = wall_height/terrain.vertical_scale  # Left room internal wall
+    terrain.height_field_raw[wall_start:wall_end, passage_end:] = wall_height/terrain.vertical_scale  # Right room internal wall
+
+    # Return updated terrain
+    return terrain
+
 
 
 def stairs_terrain(terrain, step_width, step_height):
