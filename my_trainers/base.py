@@ -209,6 +209,7 @@ class Trainer:
                     for k, v in infos[self.environment_info].items():
                         if isinstance(v, torch.Tensor) and v.numel() == 1:
                             self.agents.track_data(f"Info / {k}", v.item())
+                            print(f"Info / {k}: {v.item()}")
                             self.agents.track_data(f"Reward_comp / r_mode", r_mode_mean)
                             self.agents.track_data(f"Reward_comp / r_still", r_still_mean)
                             self.agents.track_data(f"Reward_comp / r_tar", r_tar_mean)
