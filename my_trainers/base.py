@@ -181,11 +181,11 @@ class Trainer:
                 # step the environments
                 next_states, rewards, terminated, truncated, infos = self.env.step(actions)
 
-                r_mode_mean = self.env.reward_components["r_mode"]
-                r_still_mean = self.env.reward_components["r_still"]
-                r_tar_mean = self.env.reward_components["r_tar"]
-                r_prog_mean = self.env.reward_components["r_prog"]
-                r_head_mean = self.env.reward_components["r_head"]
+                r_mode_mean = self.env.task.reward_components["r_mode"]
+                r_still_mean = self.env.task.reward_components["r_still"]
+                r_tar_mean = self.env.task.reward_components["r_tar"]
+                r_prog_mean = self.env.task.reward_components["r_prog"]
+                r_head_mean = self.env.task.reward_components["r_head"]
                 print(f"r_mode_mean: {r_mode_mean}, r_still_mean: {r_still_mean}, r_tar_mean: {r_tar_mean}, r_prog_mean: {r_prog_mean}, r_head_mean: {r_head_mean}")
 
 
