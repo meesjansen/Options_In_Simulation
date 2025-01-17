@@ -47,7 +47,7 @@ TASK_CFG = {"test": False,
                                                 },
                             "dofInitTorques": [0.0, 0.0, 0.0, 0.0],
                             "dofInitVelocities": [0.0, 0.0, 0.0, 0.0],
-                            "TerrainType": "rooms", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed                         
+                            "TerrainType": "rooms2", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed                         
 
                             },
                      "sim": {"dt": 0.0083,  # 1 / 120
@@ -122,7 +122,7 @@ class ReachingTargetTask(RLTask):
         self.dt = 1 / 120.0
 
         # observation and action space DQN
-        self._num_observations = 91  # features (+ height points)
+        self._num_observations = 5  # features (+ height points)
         self._num_actions = 2  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
@@ -565,7 +565,7 @@ class ReachingTargetTask(RLTask):
         # Combine rewards and penalties
         reward = (
             r_mode    
-            + r_still
+            # + r_still
             + r_tar
             + r_prog * r_head 
         )
@@ -619,7 +619,7 @@ class ReachingTargetTask(RLTask):
                     self.yaw_diff.unsqueeze(-1),
                     self.base_vel[:, 0].unsqueeze(-1),
                     self.base_ang_vel[:, 2].unsqueeze(-1),
-                    heights
+                    # heights
                 ),
                 dim=-1,
             )
