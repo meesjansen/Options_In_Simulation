@@ -106,6 +106,7 @@ class SequentialTrainer(Trainer):
                 r_tar_mean = self.env.reward_components["r_tar"]
                 r_prog_mean = self.env.reward_components["r_prog"]
                 r_head_mean = self.env.reward_components["r_head"]
+                print(f"r_mode_mean: {r_mode_mean}, r_still_mean: {r_still_mean}, r_tar_mean: {r_tar_mean}, r_prog_mean: {r_prog_mean}, r_head_mean: {r_head_mean}")
 
                     
                 # render scene
@@ -130,11 +131,11 @@ class SequentialTrainer(Trainer):
                         if isinstance(v, torch.Tensor) and v.numel() == 1:
                             for agent in self.agents:
                                 agent.track_data(f"Info / {k}", v.item())
-                                agent.track_data(f"Reward / r_mode", r_mode_mean)
-                                agent.track_data(f"Reward / r_still", r_still_mean)
-                                agent.track_data(f"Reward / r_tar", r_tar_mean)
-                                agent.track_data(f"Reward / r_prog", r_prog_mean)
-                                agent.track_data(f"Reward / r_head", r_head_mean)
+                                agent.track_data(f"Reward_comp / r_mode", r_mode_mean)
+                                agent.track_data(f"Reward_comp / r_still", r_still_mean)
+                                agent.track_data(f"Reward_comp / r_tar", r_tar_mean)
+                                agent.track_data(f"Reward_comp / r_prog", r_prog_mean)
+                                agent.track_data(f"Reward_comp / r_head", r_head_mean)
 
             # post-interaction
             for agent in self.agents:
