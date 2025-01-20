@@ -161,8 +161,12 @@ agent = PPO(models=models_ppo,
 
 
 agent.load("./my_runs/PPOc_rooms_r12_heights/PPOc_rooms_r12_heights/checkpoints/agent_450000.pt")
-agent.load("./my_runs/PPOc_rooms_r13_heights/PPOc_rooms_r13_heights/checkpoints/agent_500000.pt")
-agent.load("./my_runs/PPOc_rooms_r14_heights/PPOc_rooms_r14_heights/checkpoints/agent_350000.pt")
+# agent.load("./my_runs/PPOc_rooms_r13_heights/PPOc_rooms_r13_heights/checkpoints/agent_500000.pt")
+# agent.load("./my_runs/PPOc_rooms_r14_heights/PPOc_rooms_r14_heights/checkpoints/agent_350000.pt")
+
+# agent.load("./my_runs/PPOc_rooms_r9_k_prog_LOW/PPOc_rooms_r9_k_prog_LOW/checkpoints/agent_450000.pt")
+# agent.load("./my_runs/PPOc_rooms_r9_timesteps_HIGH/PPOc_rooms_r9_timesteps_HIGH/checkpoints/agent_450000.pt")
+# agent.load("./my_runs/PPOc_rooms_r11/PPOc_rooms_r11/checkpoints/agent_400000.pt")
 
 
 
