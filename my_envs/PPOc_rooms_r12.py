@@ -564,7 +564,7 @@ class ReachingTargetTask(RLTask):
         
         # Combine rewards and penalties
         reward = (
-            r_mode    
+            # r_mode    
             # + r_still
             + r_tar
             + r_prog * r_head 

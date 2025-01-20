@@ -537,7 +537,7 @@ class ReachingTargetTask(RLTask):
 
         # Efficiency penalty: Penalize large velocities and driving mode mixing
         # Penalize mixing driving modes usefull when climb is active like in a3 environments
-        k_mode = -10.0  # Penalty for mixing driving modes
+        k_mode = -50.0  # Penalty for mixing driving modes
         r_mode = k_mode * ((self.base_vel[:, 0].abs()/1) * (self.base_ang_vel[:, 2].abs()/0.3))  # * self.base_ang_vel[:, 1]**2
 
         # Check standing still condition every still_check_interval timesteps
