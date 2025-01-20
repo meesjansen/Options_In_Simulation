@@ -159,15 +159,12 @@ agent = PPO(models=models_ppo,
             action_space=env.action_space,
             device=device)
 
-# agent.load("./my_runs/PPOc_rooms_o5_r8_a2/PPOc_rooms_o5_r8_a2/checkpoints/agent_200000.pt")
-# agent.load("./my_runs/PPOc_rooms_o5_r7_a2/PPOc_rooms_o5_r7_a2/checkpoints/agent_200000.pt")
-# agent.load("./my_runs/PPOc_rooms_o3_r1_a1/PPOc_rooms_o3_r1_a1/checkpoints/agent_200000.pt")
-# agent.load("./my_runs/PPOc_rooms_o3_r2_a2/PPOc_rooms_o3_r2_a2/checkpoints/agent_200000.pt")
-agent.load("./my_runs/PPOc_rooms_o5_r9_a2/PPOc_rooms_r9/checkpoints/agent_300000.pt")
-# agent.load("./my_runs/PPOc_rooms_o5_2_r9_a2/PPOc_rooms_o5_2_r9_a2/checkpoints/agent_150000.pt")
-# agent.load("./my_runs/PPOc_rooms_o3_r4_t22_a2/PPOc_rooms_o3_r4_t22_a2/checkpoints/agent_200000.pt")
-# agent.load("./my_runs/PPOc_rooms_o10_r3_a2/PPOc_rooms_o10_r3_a2/checkpoints/agent_200000.pt")
-# agent.load("./my_runs/PPOc_rooms_o3_r1_a2/PPOc_rooms_o3_r1_a2/checkpoints/agent_200000.pt")
+
+agent.load("./my_runs/PPOc_rooms_r12_heights/PPOc_rooms_r12_heights/checkpoints/agent_450000.pt")
+agent.load("./my_runs/PPOc_rooms_r13_heights/PPOc_rooms_r13_heights/checkpoints/agent_500000.pt")
+agent.load("./my_runs/PPOc_rooms_r14_heights/PPOc_rooms_r14_heights/checkpoints/agent_350000.pt")
+
+
 
 
 # Configure and instantiate the RL trainer
