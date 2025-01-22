@@ -10,10 +10,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from skrl import config, logger
-from skrl.agents.torch import Agent
 from skrl.memories.torch import Memory
 from skrl.models.torch import Model
 from skrl.resources.schedulers.torch import KLAdaptiveLR
+
+from my_agents.base import Agent
+
 
 
 # [start-config-dict-torch]
