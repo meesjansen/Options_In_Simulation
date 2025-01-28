@@ -227,6 +227,8 @@ class ReachingTargetTask(RLTask):
             "stumble": torch_zeros(),
             "action_rate": torch_zeros(),
             "hip": torch_zeros(),
+            "fallen_over": torch_zeros(),
+            "slip_longitudinal": torch_zeros(),
         }
         return
         
