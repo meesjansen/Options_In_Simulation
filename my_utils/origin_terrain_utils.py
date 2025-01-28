@@ -106,10 +106,8 @@ def flat_terrain(terrain, height=0.0):
 
     # Fill the terrain array with the chosen flat height
     # Instead of a slope calculation, just add the same flat value
-    terrain.height_field_raw[:, :] += flat_int_height.astype(
-        terrain.height_field_raw.dtype
-    )
-
+    terrain.height_field_raw[:, :] += flat_int_height
+    
     return terrain
 
 
