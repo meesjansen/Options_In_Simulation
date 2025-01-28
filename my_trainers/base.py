@@ -206,14 +206,14 @@ class Trainer:
                                               timestep=timestep,
                                               timesteps=self.timesteps)
                 
-                self.agents.track_data(f"Reward_comp / rew_lin_vel_xy", rew_lin_vel_xy.mean().item())
-                self.agents.track_data(f"Reward_comp / rew_ang_vel_z", rew_ang_vel_z.mean().item())
-                self.agents.track_data(f"Reward_comp / rew_lin_vel_z", rew_lin_vel_z.mean().item())
-                self.agents.track_data(f"Reward_comp / rew_ang_vel_xy", rew_ang_vel_xy.mean().item())
-                self.agents.track_data(f"Reward_comp / rew_orient", rew_orient.mean().item())
-                self.agents.track_data(f"Reward_comp / rew_action_rate", rew_action_rate.mean().item())
-                self.agents.track_data(f"Reward_comp / rew_fallen_over", rew_fallen_over.mean().item())
-                self.agents.track_data(f"Reward_comp / rew_slip_longitudinal", rew_slip_longitudinal.mean().item())
+                self.agents.track_data(f"Reward_comp / rew_lin_vel_xy", rew_lin_vel_xy)
+                self.agents.track_data(f"Reward_comp / rew_ang_vel_z", rew_ang_vel_z)
+                self.agents.track_data(f"Reward_comp / rew_lin_vel_z", rew_lin_vel_z)
+                self.agents.track_data(f"Reward_comp / rew_ang_vel_xy", rew_ang_vel_xy)
+                self.agents.track_data(f"Reward_comp / rew_orient", rew_orient)
+                self.agents.track_data(f"Reward_comp / rew_action_rate", rew_action_rate)
+                self.agents.track_data(f"Reward_comp / rew_fallen_over", rew_fallen_over)
+                self.agents.track_data(f"Reward_comp / rew_slip_longitudinal", rew_slip_longitudinal)
 
                 # log environment info
                 if self.environment_info in infos:
