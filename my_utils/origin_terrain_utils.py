@@ -83,6 +83,35 @@ def random_uniform_terrain(
     terrain.height_field_raw += z_upsampled.astype(np.int16)
     return terrain
 
+def flat_terrain(terrain, height=0.0):
+    """
+    Generate a flat terrain at the specified height
+
+    Parameters:
+        terrain (SubTerrain): the terrain
+        height (float): the desired flat height in meters
+
+    Returns:
+        terrain (SubTerrain): updated terrain
+    """
+
+    x = np.arange(0, terrain.width)
+    y = np.arange(0, terrain.length)
+    # Create a meshgrid to keep structure similar to sloped_terrain
+    xx, yy = np.meshgrid(x, y, sparse=True)
+    xx = xx.reshape(terrain.width, 1)
+
+    # Convert desired height from meters to scaled integer units
+    flat_int_height = int(height / terrain.vertical_scale)
+
+    # Fill the terrain array with the chosen flat height
+    # Instead of a slope calculation, just add the same flat value
+    terrain.height_field_raw[:, :] += flat_int_height.astype(
+        terrain.height_field_raw.dtype
+    )
+
+    return terrain
+
 
 def sloped_terrain(terrain, slope=1):
     """
