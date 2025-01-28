@@ -713,7 +713,7 @@ class ReachingTargetTask(RLTask):
         )
         # checks
         print("Observation buffer:", self.obs_buf)
-        _efforts = self._anymals.get_applied_joint_efforts(clone=False)
+        _efforts = self._robots.get_applied_joint_efforts(clone=False)
         print("Measured efforts:", _efforts)
 
 
