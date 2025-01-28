@@ -4,16 +4,15 @@ import torch.nn as nn
 # Import the skrl components to build the RL system
 from skrl.models.torch import Model, GaussianMixin, DeterministicMixin
 from skrl.memories.torch import RandomMemory
-# from skrl.agents.torch.ppo import PPO, PPO_DEFAULT_CONFIG
 from skrl.resources.schedulers.torch import KLAdaptiveRL
 from skrl.resources.preprocessors.torch import RunningStandardScaler
-from skrl.trainers.torch import SequentialTrainer
 from skrl.utils.omniverse_isaacgym_utils import get_env_instance
 from skrl.envs.torch import wrap_env
 from skrl.utils import set_seed
 
 from my_models.categorical import CategoricalMixin
 from my_agents.ppo import PPO
+from my_trainers.sequential import SequentialTrainer
 
 # set the seed for reproducibility
 seed = set_seed(42)
@@ -23,18 +22,18 @@ seed = set_seed(42)
 # - Policy: takes as input the environment's observation/state and returns action probs
 # - Value: takes the state as input and provides a state value to guide the policy
 class Policy(GaussianMixin, Model):
-    def __init__(self, observation_space, action_space, device, clip_actions=True,
-                 clip_log_std=True, min_log_std=-6, max_log_std=0):
+    def __init__(self, observation_space, action_space, device, clip_actions=False,
+                 clip_log_std=True, min_log_std=-20, max_log_std=2, reduction="sum"):
         Model.__init__(self, observation_space, action_space, device)
-        GaussianMixin.__init__(self, clip_actions, clip_log_std, min_log_std, max_log_std)
+        GaussianMixin.__init__(self, clip_actions, clip_log_std, min_log_std, max_log_std, reduction)
 
-        self.net = nn.Sequential(nn.Linear(self.num_observations, 256),
-                                 nn.ReLU(),
+        self.net = nn.Sequential(nn.Linear(self.num_observations, 512),
+                                 nn.ELU(),
+                                 nn.Linear(512, 256),
+                                 nn.ELU(),
                                  nn.Linear(256, 128),
-                                 nn.ReLU(),
-                                 nn.Linear(128, 64),
-                                 nn.ReLU(),
-                                 nn.Linear(64, self.num_actions))
+                                 nn.ELU(),
+                                 nn.Linear(128, self.num_actions))
         self.log_std_parameter = nn.Parameter(torch.zeros(self.num_actions))
 
     def compute(self, inputs, role):
@@ -46,13 +45,13 @@ class Value(DeterministicMixin, Model):
         Model.__init__(self, observation_space, action_space, device)
         DeterministicMixin.__init__(self, clip_actions)
 
-        self.net = nn.Sequential(nn.Linear(self.num_observations, 256),
-                                 nn.ReLU(),
+        self.net = nn.Sequential(nn.Linear(self.num_observations, 512),
+                                 nn.ELU(),
+                                 nn.Linear(512, 256),
+                                 nn.ELU(),
                                  nn.Linear(256, 128),
-                                 nn.ReLU(),
-                                 nn.Linear(128, 64),
-                                 nn.ReLU(),
-                                 nn.Linear(64, 1))
+                                 nn.ELU(),
+                                 nn.Linear(128, 1))
 
     def compute(self, inputs, role):
         return self.net(inputs["states"]), {}
@@ -64,11 +63,25 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.PPOc_rooms_r9_still_HIGH import ReachingTargetTask, TASK_CFG
+from my_envs.PPOc_rooms_r15_vel import ReachingTargetTask, TASK_CFG
+from argparse import ArgumentParser 
+
+# arg_parser = ArgumentParser()
+# arg_parser.add_argument("--seed", type=int, default=42)
+# arg_parser.add_argument("--k_tar", type=float, default=100.0)
+# arg_parser.add_argument("--k_prog", type=float, default=0.05)
+# arg_parser.add_argument("--k_d", type=float, default=2.0)
+
+# parsed_config = arg_parser.parse_args().__dict__
+
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
 TASK_CFG["task"]["env"]["numEnvs"] = 16
+# TASK_CFG["task"]["env"]["k_tar"] = parsed_config["k_tar"]
+# TASK_CFG["task"]["env"]["k_prog"] = parsed_config["k_prog"]
+# TASK_CFG["task"]["env"]["k_d"] = parsed_config["k_d"]
+
 
 
 sim_config = SimConfig(TASK_CFG)
@@ -82,7 +95,7 @@ env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
 # instantiate a memory as experience replay 202
-memory = RandomMemory(memory_size=1280, num_envs=env.num_envs, device=device, replacement=False)
+memory = RandomMemory(memory_size=1024, num_envs=env.num_envs, device=device, replacement=False)
 
 
 # Instantiate the agent's models (function approximators).
@@ -130,8 +143,8 @@ PPO_DEFAULT_CONFIG = {
     "time_limit_bootstrap": False,  # bootstrap at timeout termination (episode truncation)
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_rooms_r9_still_HIGH",            # experiment's parent directory
-        "experiment_name": "PPOc_rooms_r9_still_HIGH",      # experiment name
+        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_rooms_r14_heights",            # experiment's parent directory
+        "experiment_name": "PPOc_rooms_r14_heights",      # experiment name
         "write_interval": "auto",   # TensorBoard writing interval (timesteps)
 
         "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
@@ -140,30 +153,31 @@ PPO_DEFAULT_CONFIG = {
         "wandb": True,             # whether to use Weights & Biases
         "wandb_kwargs": {"project":     "PPO_rooms",
                         "entity":       "meesjansen-Delft Technical University",
-                        "name":         "PPOc_rooms_r9_still_HIGH",
+                        "name":         "PPOc_rooms_r14_heights",
                         "tags":         ["PPOc", "Rooms"],
-                        "dir":          "/workspace/Options_In_Simulation/my_runs"}    # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
+                        "dir":          "/workspace/Options_In_Simulation/my_runs"}    
                     }          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
     }
 
 cfg_ppo = PPO_DEFAULT_CONFIG.copy()
-cfg_ppo["rollouts"] = 1280
-cfg_ppo["learning_epochs"] = 10
-cfg_ppo["mini_batches"] = 64
+cfg_ppo["rollouts"] = 1024
+cfg_ppo["learning_epochs"] = 5
+cfg_ppo["mini_batches"] = 6
 cfg_ppo["discount_factor"] = 0.99
 cfg_ppo["lambda"] = 0.95
-cfg_ppo["learning_rate"] = 5e-4
+cfg_ppo["learning_rate"] = 3e-4
 cfg_ppo["learning_rate_scheduler"] = KLAdaptiveRL
-cfg_ppo["learning_rate_scheduler_kwargs"] = {"kl_threshold": 0.02}
+cfg_ppo["learning_rate_scheduler_kwargs"] = {"kl_threshold": 0.008}
 cfg_ppo["random_timesteps"] = 0
 cfg_ppo["learning_starts"] = 0 
 cfg_ppo["grad_norm_clip"] = 1.0
 cfg_ppo["ratio_clip"] = 0.2
 cfg_ppo["value_clip"] = 0.2
 cfg_ppo["clip_predicted_values"] = True
-cfg_ppo["entropy_loss_scale"] = 0.03
-cfg_ppo["value_loss_scale"] = 0.5
+cfg_ppo["entropy_loss_scale"] = 0.001
+cfg_ppo["value_loss_scale"] = 1.0
 cfg_ppo["kl_threshold"] = 0
+cfg_ppo["rewards_shaper"] = None
 cfg_ppo["state_preprocessor"] = RunningStandardScaler
 cfg_ppo["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
 cfg_ppo["value_preprocessor"] = RunningStandardScaler
@@ -182,7 +196,7 @@ agent = PPO(models=models_ppo,
 
 
 # Configure and instantiate the RL trainer
-cfg_trainer = {"timesteps": 500000, "headless": True}
+cfg_trainer = {"timesteps": 102_402, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # start training
