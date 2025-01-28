@@ -603,7 +603,7 @@ class ReachingTargetTask(RLTask):
     def calculate_metrics(self) -> None:
 
         # velocity tracking reward
-        lin_vel_error = torch.sum(torch.square(self.commands[:, 0] - self.base_lin_vel[:, 0]), dim=1)
+        lin_vel_error = torch.square(self.commands[:, 0] - self.base_lin_vel[:, 0])
         ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2])
         rew_lin_vel_xy = torch.exp(-lin_vel_error / 0.25) * self.rew_scales["lin_vel_xy"]
         rew_ang_vel_z = torch.exp(-ang_vel_error / 0.25) * self.rew_scales["ang_vel_z"]
