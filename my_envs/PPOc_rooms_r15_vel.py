@@ -702,8 +702,8 @@ class ReachingTargetTask(RLTask):
                 self.base_lin_vel * self.lin_vel_scale,
                 self.base_ang_vel * self.ang_vel_scale,
                 self.projected_gravity,
-                self.commands[:, 0] * self.commands_scale[0],
-                self.commands[:, 2] * self.commands_scale[2],
+                (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1),    # (num_envs, 1)
+                (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1),
                 self.dof_vel * self.r * self.dof_vel_scale,
                 self.action_scale * self.actions,
                 self.lambda_slip,
