@@ -86,8 +86,8 @@ TASK_CFG = {"test": False,
                                                             "linear_y": [-0.5, 0.5], # [m/s]
                                                             "yaw": [-3.14, 3.14]},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
-                                        "stiffness": 365.0, # [N*m/rad] For torque setpoint control
-                                        "damping": 20.0, # [N*m*s/rad]
+                                        "stiffness": 40.0, # [N*m/rad] For torque setpoint control
+                                        "damping": 2.0, # [N*m*s/rad]
                                         "actionScale": 1.0,
                                         "wheel_radius": 0.1175},   # leave room to overshoot or corner 
 
@@ -165,12 +165,12 @@ class ReachingTargetTask(RLTask):
         self._env_spacing = 0.0
         
                 # observation and action space DQN
-        self._num_observations = 163
+        self._num_observations = 188
         self._num_actions = 4  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
-            low=-1.0,  # Replace with a specific lower bound if needed
-            high=1.0,  # Replace with a specific upper bound if needed
+            low=float("-10"),  # Replace with a specific lower bound if needed
+            high=float("10"),  # Replace with a specific upper bound if needed
             shape=(self.num_observations,),
             dtype=np.float32  # Ensure data type is consistent
         )
@@ -182,6 +182,10 @@ class ReachingTargetTask(RLTask):
             shape=(self.num_actions,),
             dtype=np.float32
         )
+
+        # Define the action range for velocities
+        self.min_vel = -0.5  # Example min velocity value
+        self.max_vel = 0.5   # Example max velocity value
 
         self.update_config(sim_config)
 
@@ -257,7 +261,6 @@ class ReachingTargetTask(RLTask):
         self.rew_scales["base_height"] = self._task_cfg["env"]["learn"]["baseHeightRewardScale"]
         self.rew_scales["action_rate"] = self._task_cfg["env"]["learn"]["actionRateRewardScale"]
         self.rew_scales["fallen_over"] = self._task_cfg["env"]["learn"]["fallenOverRewardScale"]
-        self.rew_scales["slip_longitudinal"] = self._task_cfg["env"]["learn"]["slipLongitudinalRewardScale"]
 
         # command ranges
         self.command_x_range = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_x"]
@@ -271,6 +274,10 @@ class ReachingTargetTask(RLTask):
         v_ang = self._task_cfg["env"]["baseInitState"]["vAngular"]
         self.base_init_state = pos + rot + v_lin + v_ang
 
+
+
+
+
         # other
         self.decimation = self._task_cfg["env"]["control"]["decimation"]
         self.dt = self.decimation * self._task_cfg["sim"]["dt"]
@@ -279,17 +286,25 @@ class ReachingTargetTask(RLTask):
         self.push_interval = int(self._task_cfg["env"]["learn"]["pushInterval_s"] / self.dt + 0.5)
         self.Kp = self._task_cfg["env"]["control"]["stiffness"]
         self.Kd = self._task_cfg["env"]["control"]["damping"]
-        self.r = self._task_cfg["env"]["control"]["wheel_radius"]
         self.curriculum = self._task_cfg["env"]["terrain"]["curriculum"]
       
         for key in self.rew_scales.keys():
             self.rew_scales[key] *= self.dt
 
+
         # env config
         self._num_envs = self._task_cfg["env"]["numEnvs"]
+
         torques = self._task_cfg["env"]["dofInitTorques"]
         dof_velocities = self._task_cfg["env"]["dofInitVelocities"]
         self.dof_init_state = torques + dof_velocities
+
+        self.k_prog = self._task_cfg["env"]["k_prog"]
+        self.k_tar = self._task_cfg["env"]["k_tar"]
+        self.k_d = self._task_cfg["env"]["k_d"]
+
+
+        self.decimation = 4
 
 
     def init_height_points(self):
@@ -373,7 +388,7 @@ class ReachingTargetTask(RLTask):
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot", get_prim_at_path(robot.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot", get_prim_at_path(self.robot_v101.prim_path), self._sim_config.parse_actor_config("robot")
         )
         robot.set_robot_properties(self._stage, robot.prim)
 
@@ -402,9 +417,6 @@ class ReachingTargetTask(RLTask):
         self.gravity_vec = torch.tensor(
             get_axis_params(-1.0, self.up_axis_idx), dtype=torch.float, device=self.device
         ).repeat((self.num_envs, 1))
-        self.forward_vec = torch.tensor([1.0, 0.0, 0.0], dtype=torch.float, device=self.device).repeat(
-            (self.num_envs, 1)
-        )
         
         self.torques = torch.zeros(
             self.num_envs, 4, dtype=torch.float, device=self.device, requires_grad=False
@@ -416,14 +428,13 @@ class ReachingTargetTask(RLTask):
             self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False
         )
 
-        self.last_dof_vel = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
+        self.last_dof_vel = torch.zeros((self.num_envs, 12), dtype=torch.float, device=self.device, requires_grad=False)
 
         for i in range(self.num_envs):
             self.env_origins[i] = self.terrain_origins[self.terrain_levels[i], self.terrain_types[i]]
         self.num_dof = self._robots.num_dof 
         self.dof_pos = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
         self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
-        self.dof_acc = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
         self.dof_effort = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
         self.base_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
         self.base_quat = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device)
@@ -489,7 +500,7 @@ class ReachingTargetTask(RLTask):
         root_pos, _ = self._robots.get_world_poses(clone=False)
         distance = torch.norm(root_pos[env_ids, :2] - self.env_origins[env_ids, :2], dim=1)
         self.terrain_levels[env_ids] -= 1 * (
-            distance < self.commands[env_ids, 0] * self.max_episode_length_s * 0.25
+            distance < torch.norm(self.commands[env_ids, :2]) * self.max_episode_length_s * 0.25
         )
         self.terrain_levels[env_ids] += 1 * (distance > self.terrain.env_length / 2)
         self.terrain_levels[env_ids] = torch.clip(self.terrain_levels[env_ids], 0) % self.terrain.env_rows
@@ -501,8 +512,9 @@ class ReachingTargetTask(RLTask):
 
     def refresh_body_state_tensors(self):
         self.base_pos, self.base_quat = self._robots.get_world_poses(clone=False)
-        self.base_velocities = self._robots.get_velocities(clone=False)
-    
+        self.base_vel = self._robots.get_velocities(clone=False)
+        self.target_pos, _ = self._targets.get_world_poses(clone=False)
+
 
     def pre_physics_step(self, actions):
 
@@ -515,49 +527,56 @@ class ReachingTargetTask(RLTask):
         #     SimulationContext.step(self.world, render=False)  # Advance simulation
         #     return 
 
-        self.dof_acc = (self.dof_vel * self.r - self.last_dof_vel * self.r) / self.dt
-
-
         self.actions = actions.clone().to(self.device)
+        # print(f"actions: {self.actions}")
+
+        # Apply the actions to the robot
+        self.min_delta = -1.0
+        self.max_delta = 1.0
+
+        self.scaled_actions = self.min_vel + (actions[:, 0] + 1) * 0.5 * (self.max_vel - self.min_vel)
+        self.scaled_delta_diff = self.min_delta + (actions[:, 1] + 1) * 0.5 * (self.max_delta - self.min_delta)
+        # self.scaled_delta_climb = self.min_delta + (self.actions[:, 2] + 1) * 0.5 * (self.max_delta - self.min_delta)
+
+        # print(f"scaled_actions: {self.scaled_actions}")
+        # print(f"scaled_delta_diff: {self.scaled_delta_diff}")
+
+
+        updated_efforts = torch.zeros((self.num_envs, 4), device=self.device)
+
+        # Front left wheel
+        updated_efforts[:, 0] = self.scaled_actions + self.scaled_delta_diff # - self.scaled_delta_climb
+        # Rear left wheel
+        updated_efforts[:, 1] = self.scaled_actions + self.scaled_delta_diff # + self.scaled_delta_climb
+        # Front right wheel
+        updated_efforts[:, 2] = self.scaled_actions - self.scaled_delta_diff # - self.scaled_delta_climb
+        # Rear right wheel
+        updated_efforts[:, 3] = self.scaled_actions - self.scaled_delta_diff # + self.scaled_delta_climb
+
+        updated_efforts = torch.clip(updated_efforts, -15.0, 15.0)
+        # print(f"updated_efforts: {updated_efforts}")
+
+          
         for i in range(self.decimation):
             if self.world.is_playing():
-                wheel_velocities = torch.clip(
-                    self.Kp * (self.action_scale * self.actions - self.dof_vel * self.r)
-                    - self.Kd * self.dof_acc,
-                    -80.0,
-                    80.0,
-                )
-                self._robots.set_joint_efforts(wheel_velocities)
-                # print("Applied velocities:", wheel_velocities)
+                self._robots.set_joint_efforts(updated_efforts) 
                 SimulationContext.step(self.world, render=False)
-                self.refresh_dof_state_tensors()
-
 
           
     def post_physics_step(self):
         self.progress_buf[:] += 1
         self.episode_buf[:] += 1
         
+        ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
        
         if self.world.is_playing():
-            
-            self.refresh_dof_state_tensors()
+
             self.refresh_body_state_tensors()
 
-            self.common_step_counter += 1
-            if self.common_step_counter % self.push_interval == 0:
-                self.push_robots()
-
-            # prepare quantities
-            self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 0:3])
-            self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 3:6])
+            # prepare quantities            
             self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
-            forward = quat_apply(self.base_quat, self.forward_vec)
-            heading = torch.atan2(forward[:, 1], forward[:, 0])
-            self.commands[:, 2] = torch.clip(0.5 * wrap_to_pi(self.commands[:, 3] - heading), -1.0, 1.0)
-
+                        
             self.is_done()
-            self.get_states()
             self.calculate_metrics()
             
             env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
@@ -567,160 +586,159 @@ class ReachingTargetTask(RLTask):
             self.get_observations()
             
             self.last_actions[:] = self.actions[:]
-            self.last_dof_vel[:] = self.dof_vel[:]
 
 
         return self.obs_buf, self.rew_buf, self.reset_buf, self.extras
-
-    def push_robots(self):
-        self.base_velocities[:, 0:2] = torch_rand_float(
-            -1.0, 1.0, (self.num_envs, 2), device=self.device
-        )  # lin vel x/y
-        self._robots.set_velocities(self.base_velocities)
     
 
     def is_done(self):
         self.reset_buf.fill_(0)
 
+        # target reached or lost
+        self.target_reached = self._computed_distance <= 0.5
+        self.reset_buf = torch.where(self.target_reached, torch.ones_like(self.reset_buf), self.reset_buf)
+
         # max episode length
         self.timeout_buf = torch.where(
-            self.episode_buf >= self.max_episode_length - 1,
+            self.episode_buf >= self._max_episode_length - 1,
             torch.ones_like(self.timeout_buf),
             torch.zeros_like(self.timeout_buf),
         ) 
+        self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)  
 
         # Calculate the projected gravity in the robot's local frame
         projected_gravity = quat_apply(self.base_quat, self.gravity_vec)
 
         # Detect if the robot is on its back based on positive Z-axis component of the projected gravity
         positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
-        self.has_fallen = projected_gravity[:, 2] > positive_gravity_z_threshold
-        self.reset_buf = self.has_fallen.clone()
+        self.fallen = projected_gravity[:, 2] > positive_gravity_z_threshold
+        self.reset_buf = torch.where(self.fallen, torch.ones_like(self.reset_buf), self.reset_buf)
 
-        self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)
+        self.out_of_bounds = ((self.base_pos[:, 0] - self.env_origins[:, 0]) < self.bounds[0]) | ((self.base_pos[:, 0] - self.env_origins[:, 0]) > self.bounds[1]) | \
+                        ((self.base_pos[:, 1] - self.env_origins[:, 1]) < self.bounds[2]) | ((self.base_pos[:, 1] - self.env_origins[:, 1]) > self.bounds[3])
+        self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
+
+        # Check standing still condition every still_check_interval timesteps
+        self.standing_still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+        if not hasattr(self, "still_counter"):
+            self.still_counter = torch.zeros(self.num_envs, dtype=torch.int64, device=self.device)
+
+        still_lin = (self.base_vel[:, 0].abs() < 0.01)
+        still_ang = (self.base_ang_vel[:, 2].abs() < 0.01)
+        still_mask = still_lin & still_ang
+
+        self.still_counter[still_mask] += 1
+        self.still_counter[~still_mask] = 0
+
+        self.standing_still = (self.still_counter >= 30)
+        # Reset the still_counter for environments that have been standing still
+        self.still_counter[self.standing_still] = 0
+
+        # print(f"still_counter: {self.still_counter}")
+
+        # Update reset_buf based on standing_still condition
+        self.reset_buf = torch.where(self.standing_still, torch.ones_like(self.reset_buf), self.reset_buf)
 
     
     def calculate_metrics(self) -> None:
 
-        # velocity tracking reward
-        lin_vel_error = torch.square(self.commands[:, 0] - self.base_lin_vel[:, 0])
-        ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2])
-        rew_lin_vel_xy = torch.exp(-lin_vel_error / 0.25) * self.rew_scales["lin_vel_xy"]
-        rew_ang_vel_z = torch.exp(-ang_vel_error / 0.25) * self.rew_scales["ang_vel_z"]
+        # Efficiency penalty: Penalize large velocities and driving mode mixing
+        # Penalize mixing driving modes usefull when climb is active like in a3 environments
+        k_mode = -10.0  # Penalty for mixing driving modes
+        r_mode = k_mode * ((self.base_vel[:, 0].abs()/1) * (self.base_ang_vel[:, 2].abs()/0.3))  # * self.base_ang_vel[:, 1]**2
 
-        # other base velocity penalties (necessary)
-        rew_lin_vel_z = torch.square(self.base_lin_vel[:, 2]) * self.rew_scales["lin_vel_z"]
-        rew_ang_vel_xy = torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1) * self.rew_scales["ang_vel_xy"]
+        # Check standing still condition every still_check_interval timesteps
+        k_still = -0.5  # Penalty for standing still
+        self.still = torch.zeros(self.num_envs, dtype=torch.bool, device=self.device)
+        self.still_lin = self.base_vel[:, 0].abs() < 0.01 
+        self.still_ang = self.base_ang_vel[:, 2].abs() < 0.01
+        still = torch.where(self.still_lin & self.still_ang, torch.ones_like(self.still), torch.zeros_like(self.still))
+        r_still = k_still * still.float()
 
-        # orientation penalty
-        rew_orient = torch.sum(torch.square(self.projected_gravity[:, :2]), dim=1) * self.rew_scales["orient"]
+        # Sparse Rewards
+        target_reached = self.target_reached.float()
+        k_tar = self.k_tar  # Completion bonus
+        r_tar = k_tar * target_reached
 
-        # # base height penalty
-        print(f"base_pos: {self.base_pos[:, 2]}")
-        # rew_base_height = torch.square(self.base_pos[:, 2] - 0.52) * self.rew_scales["base_height"]
+        # Progress reward
+        k_prog = self.k_prog
+        r_prog = (self.dist_t - self._computed_distance) * k_prog/(self.decimation * self.dt)  
 
-        # torque penalty
-        # rew_torque = torch.sum(torch.square(self.torques), dim=1) * self.rew_scales["torque"]
+        # Alignment reward
+        k_d = self.k_d  # Curvature parameter for the exponential function
+        r_head =  torch.exp(-0.5 * (self.yaw_diff / (self._computed_distance / k_d))**2)
 
-        # joint acc penalty
-        # rew_joint_acc = torch.sum(torch.square(self.last_dof_vel - self.dof_vel), dim=1) * self.rew_scales["joint_acc"]
-
-        # fallen over penalty
-        rew_fallen_over = self.has_fallen * self.rew_scales["fallen_over"]
-
-        # action rate penalty
-        rew_action_rate = (
-            torch.sum(torch.square(self.last_actions - self.actions), dim=1) * self.rew_scales["action_rate"]
+        
+        # Combine rewards and penalties
+        reward = (
+            # r_mode    
+            # + r_still
+            + r_tar
+            + r_prog * r_head 
         )
 
-        # Calculate longitudinal slip (lambda)
-        v_wheel = self.r * self.dof_vel  # v_wheel = r * omega
-        base_lin_vel_expanded = self.base_lin_vel[:, 0].unsqueeze(1).expand(-1, v_wheel.shape[1])
-        self.lambda_slip = (v_wheel - base_lin_vel_expanded) / torch.maximum(v_wheel, base_lin_vel_expanded)  # avoid divide by zero
-        self.k_lambda = 0.3
-
-        # Longitudinal slip reward
-        rew_slip_longitudinal = torch.prod(torch.exp(-0.5 * (self.lambda_slip / self.k_lambda) ** 2), dim=1) * self.rew_scales["slip_longitudinal"]
-
-        # total reward
-        self.rew_buf = (
-            rew_lin_vel_xy
-            + rew_ang_vel_z
-            + rew_lin_vel_z
-            + rew_ang_vel_xy
-            + rew_orient
-            + rew_action_rate
-            + rew_fallen_over
-            + rew_slip_longitudinal
-        )
-        self.rew_buf = torch.clip(self.rew_buf, min=0.0, max=None)
-
-        # add termination reward
-        self.rew_buf += self.rew_scales["termination"] * self.reset_buf * ~self.timeout_buf
-
-        # log episode reward sums
-        self.episode_sums["lin_vel_xy"] += rew_lin_vel_xy
-        self.episode_sums["ang_vel_z"] += rew_ang_vel_z
-        self.episode_sums["lin_vel_z"] += rew_lin_vel_z
-        self.episode_sums["ang_vel_xy"] += rew_ang_vel_xy
-        self.episode_sums["orient"] += rew_orient
-        # self.episode_sums["torques"] += rew_torque
-        # self.episode_sums["joint_acc"] += rew_joint_acc
-        self.episode_sums["action_rate"] += rew_action_rate
-        # self.episode_sums["base_height"] += rew_base_height
-        self.episode_sums["fallen_over"] += rew_fallen_over
-        self.episode_sums["slip_longitudinal"] += rew_slip_longitudinal
-
+        # print(f"r_mode: {r_mode}")
+        # print(f"r_still: {r_still}")
+        # print(f"r_tar: {r_tar}")
+        # print(f"progress: {self.dist_t - self._computed_distance} [m]")
+        # print(f"r_prog: {r_prog}")
+        # print(f"self.yaw_diff: {self.yaw_diff} [rad]")
+        # print(f"r_head: {r_head}")
+        # print(f"reward: {reward}")
 
         # Store reward components for tracking
         self.reward_components = {
-            "rew_lin_vel_xy": rew_lin_vel_xy.mean().item(),
-            "rew_ang_vel_z": rew_ang_vel_z.mean().item(),
-            "rew_lin_vel_z": rew_lin_vel_z.mean().item(),
-            "rew_ang_vel_xy": rew_ang_vel_xy.mean().item(),
-            "rew_orient": rew_orient.mean().item(),
-            # "rew_torque": rew_torque.mean().item(),
-            # "rew_joint_acc": rew_joint_acc.mean().item(),
-            "rew_action_rate": rew_action_rate.mean().item(),
-            # "rew_base_height": rew_base_height.mean().item(),
-            "rew_fallen_over": rew_fallen_over.mean().item(),
-            "rew_slip_longitudinal": rew_slip_longitudinal.mean().item(),
+            "r_mode": r_mode.mean().item(),
+            "r_still": r_still.mean().item(),
+            "r_tar": r_tar.mean().item(),
+            "r_prog": r_prog.mean().item(),
+            "r_head": r_head.mean().item()
         }
       
+        self.rew_buf[:] = reward
+
         return self.rew_buf
 
 
     def get_observations(self):
-        self.measured_heights = self.get_heights()
-        heights = (
-            torch.clip(self.base_pos[:, 2].unsqueeze(1) - 0.5 - self.measured_heights, -1, 1.0) * self.height_meas_scale
-        )
-        self.obs_buf = torch.cat(
-            (
-                self.base_lin_vel * self.lin_vel_scale,
-                self.base_ang_vel * self.ang_vel_scale,
-                self.projected_gravity,
-                self.commands[:, 0] * self.commands_scale,
-                self.commands[:, 2] * self.commands_scale,
-                self.dof_vel * self.r * self.dof_vel_scale,
-                self.action_scale * self.actions,
-                self.lambda_slip,
-                heights,
-            ),
-            dim=-1,
-        )
-        # checks
-        print("Observation buffer:", self.obs_buf)
-        _efforts = self._anymals.get_applied_joint_efforts(clone=False)
-        print("Measured efforts:", _efforts)
+        ids = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
+        self.measured_heights = self.get_heights(env_ids=ids)
+        # print(f"measured_heights: {self.measured_heights}")
 
+        heights = (
+            torch.clip(self.measured_heights, -1, 1.0) #* self.height_meas_scale
+        ) 
+
+        # print(f"heights: {heights}")
+
+        # Count the number of non-zero values in height_samples
+        non_zero_count = torch.nonzero(self.height_samples).size(0)
+        # print(f"Number of non-zero height samples: {non_zero_count}")
+
+        # print(f"all heightsamples: {self.height_samples}")
+
+        self.refresh_body_state_tensors()
+        delta_pos = self.target_pos - self.base_pos
+
+        self.obs_buf = torch.cat(
+                (
+                    delta_pos[:, 0:2],
+                    self.yaw_diff.unsqueeze(-1),
+                    self.base_vel[:, 0].unsqueeze(-1),
+                    self.base_ang_vel[:, 2].unsqueeze(-1),
+                    heights
+                ),
+                dim=-1,
+            )
+        
+        # print(f"obs_vel: {self.base_vel[:, 0].unsqueeze(-1)}, obs_ang_vel: {self.base_ang_vel[:, 2].unsqueeze(-1)}")
 
                     
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     
 
     def get_heights(self, env_ids=None):
-        if env_ids:
+        if env_ids.numel() > 0:
             points = quat_apply_yaw(
                 self.base_quat[env_ids].repeat(1, self.num_height_points), self.height_points[env_ids]
             ) + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
@@ -729,20 +747,29 @@ class ReachingTargetTask(RLTask):
                 self.base_pos[:, 0:3]
             ).unsqueeze(1)
 
+        # Add terrain border size
         points += self.terrain.border_size
+
+        # Convert to terrain grid coordinates (account for terrain scaling)
         points = (points / self.terrain.horizontal_scale).long()
-        px = points[:, :, 0].view(-1)
-        py = points[:, :, 1].view(-1)
+        
+        # Extract the x and y coordinates for indexing into height_samples
+        px = points[:, :, 0].view(-1)  # Flatten x coordinates
+        py = points[:, :, 1].view(-1)  # Flatten y coordinates
+        
+        # Clip the values to stay within the height samples bounds
         px = torch.clip(px, 0, self.height_samples.shape[0] - 2)
         py = torch.clip(py, 0, self.height_samples.shape[1] - 2)
-
+        
+        # Get heights from the height_samples for these coordinates
         heights1 = self.height_samples[px, py]
-
         heights2 = self.height_samples[px + 1, py + 1]
+        
+        # Use the minimum height as a conservative estimate
         heights = torch.min(heights1, heights2)
 
+        # Return the heights, scaled by the vertical scale
         return heights.view(self.num_envs, -1) * self.terrain.vertical_scale
-
 
 @torch.jit.script
 def quat_apply_yaw(quat, vec):
@@ -757,13 +784,3 @@ def wrap_to_pi(angles):
     angles %= 2 * np.pi
     angles -= 2 * np.pi * (angles > np.pi)
     return angles
-
-
-def get_axis_params(value, axis_idx, x_value=0.0, dtype=float, n_dims=3):
-    """construct arguments to `Vec` according to axis index."""
-    zs = np.zeros((n_dims,))
-    assert axis_idx < n_dims, "the axis dim should be within the vector dimensions"
-    zs[axis_idx] = 1.0
-    params = np.where(zs == 1.0, value, zs)
-    params[0] = x_value
-    return list(params.astype(dtype))
