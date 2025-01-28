@@ -271,10 +271,6 @@ class ReachingTargetTask(RLTask):
         v_ang = self._task_cfg["env"]["baseInitState"]["vAngular"]
         self.base_init_state = pos + rot + v_lin + v_ang
 
-
-
-
-
         # other
         self.decimation = self._task_cfg["env"]["control"]["decimation"]
         self.dt = self.decimation * self._task_cfg["sim"]["dt"]
@@ -291,16 +287,9 @@ class ReachingTargetTask(RLTask):
 
         # env config
         self._num_envs = self._task_cfg["env"]["numEnvs"]
-
         torques = self._task_cfg["env"]["dofInitTorques"]
         dof_velocities = self._task_cfg["env"]["dofInitVelocities"]
         self.dof_init_state = torques + dof_velocities
-
-        self.k_prog = self._task_cfg["env"]["k_prog"]
-        self.k_tar = self._task_cfg["env"]["k_tar"]
-        self.k_d = self._task_cfg["env"]["k_d"]
-
-
 
 
     def init_height_points(self):
