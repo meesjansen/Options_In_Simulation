@@ -131,7 +131,7 @@ class Terrain:
                 discrete_obstacles_height = 0 # 0.025 + difficulty * 0.15
                 stepping_stones_size = 0 # 2 - 1.8 * difficulty
                 if i == 0 and j == 0:
-                    random_uniform_terrain(terrain, min_height=0.01, max_height=0.01, step=0.0, downsampled_scale=0.2)
+                    flat_terrain(terrain, height=0.0)
                 elif i == 0 and j == 1:
                     random_uniform_terrain(terrain, min_height=-0.1, max_height=0.1, step=0.025, downsampled_scale=0.2)
                 elif i == 1 and j == 0:
