@@ -43,6 +43,7 @@ class Terrain:
         self.env_length = cfg["mapLength"]
         self.env_width = cfg["mapWidth"]
         self.proportions = [np.sum(cfg["terrainProportions"][: i + 1]) for i in range(len(cfg["terrainProportions"]))]
+        self.slopeThr = cfg["slopeTreshold"]
 
         self.env_rows = cfg["numLevels"]
         self.env_cols = cfg["numTerrains"]
@@ -64,7 +65,7 @@ class Terrain:
             self.randomized_terrain()
         self.heightsamples = self.height_field_raw
         self.vertices, self.triangles = convert_heightfield_to_trimesh(
-            self.height_field_raw, self.horizontal_scale, self.vertical_scale, cfg["slopeTreshold"]
+            self.height_field_raw, self.horizontal_scale, self.vertical_scale, self.slopeThr
         )
 
     def randomized_terrain(self):

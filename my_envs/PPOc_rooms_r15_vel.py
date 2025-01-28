@@ -60,7 +60,7 @@ TASK_CFG = {"test": False,
                                         # terrain types: [ smooth slope, rough slope, stairs up, stairs down, discrete]
                                         "terrainProportions": [0.35, 0.55, 0.7, 0.85, 1.0],
                                         # tri mesh only:
-                                        "slopeThreshold": 0.5
+                                        "slopeThreshold": 0.5,
                                         },
                             "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed      
                             "learn" : {"linearVelocityScale": 2.0,
