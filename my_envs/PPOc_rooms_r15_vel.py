@@ -257,7 +257,7 @@ class ReachingTargetTask(RLTask):
         self.rew_scales["base_height"] = self._task_cfg["env"]["learn"]["baseHeightRewardScale"]
         self.rew_scales["action_rate"] = self._task_cfg["env"]["learn"]["actionRateRewardScale"]
         self.rew_scales["fallen_over"] = self._task_cfg["env"]["learn"]["fallenOverRewardScale"]
-        self.rew_scale["slip_longitudinal"] = self._task_cfg["env"]["learn"]["slipLongitudinalRewardScale"]
+        self.rew_scales["slip_longitudinal"] = self._task_cfg["env"]["learn"]["slipLongitudinalRewardScale"]
 
         # command ranges
         self.command_x_range = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_x"]

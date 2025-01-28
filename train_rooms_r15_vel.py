@@ -143,18 +143,18 @@ PPO_DEFAULT_CONFIG = {
     "time_limit_bootstrap": False,  # bootstrap at timeout termination (episode truncation)
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_rooms_r14_heights",            # experiment's parent directory
-        "experiment_name": "PPOc_rooms_r14_heights",      # experiment name
+        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_rooms_r15_vel",            # experiment's parent directory
+        "experiment_name": "PPOc_rooms_r15_vel",      # experiment name
         "write_interval": "auto",   # TensorBoard writing interval (timesteps)
 
         "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
         "store_separately": False,          # whether to store checkpoints separately
 
         "wandb": True,             # whether to use Weights & Biases
-        "wandb_kwargs": {"project":     "PPO_rooms",
+        "wandb_kwargs": {"project":     "PPO_curriculum",
                         "entity":       "meesjansen-Delft Technical University",
-                        "name":         "PPOc_rooms_r14_heights",
-                        "tags":         ["PPOc", "Rooms"],
+                        "name":         "PPOc_rooms_r15_vel",
+                        "tags":         ["PPOc", "Curriculum", "r15", "o163", "vel"],
                         "dir":          "/workspace/Options_In_Simulation/my_runs"}    
                     }          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
     }
