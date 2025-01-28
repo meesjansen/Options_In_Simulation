@@ -181,12 +181,16 @@ class Trainer:
                 # step the environments
                 next_states, rewards, terminated, truncated, infos = self.env.step(actions)
 
-                r_mode_mean = self.env.task.reward_components["r_mode"]
-                r_still_mean = self.env.task.reward_components["r_still"]
-                r_tar_mean = self.env.task.reward_components["r_tar"]
-                r_prog_mean = self.env.task.reward_components["r_prog"]
-                r_head_mean = self.env.task.reward_components["r_head"]
+                rew_lin_vel_xy = self.env.task.reward_components["rew_lin_vel_xy"]
+                rew_ang_vel_z = self.env.task.reward_components["rew_ang_vel_z"]
+                rew_lin_vel_z = self.env.task.reward_components["rew_lin_vel_z"]
+                rew_ang_vel_xy = self.env.task.reward_components["rew_ang_vel_xy"]
+                rew_orient = self.env.task.reward_components["rew_orient"]
+                rew_action_rate = self.env.task.reward_components["rew_action_rate"]
+                rew_fallen_over = self.env.task.reward_components["rew_fallen_over"]
+                rew_slip_longitudinal = self.env.task.reward_components["rew_slip_longitudinal"]
 
+                
                 # render scene
                 if not self.headless:
                     self.env.render()
@@ -202,11 +206,14 @@ class Trainer:
                                               timestep=timestep,
                                               timesteps=self.timesteps)
                 
-                self.agents.track_data(f"Reward_comp / r_mode", r_mode_mean)
-                self.agents.track_data(f"Reward_comp / r_still", r_still_mean)
-                self.agents.track_data(f"Reward_comp / r_tar", r_tar_mean)
-                self.agents.track_data(f"Reward_comp / r_prog", r_prog_mean)
-                self.agents.track_data(f"Reward_comp / r_head", r_head_mean)
+                self.agents.track_data(f"Reward_comp / rew_lin_vel_xy", rew_lin_vel_xy.mean().item())
+                self.agents.track_data(f"Reward_comp / rew_ang_vel_z", rew_ang_vel_z.mean().item())
+                self.agents.track_data(f"Reward_comp / rew_lin_vel_z", rew_lin_vel_z.mean().item())
+                self.agents.track_data(f"Reward_comp / rew_ang_vel_xy", rew_ang_vel_xy.mean().item())
+                self.agents.track_data(f"Reward_comp / rew_orient", rew_orient.mean().item())
+                self.agents.track_data(f"Reward_comp / rew_action_rate", rew_action_rate.mean().item())
+                self.agents.track_data(f"Reward_comp / rew_fallen_over", rew_fallen_over.mean().item())
+                self.agents.track_data(f"Reward_comp / rew_slip_longitudinal", rew_slip_longitudinal.mean().item())
 
                 # log environment info
                 if self.environment_info in infos:
