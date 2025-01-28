@@ -373,7 +373,7 @@ class ReachingTargetTask(RLTask):
             orientation=robot_orientation,
         )
         self._sim_config.apply_articulation_settings(
-            "robot", get_prim_at_path(self.robot_v101.prim_path), self._sim_config.parse_actor_config("robot")
+            "robot", get_prim_at_path(robot.prim_path), self._sim_config.parse_actor_config("robot")
         )
         robot.set_robot_properties(self._stage, robot.prim)
 
