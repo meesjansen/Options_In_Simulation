@@ -185,7 +185,6 @@ class Trainer:
                 rew_ang_vel_z = self.env.task.reward_components["rew_ang_vel_z"]
                 rew_lin_vel_z = self.env.task.reward_components["rew_lin_vel_z"]
                 rew_ang_vel_xy = self.env.task.reward_components["rew_ang_vel_xy"]
-                rew_orient = self.env.task.reward_components["rew_orient"]
                 rew_action_rate = self.env.task.reward_components["rew_action_rate"]
                 rew_fallen_over = self.env.task.reward_components["rew_fallen_over"]
                 rew_slip_longitudinal = self.env.task.reward_components["rew_slip_longitudinal"]
@@ -210,7 +209,6 @@ class Trainer:
                 self.agents.track_data(f"Reward_comp / rew_ang_vel_z", rew_ang_vel_z)
                 self.agents.track_data(f"Reward_comp / rew_lin_vel_z", rew_lin_vel_z)
                 self.agents.track_data(f"Reward_comp / rew_ang_vel_xy", rew_ang_vel_xy)
-                self.agents.track_data(f"Reward_comp / rew_orient", rew_orient)
                 self.agents.track_data(f"Reward_comp / rew_action_rate", rew_action_rate)
                 self.agents.track_data(f"Reward_comp / rew_fallen_over", rew_fallen_over)
                 self.agents.track_data(f"Reward_comp / rew_slip_longitudinal", rew_slip_longitudinal)
