@@ -134,7 +134,7 @@ class Terrain:
                 if i == 0 and j == 0:
                     flat_terrain(terrain, height=0.0)
                 elif i == 0 and j == 1:
-                    random_uniform_terrain(terrain, min_height=-0.1, max_height=0.1, step=0.025, downsampled_scale=0.2)
+                    random_uniform_terrain(terrain, min_height=-0.01, max_height=0.01, step=0.005, downsampled_scale=0.2)
                 elif i == 1 and j == 0:
                     pyramid_stairs_terrain(terrain, step_width=1.0, step_height=step_height, platform_size=3.0)
                 elif i == 1 and j == 1:
