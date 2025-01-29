@@ -86,8 +86,8 @@ TASK_CFG = {"test": False,
                                                             "linear_y": [-0.5, 0.5], # [m/s]
                                                             "yaw": [-3.14, 3.14]},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
-                                        "stiffness": 0.025, # [N*m/rad] For torque setpoint control
-                                        "damping": .005, # [N*m*s/rad]
+                                        "stiffness": 0.05, # [N*m/rad] For torque setpoint control
+                                        "damping": .01, # [N*m*s/rad]
                                         "actionScale": 1.0,
                                         "wheel_radius": 0.1175},   # leave room to overshoot or corner 
 
@@ -519,7 +519,7 @@ class ReachingTargetTask(RLTask):
                 # print(f"wheel_velocity_corrections: {wheel_velocity_corrections}")
                 self.last_vel_error = self.vel_error
                 wheel_velocities = FF_wheel_vel + wheel_velocity_corrections
-                self._robots.set_joint_velocities(wheel_velocities)
+                self._robots.set_joint_velocities(FF_wheel_vel)
                 # print("Applied velocities:", wheel_velocities)
                 SimulationContext.step(self.world, render=False)
                 self.refresh_dof_state_tensors()
