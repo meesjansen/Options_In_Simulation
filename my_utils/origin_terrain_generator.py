@@ -127,14 +127,15 @@ class Terrain:
                 difficulty = i / num_levels
                 choice = j / num_terrains
 
-                slope = difficulty * 0.4
-                step_height = (0.1175 * num_levels/(num_levels - 1)) * difficulty
+                slope = -difficulty * 0.4
+                step_height = -(0.1175 * num_levels/(num_levels - 1)) * difficulty
                 discrete_obstacles_height = 0 # 0.025 + difficulty * 0.15
                 stepping_stones_size = 0 # 2 - 1.8 * difficulty
                 if i == 0 and j == 0:
                     flat_terrain(terrain, height=0.0)
                 elif i == 0 and j == 1:
-                    random_uniform_terrain(terrain, min_height=-0.01, max_height=0.01, step=0.005, downsampled_scale=0.2)
+                    flat_terrain(terrain, height=0.0)
+                    # random_uniform_terrain(terrain, min_height=-0.01, max_height=0.01, step=0.005, downsampled_scale=0.2)
                 elif i == 1 and j == 0:
                     pyramid_stairs_terrain(terrain, step_width=1.0, step_height=step_height, platform_size=3.0)
                 elif i == 1 and j == 1:
