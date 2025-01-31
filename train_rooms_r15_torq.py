@@ -63,26 +63,19 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.PPOc_rooms_r15_torq import ReachingTargetTask, TASK_CFG
+from my_envs.PPOc_rooms_r15_vel import ReachingTargetTask, TASK_CFG
 from argparse import ArgumentParser 
 
-# arg_parser = ArgumentParser()
-# arg_parser.add_argument("--seed", type=int, default=42)
-# arg_parser.add_argument("--k_tar", type=float, default=100.0)
-# arg_parser.add_argument("--k_prog", type=float, default=0.05)
-# arg_parser.add_argument("--k_d", type=float, default=2.0)
+arg_parser = ArgumentParser()
+arg_parser.add_argument("--seed", type=int, default=42)
+arg_parser.add_argument("--test", type=float, default=100.0)
 
-# parsed_config = arg_parser.parse_args().__dict__
-
+parsed_config = arg_parser.parse_args().__dict__
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
 TASK_CFG["task"]["env"]["numEnvs"] = 16
-# TASK_CFG["task"]["env"]["k_tar"] = parsed_config["k_tar"]
-# TASK_CFG["task"]["env"]["k_prog"] = parsed_config["k_prog"]
-# TASK_CFG["task"]["env"]["k_d"] = parsed_config["k_d"]
-
-
+TASK_CFG["task"]["env"]["test"] = parsed_config["test"]
 
 sim_config = SimConfig(TASK_CFG)
 task = ReachingTargetTask(name="ReachingTarget", sim_config=sim_config, env=env)
@@ -154,7 +147,7 @@ PPO_DEFAULT_CONFIG = {
         "wandb_kwargs": {"project":     "PPO_curriculum",
                         "entity":       "meesjansen-Delft Technical University",
                         "name":         "PPOc_rooms_r15_torq",
-                        "tags":         ["PPOc", "Curriculum", "r15", "o163", "torq"],
+                        "tags":         ["PPOc", "Curriculum", "r15", "o163", "torq", "PD"],
                         "dir":          "/workspace/Options_In_Simulation/my_runs"}    
                     }          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
     }
