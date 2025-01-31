@@ -22,17 +22,17 @@ seed = set_seed(42)
 # Define only the policy for evaluation
 class Policy(GaussianMixin, Model):
     def __init__(self, observation_space, action_space, device, clip_actions=False,
-                 clip_log_std=True, min_log_std=-6, max_log_std=0):
+                 clip_log_std=True, min_log_std=-20, max_log_std=2, reduction="sum"):
         Model.__init__(self, observation_space, action_space, device)
-        GaussianMixin.__init__(self, clip_actions, clip_log_std, min_log_std, max_log_std)
+        GaussianMixin.__init__(self, clip_actions, clip_log_std, min_log_std, max_log_std, reduction)
 
-        self.net = nn.Sequential(nn.Linear(self.num_observations, 256),
-                                 nn.ReLU(),
+        self.net = nn.Sequential(nn.Linear(self.num_observations, 512),
+                                 nn.ELU(),
+                                 nn.Linear(512, 256),
+                                 nn.ELU(),
                                  nn.Linear(256, 128),
-                                 nn.ReLU(),
-                                 nn.Linear(128, 64),
-                                 nn.ReLU(),
-                                 nn.Linear(64, self.num_actions))
+                                 nn.ELU(),
+                                 nn.Linear(128, self.num_actions))
         self.log_std_parameter = nn.Parameter(torch.zeros(self.num_actions))
 
     def compute(self, inputs, role):
