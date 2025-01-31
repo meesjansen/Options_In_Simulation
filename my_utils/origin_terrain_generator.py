@@ -36,8 +36,8 @@ from my_utils.origin_terrain_utils import *
 # terrain generator
 class Terrain:
     def __init__(self, cfg, num_robots) -> None:
-        self.horizontal_scale = 0.1
-        self.vertical_scale = 0.005
+        self.horizontal_scale = 0.02
+        self.vertical_scale = 0.006
         self.border_size = 20
         self.num_per_env = 2
         self.env_length = cfg["mapLength"]
