@@ -71,7 +71,7 @@ TASK_CFG = {"test": False,
                                        "terminalReward": 0.0,
                                        "linearVelocityXYRewardScale": 1.0,
                                        "linearVelocityZRewardScale": -4.0,
-                                       "angularVelocityZRewardScale": 5.0,
+                                       "angularVelocityZRewardScale": 1.0,
                                        "angularVelocityXYRewardScale": -0.5,
                                        "orientationRewardScale": -0.0,
                                        "torqueRewardScale": -0.0,
@@ -82,11 +82,11 @@ TASK_CFG = {"test": False,
                                        "slipLongitudinalRewardScale": -0.5,
                                        "episodeLength_s": 15.0,
                                        "pushInterval_s": 20.0,},
-                            "randomCommandVelocityRanges": {"linear_x": [-0.5, 0.5], # [m/s]
+                            "randomCommandVelocityRanges": {"linear_x": [0.0, 0.25], # [m/s]
                                                             "linear_y": [-0.5, 0.5], # [m/s]
-                                                            "yaw": [-3.14, 3.14]},   # [rad/s]
+                                                            "yaw": [-6.28, 6.28]},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
-                                        "stiffness": 0.025, # [N*m/rad] For torque setpoint control
+                                        "stiffness": 0.05, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
                                         "actionScale": 1.0,
                                         "wheel_radius": 0.1175},   # leave room to overshoot or corner 
@@ -480,7 +480,7 @@ class ReachingTargetTask(RLTask):
         root_pos, _ = self._robots.get_world_poses(clone=False)
         distance = torch.norm(root_pos[env_ids, :2] - self.env_origins[env_ids, :2], dim=1)
         self.terrain_levels[env_ids] -= 1 * (
-            distance < self.commands[env_ids, 0] * self.max_episode_length_s * 0.25
+            distance < self.commands[env_ids, 0] * self.max_episode_length_s * 0.5
         )
         self.terrain_levels[env_ids] += 1 * (distance > self.terrain.env_length / 2)
         self.terrain_levels[env_ids] = torch.clip(self.terrain_levels[env_ids], 0) % self.terrain.env_rows
@@ -504,7 +504,7 @@ class ReachingTargetTask(RLTask):
 
         for i in range(self.decimation):
             if self.world.is_playing():
-                self.vel_error = (self.action_scale * self.actions - self.dof_vel * self.r) 
+                self.vel_error = (self.action_scale * self.actions - self.base_velocities[:, 0]) 
                 self.vel_error_der = (self.vel_error - self.last_vel_error) / self.dt
                 FF_wheel_vel = torch.clip(self.action_scale * self.actions / self.r, -80.0, 80.0)
                 # print(f"FF_wheel_vel: {FF_wheel_vel}")
@@ -635,13 +635,13 @@ class ReachingTargetTask(RLTask):
 
         # total reward
         self.rew_buf = (
-            rew_lin_vel_xy
-            + rew_ang_vel_z
-            + rew_lin_vel_z
-            + rew_ang_vel_xy
-            + rew_action_rate
-            + rew_fallen_over
-            + rew_slip_longitudinal
+            rew_lin_vel_xy # 0.8
+            + rew_ang_vel_z # 0.8
+            # + rew_lin_vel_z # -0.2
+            # + rew_ang_vel_xy # -0.3
+            + rew_action_rate # -0.4
+            + rew_fallen_over # -0.005
+            + rew_slip_longitudinal # -0.4
         )
 
         # print(f"Reward linear velocity xy: {rew_lin_vel_xy}")
