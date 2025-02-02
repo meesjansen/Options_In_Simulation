@@ -52,7 +52,7 @@ srun apptainer exec --nv \
     -B "$data/logs:$HOME/.nvidia-omniverse/logs" \
     -B "$data/data:$HOME/.local/share/ov/data" \
     -B "$data/documents:$HOME/Documents" \
-    $APPTAINER_ROOT/$APPTAINER_NAME mkdir -p ~/bin && ln -s /isaac-sim/kit/python/bin/python3 ~/bin/python && export PATH=~/bin:$PATH && /isaac-sim/python.sh -m wandb agent "meesjansen-Delft Technical University/PPO_curriculum/76j0ko5e"
+    $APPTAINER_ROOT/$APPTAINER_NAME mkdir -p /home/nfs/meesjansen/bin && ln -s /isaac-sim/kit/python/bin/python3 /home/nfs/meesjansen/bin/python && export PATH=/home/nfs/meesjansen/bin:$PATH && /isaac-sim/python.sh -m wandb agent "meesjansen-Delft Technical University/PPO_curriculum/76j0ko5e"
 
 
 # Measure GPU usage of your job (result)
