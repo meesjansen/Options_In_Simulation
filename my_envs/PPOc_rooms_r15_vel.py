@@ -78,13 +78,13 @@ TASK_CFG = {"test": False,
                                        "jointAccRewardScale": -0.0,
                                        "baseHeightRewardScale": -0.0,
                                        "actionRateRewardScale": -0.05,
-                                       "fallenOverRewardScale": -5.0,
-                                       "slipLongitudinalRewardScale": -0.5,
+                                       "fallenOverRewardScale": -200.0,
+                                       "slipLongitudinalRewardScale": -5.0,
                                        "episodeLength_s": 15.0,
                                        "pushInterval_s": 20.0,},
                             "randomCommandVelocityRanges": {"linear_x": [0.0, 0.25], # [m/s]
                                                             "linear_y": [-0.5, 0.5], # [m/s]
-                                                            "yaw": [-6.28, 6.28]},   # [rad/s]
+                                                            "yaw": [-3.14, 3.14]},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 0.05, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
@@ -252,6 +252,7 @@ class ReachingTargetTask(RLTask):
         self.command_x_range = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_x"]
         self.command_y_range = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_y"]
         self.command_yaw_range = self._task_cfg["env"]["randomCommandVelocityRanges"]["yaw"]
+        self.yaw_constant = self._task_cfg["env"]["randomCommandVelocityRanges"]["yaw_constant"]
 
         # base init state
         pos = self._task_cfg["env"]["baseInitState"]["pos"]
@@ -446,9 +447,7 @@ class ReachingTargetTask(RLTask):
         self._robots.set_joint_efforts(self.dof_effort[env_ids].clone(), indices=indices)
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
 
-        self.commands[env_ids, 0] = torch_rand_float(
-            self.command_x_range[0], self.command_x_range[1], (len(env_ids), 1), device=self.device
-        ).squeeze()
+        self.commands[env_ids, 0] = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_x"]
         self.commands[env_ids, 1] = torch_rand_float(
             self.command_y_range[0], self.command_y_range[1], (len(env_ids), 1), device=self.device
         ).squeeze()
@@ -548,7 +547,7 @@ class ReachingTargetTask(RLTask):
             self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
             forward = quat_apply(self.base_quat, self.forward_vec)
             heading = torch.atan2(forward[:, 1], forward[:, 0])
-            self.commands[:, 2] = torch.clip(0.5 * wrap_to_pi(self.commands[:, 3] - heading), -1.0, 1.0)
+            self.commands[:, 2] = torch.clip(self.yaw_constant * wrap_to_pi(self.commands[:, 3] - heading), -1.0, 1.0)
 
             self.is_done()
             self.get_states()
@@ -639,8 +638,8 @@ class ReachingTargetTask(RLTask):
         self.rew_buf = (
             rew_lin_vel_xy # 0.8
             + rew_ang_vel_z # 0.8
-            # + rew_lin_vel_z # -0.2
-            # + rew_ang_vel_xy # -0.3
+            + rew_lin_vel_z # -0.2
+            + rew_ang_vel_xy # -0.3
             + rew_action_rate # -0.4
             + rew_fallen_over # -0.005
             + rew_slip_longitudinal # -0.4
