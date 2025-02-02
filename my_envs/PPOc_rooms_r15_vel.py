@@ -505,6 +505,7 @@ class ReachingTargetTask(RLTask):
         for i in range(self.decimation):
             if self.world.is_playing():
                 base_vel = self.base_velocities[:, 0].repeat(1, self.num_dof)
+                print(f"base_vel: {base_vel.shape}")
                 self.vel_error = (self.action_scale * self.actions - base_vel) 
                 self.vel_error_der = (self.vel_error - self.last_vel_error) / self.dt
                 FF_wheel_vel = torch.clip(self.action_scale * self.actions / self.r, -80.0, 80.0)
