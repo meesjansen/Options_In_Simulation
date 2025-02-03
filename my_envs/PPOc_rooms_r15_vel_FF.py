@@ -509,19 +509,19 @@ class ReachingTargetTask(RLTask):
                 self.vel_error = (self.action_scale * self.actions - base_vel) 
                 self.vel_error_der = (self.vel_error - self.last_vel_error) / self.sim_dt
                 FF_wheel_vel = torch.clip(self.action_scale * self.actions / self.r, -80.0, 80.0)
-                # print(f"FF_wheel_vel: {FF_wheel_vel}")
-                wheel_velocity_corrections = torch.clip(
-                    self.Kp * self.vel_error
-                    + self.Kd * self.vel_error_der,
-                    -80.0,
-                    80.0,
-                )
+                print(f"FF_wheel_vel: {FF_wheel_vel}")
+                # wheel_velocity_corrections = torch.clip(
+                #     self.Kp * self.vel_error
+                #     + self.Kd * self.vel_error_der,
+                #     -80.0,
+                #     80.0,
+                # )
                 # print(f"Kp component: {self.Kp * self.vel_error}")
                 # print(f"Kd component: {self.Kd * self.vel_error_der}")
                 # print(f"wheel_velocity_corrections: {wheel_velocity_corrections}")
-                self.last_vel_error = self.vel_error
-                wheel_velocities = FF_wheel_vel + wheel_velocity_corrections
-                self._robots.set_joint_velocities(wheel_velocities)
+                # self.last_vel_error = self.vel_error
+                # wheel_velocities = FF_wheel_vel + wheel_velocity_corrections
+                self._robots.set_joint_velocities(FF_wheel_vel)
                 # print("Applied velocities:", wheel_velocities)
                 SimulationContext.step(self.world, render=False)
                 self.refresh_dof_state_tensors()

@@ -63,7 +63,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.PPOc_rooms_r15_torq import ReachingTargetTask, TASK_CFG
+from my_envs.PPOc_rooms_r15_vel_PD import ReachingTargetTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
@@ -75,8 +75,6 @@ arg_parser.add_argument("--fallenOverRewardScale", type=float, default=-200.0)
 arg_parser.add_argument("--slipLongitudinalRewardScale", type=float, default=-5.0)
 arg_parser.add_argument("--stiffness", type=float, default=0.05)
 arg_parser.add_argument("--damping", type=float, default=0.005)
-arg_parser.add_argument("--torq_constant", type=float, default=7.2)
-arg_parser.add_argument("--torq_FF_gain", type=float, default=0.1)
 arg_parser.add_argument("--static_friction", type=float, default=1.0)
 arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
@@ -99,8 +97,6 @@ TASK_CFG["task"]["env"]["learn"]["slipLongitudinalRewardScale"] = parsed_config[
 # control
 TASK_CFG["task"]["env"]["control"]["stiffness"] = parsed_config["stiffness"]
 TASK_CFG["task"]["env"]["control"]["damping"] = parsed_config["damping"]
-TASK_CFG["task"]["env"]["control"]["torq_constant"] = parsed_config["torq_constant"]
-TASK_CFG["task"]["env"]["control"]["torq_FF_gain"] = parsed_config["torq_FF_gain"]
 
 # friction
 TASK_CFG["task"]["sim"]["default_physics_material"]["static_friction"] = parsed_config["static_friction"]
@@ -169,8 +165,8 @@ PPO_DEFAULT_CONFIG = {
     "time_limit_bootstrap": False,  # bootstrap at timeout termination (episode truncation)
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_rooms_r15_torq",            # experiment's parent directory
-        "experiment_name": "PPOc_rooms_r15_torq",      # experiment name
+        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_rooms_r15_vel_PD",            # experiment's parent directory
+        "experiment_name": "PPOc_rooms_r15_vel_PD",      # experiment name
         "write_interval": "auto",   # TensorBoard writing interval (timesteps)
 
         "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
@@ -179,8 +175,8 @@ PPO_DEFAULT_CONFIG = {
         "wandb": True,             # whether to use Weights & Biases
         "wandb_kwargs": {"project":     "PPO_curriculum",
                         "entity":       "meesjansen-Delft Technical University",
-                        "name":         "PPOc_rooms_r15_torq",
-                        "tags":         ["PPOc", "Curriculum", "r15", "o163", "torq", "FF+PD"],
+                        "name":         "PPOc_rooms_r15_vel_PD",
+                        "tags":         ["PPOc", "Curriculum", "r15", "o163", "vel", "PD"],
                         "dir":          "/workspace/Options_In_Simulation/my_runs"}    
                     }          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
     }

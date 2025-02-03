@@ -23,7 +23,7 @@ from pxr import PhysxSchema, UsdPhysics
 from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10 
 
 from my_utils.origin_terrain_generator import *
-from my_utils.terrain_utils import *
+from my_utils.origin_terrain_utils import *
 
 TASK_CFG = {"test": False,
             "device_id": 0,
@@ -71,25 +71,25 @@ TASK_CFG = {"test": False,
                                        "terminalReward": 0.0,
                                        "linearVelocityXYRewardScale": 1.0,
                                        "linearVelocityZRewardScale": -4.0,
-                                       "angularVelocityZRewardScale": 5.0,
+                                       "angularVelocityZRewardScale": 1.0,
                                        "angularVelocityXYRewardScale": -0.5,
                                        "orientationRewardScale": -0.0,
                                        "torqueRewardScale": -0.0,
                                        "jointAccRewardScale": -0.0,
                                        "baseHeightRewardScale": -0.0,
                                        "actionRateRewardScale": -0.05,
-                                       "fallenOverRewardScale": -5.0,
-                                       "slipLongitudinalRewardScale": -0.5,
+                                       "fallenOverRewardScale": -200.0,
+                                       "slipLongitudinalRewardScale": -5.0,
                                        "episodeLength_s": 15.0,
                                        "pushInterval_s": 20.0,},
-                            "randomCommandVelocityRanges": {"linear_x": [-0.5, 0.5], # [m/s]
+                            "randomCommandVelocityRanges": {"linear_x": [0.0, 0.25], # [m/s]
                                                             "linear_y": [-0.5, 0.5], # [m/s]
                                                             "yaw": [-3.14, 3.14]},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
-                                        "stiffness": 0.025, # [N*m/rad] For torque setpoint control
+                                        "stiffness": 0.05, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
                                         "actionScale": 1.0,
-                                        "wheel_radius": 0.1175},   # leave room to overshoot or corner 
+                                        "wheel_radius": 0.1175,},   # leave room to overshoot or corner 
 
                             },
                      "sim": {"dt": 0.005,  
@@ -197,7 +197,7 @@ class ReachingTargetTask(RLTask):
         self.previous_linear_velocity = torch.zeros((self.num_envs, 3), device=self.device)
         self.previous_angular_velocity = torch.zeros((self.num_envs, 3), device=self.device)
 
-        self.last_vel_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
+        self.last_torq_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
         
         torch_zeros = lambda: torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
         self.episode_sums = {
@@ -252,6 +252,7 @@ class ReachingTargetTask(RLTask):
         self.command_x_range = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_x"]
         self.command_y_range = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_y"]
         self.command_yaw_range = self._task_cfg["env"]["randomCommandVelocityRanges"]["yaw"]
+        self.yaw_constant = self._task_cfg["env"]["randomCommandVelocityRanges"]["yaw_constant"]
 
         # base init state
         pos = self._task_cfg["env"]["baseInitState"]["pos"]
@@ -262,6 +263,7 @@ class ReachingTargetTask(RLTask):
 
         # other
         self.decimation = self._task_cfg["env"]["control"]["decimation"]
+        self.sim_dt = self._task_cfg["sim"]["dt"]
         self.dt = self.decimation * self._task_cfg["sim"]["dt"]
         self.max_episode_length_s = self._task_cfg["env"]["learn"]["episodeLength_s"]
         self.max_episode_length = int(self.max_episode_length_s / self.dt + 0.5)
@@ -269,6 +271,8 @@ class ReachingTargetTask(RLTask):
         self.Kp = self._task_cfg["env"]["control"]["stiffness"]
         self.Kd = self._task_cfg["env"]["control"]["damping"]
         self.r = self._task_cfg["env"]["control"]["wheel_radius"]
+        self.torq_constant = self._task_cfg["env"]["control"]["torq_constant"]
+        self.torq_FF_gain = self._task_cfg["env"]["control"]["torq_FF_gain"]
         self.curriculum = self._task_cfg["env"]["terrain"]["curriculum"]
       
         for key in self.rew_scales.keys():
@@ -279,8 +283,6 @@ class ReachingTargetTask(RLTask):
         torques = self._task_cfg["env"]["dofInitTorques"]
         dof_velocities = self._task_cfg["env"]["dofInitVelocities"]
         self.dof_init_state = torques + dof_velocities
-
-        test = self._task_cfg["test"]
 
 
     def init_height_points(self):
@@ -408,7 +410,7 @@ class ReachingTargetTask(RLTask):
         )
 
         self.last_dof_vel = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
-        self.last_vel_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
+        self.last_torq_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
 
 
         for i in range(self.num_envs):
@@ -448,9 +450,7 @@ class ReachingTargetTask(RLTask):
         self._robots.set_joint_efforts(self.dof_effort[env_ids].clone(), indices=indices)
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
 
-        self.commands[env_ids, 0] = torch_rand_float(
-            self.command_x_range[0], self.command_x_range[1], (len(env_ids), 1), device=self.device
-        ).squeeze()
+        self.commands[env_ids, 0] = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_x"]
         self.commands[env_ids, 1] = torch_rand_float(
             self.command_y_range[0], self.command_y_range[1], (len(env_ids), 1), device=self.device
         ).squeeze()
@@ -482,7 +482,7 @@ class ReachingTargetTask(RLTask):
         root_pos, _ = self._robots.get_world_poses(clone=False)
         distance = torch.norm(root_pos[env_ids, :2] - self.env_origins[env_ids, :2], dim=1)
         self.terrain_levels[env_ids] -= 1 * (
-            distance < self.commands[env_ids, 0] * self.max_episode_length_s * 0.25
+            distance < self.commands[env_ids, 0] * self.max_episode_length_s * 0.5
         )
         self.terrain_levels[env_ids] += 1 * (distance > self.terrain.env_length / 2)
         self.terrain_levels[env_ids] = torch.clip(self.terrain_levels[env_ids], 0) % self.terrain.env_rows
@@ -506,23 +506,23 @@ class ReachingTargetTask(RLTask):
 
         for i in range(self.decimation):
             if self.world.is_playing():
-                self.vel_error = (self.action_scale * self.actions - self.base_velocities[:, 0]) 
-                self.vel_error_der = (self.vel_error - self.last_vel_error) / self.dt
-                FF_wheel_vel = torch.clip(self.action_scale * self.actions / self.r, -80.0, 80.0)
-                # print(f"FF_wheel_vel: {FF_wheel_vel}")
-                wheel_velocity_corrections = torch.clip(
-                    self.Kp * self.vel_error
-                    + self.Kd * self.vel_error_der,
+                self.torq_error = (self.action_scale * self.actions - self.r * self.dof_vel) 
+                self.torq_error_der = (self.torq_error - self.last_torq_error) / self.sim_dt
+                FF_wheel_torq = torch.clip(self.action_scale * self.actions * self.torq_FF_gain + self.torq_constant, -80.0, 80.0)
+                print(f"FF_wheel_torq: {FF_wheel_torq}")
+                wheel_torq_corrections = torch.clip(
+                    self.Kp * self.torq_error
+                    + self.Kd * self.torq_error_der,
                     -80.0,
                     80.0,
                 )
-                # print(f"Kp component: {self.Kp * self.vel_error}")
-                # print(f"Kd component: {self.Kd * self.vel_error_der}")
-                # print(f"wheel_velocity_corrections: {wheel_velocity_corrections}")
-                self.last_vel_error = self.vel_error
-                wheel_velocities = FF_wheel_vel + wheel_velocity_corrections
-                self._robots.set_joint_velocities(wheel_velocities)
-                # print("Applied velocities:", wheel_velocities)
+                # print(f"Kp component: {self.Kp * self.torq_error}")
+                # print(f"Kd component: {self.Kd * self.torq_error_der}")
+                print(f"wheel_torq_corrections: {wheel_torq_corrections}")
+                self.last_torq_error = self.torq_error
+                wheel_torqs = FF_wheel_torq + wheel_torq_corrections
+                self._robots.set_joint_efforts(wheel_torqs)
+                print("Applied velocities:", wheel_torqs)
                 SimulationContext.step(self.world, render=False)
                 self.refresh_dof_state_tensors()
 
@@ -548,7 +548,7 @@ class ReachingTargetTask(RLTask):
             self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
             forward = quat_apply(self.base_quat, self.forward_vec)
             heading = torch.atan2(forward[:, 1], forward[:, 0])
-            self.commands[:, 2] = torch.clip(0.5 * wrap_to_pi(self.commands[:, 3] - heading), -1.0, 1.0)
+            self.commands[:, 2] = torch.clip(self.yaw_constant * wrap_to_pi(self.commands[:, 3] - heading), -1.0, 1.0)
 
             self.is_done()
             self.get_states()
@@ -637,13 +637,13 @@ class ReachingTargetTask(RLTask):
 
         # total reward
         self.rew_buf = (
-            rew_lin_vel_xy
-            + rew_ang_vel_z
-            + rew_lin_vel_z
-            + rew_ang_vel_xy
-            + rew_action_rate
-            + rew_fallen_over
-            + rew_slip_longitudinal
+            rew_lin_vel_xy # 0.8
+            + rew_ang_vel_z # 0.8
+            + rew_lin_vel_z # -0.2
+            + rew_ang_vel_xy # -0.3
+            + rew_action_rate # -0.4
+            + rew_fallen_over # -0.005
+            + rew_slip_longitudinal # -0.4
         )
 
         # print(f"Reward linear velocity xy: {rew_lin_vel_xy}")
