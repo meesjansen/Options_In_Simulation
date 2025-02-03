@@ -23,7 +23,7 @@ from pxr import PhysxSchema, UsdPhysics
 from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10 
 
 from my_utils.origin_terrain_generator import *
-from my_utils.origin_terrain_utils import *
+from my_utils.terrain_utils import *
 
 TASK_CFG = {"test": False,
             "device_id": 0,
