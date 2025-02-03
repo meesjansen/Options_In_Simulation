@@ -63,7 +63,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.PPOc_rooms_r15_torq import ReachingTargetTask, TASK_CFG
+from my_envs.PPOc_rooms_r15_torq_PD import ReachingTargetTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
@@ -169,8 +169,8 @@ PPO_DEFAULT_CONFIG = {
     "time_limit_bootstrap": False,  # bootstrap at timeout termination (episode truncation)
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_rooms_r15_torq",            # experiment's parent directory
-        "experiment_name": "PPOc_rooms_r15_torq",      # experiment name
+        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_rooms_r15_torq_PD",            # experiment's parent directory
+        "experiment_name": "PPOc_rooms_r15_torq_PD",      # experiment name
         "write_interval": "auto",   # TensorBoard writing interval (timesteps)
 
         "checkpoint_interval": "auto",      # interval for checkpoints (timesteps)
@@ -179,8 +179,8 @@ PPO_DEFAULT_CONFIG = {
         "wandb": True,             # whether to use Weights & Biases
         "wandb_kwargs": {"project":     "PPO_curriculum",
                         "entity":       "meesjansen-Delft Technical University",
-                        "name":         "PPOc_rooms_r15_torq",
-                        "tags":         ["PPOc", "Curriculum", "r15", "o163", "torq", "FF+PD"],
+                        "name":         "PPOc_rooms_r15_torq_PD",
+                        "tags":         ["PPOc", "Curriculum", "r15", "o163", "torq", "PD"],
                         "dir":          "/workspace/Options_In_Simulation/my_runs"}    
                     }          # wandb kwargs (see https://docs.wandb.ai/ref/python/init)
     }

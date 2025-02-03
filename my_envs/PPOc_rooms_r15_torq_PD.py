@@ -89,7 +89,7 @@ TASK_CFG = {"test": False,
                                         "stiffness": 0.05, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
                                         "actionScale": 1.0,
-                                        "wheel_radius": 0.1175},   # leave room to overshoot or corner 
+                                        "wheel_radius": 0.1175,},   # leave room to overshoot or corner 
 
                             },
                      "sim": {"dt": 0.005,  
@@ -197,7 +197,7 @@ class ReachingTargetTask(RLTask):
         self.previous_linear_velocity = torch.zeros((self.num_envs, 3), device=self.device)
         self.previous_angular_velocity = torch.zeros((self.num_envs, 3), device=self.device)
 
-        self.last_vel_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
+        self.last_torq_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
         
         torch_zeros = lambda: torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
         self.episode_sums = {
@@ -271,6 +271,8 @@ class ReachingTargetTask(RLTask):
         self.Kp = self._task_cfg["env"]["control"]["stiffness"]
         self.Kd = self._task_cfg["env"]["control"]["damping"]
         self.r = self._task_cfg["env"]["control"]["wheel_radius"]
+        self.torq_constant = self._task_cfg["env"]["control"]["torq_constant"]
+        self.torq_FF_gain = self._task_cfg["env"]["control"]["torq_FF_gain"]
         self.curriculum = self._task_cfg["env"]["terrain"]["curriculum"]
       
         for key in self.rew_scales.keys():
@@ -408,7 +410,7 @@ class ReachingTargetTask(RLTask):
         )
 
         self.last_dof_vel = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
-        self.last_vel_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
+        self.last_torq_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
 
 
         for i in range(self.num_envs):
@@ -504,25 +506,23 @@ class ReachingTargetTask(RLTask):
 
         for i in range(self.decimation):
             if self.world.is_playing():
-                base_vel = self.base_velocities[:, 0].unsqueeze(1).repeat(1, self.num_dof)
-                # print(f"base_vel: {base_vel.shape}")
-                self.vel_error = (self.action_scale * self.actions - base_vel) 
-                self.vel_error_der = (self.vel_error - self.last_vel_error) / self.sim_dt
-                FF_wheel_vel = torch.clip(self.action_scale * self.actions / self.r, -80.0, 80.0)
-                # print(f"FF_wheel_vel: {FF_wheel_vel}")
-                wheel_velocity_corrections = torch.clip(
-                    self.Kp * self.vel_error
-                    + self.Kd * self.vel_error_der,
+                self.torq_error = (self.action_scale * self.actions - self.r * self.dof_vel) 
+                self.torq_error_der = (self.torq_error - self.last_torq_error) / self.sim_dt
+                # FF_wheel_torq = torch.clip(self.action_scale * self.actions * self.torq_FF_gain + self.torq_constant, -80.0, 80.0)
+                # print(f"FF_wheel_torq: {FF_wheel_torq}")
+                wheel_torq_corrections = torch.clip(
+                    self.Kp * self.torq_error
+                    + self.Kd * self.torq_error_der,
                     -80.0,
                     80.0,
                 )
-                # print(f"Kp component: {self.Kp * self.vel_error}")
-                # print(f"Kd component: {self.Kd * self.vel_error_der}")
-                # print(f"wheel_velocity_corrections: {wheel_velocity_corrections}")
-                self.last_vel_error = self.vel_error
-                wheel_velocities = FF_wheel_vel + wheel_velocity_corrections
-                self._robots.set_joint_velocities(wheel_velocities)
-                # print("Applied velocities:", wheel_velocities)
+                # print(f"Kp component: {self.Kp * self.torq_error}")
+                # print(f"Kd component: {self.Kd * self.torq_error_der}")
+                # print(f"wheel_torq_corrections: {wheel_torq_corrections}")
+                self.last_torq_error = self.torq_error
+                # wheel_torqs = FF_wheel_torq + wheel_torq_corrections
+                self._robots.set_joint_efforts(wheel_torq_corrections)
+                print("Applied velocities:", wheel_torq_corrections)
                 SimulationContext.step(self.world, render=False)
                 self.refresh_dof_state_tensors()
 
