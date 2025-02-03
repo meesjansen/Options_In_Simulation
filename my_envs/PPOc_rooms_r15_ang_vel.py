@@ -80,7 +80,7 @@ TASK_CFG = {"test": False,
                                        "actionRateRewardScale": -0.05,
                                        "fallenOverRewardScale": -200.0,
                                        "slipLongitudinalRewardScale": -5.0,
-                                       "episodeLength_s": 15.0,
+                                       "episodeLength_s": 10.0,
                                        "pushInterval_s": 20.0,},
                             "randomCommandVelocityRanges": {"linear_x": [0.0, 0.25], # [m/s]
                                                             "linear_y": [-0.5, 0.5], # [m/s]
