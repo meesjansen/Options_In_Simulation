@@ -509,7 +509,7 @@ class ReachingTargetTask(RLTask):
                 self.vel_error = (self.action_scale * self.actions - base_vel) 
                 self.vel_error_der = (self.vel_error - self.last_vel_error) / self.sim_dt
                 FF_wheel_vel = torch.clip(self.action_scale * self.actions / self.r, -80.0, 80.0)
-                print(f"FF_wheel_vel: {FF_wheel_vel}")
+                # print(f"FF_wheel_vel: {FF_wheel_vel}")
                 # wheel_velocity_corrections = torch.clip(
                 #     self.Kp * self.vel_error
                 #     + self.Kd * self.vel_error_der,

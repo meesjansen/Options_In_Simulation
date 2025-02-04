@@ -518,7 +518,7 @@ class ReachingTargetTask(RLTask):
                 )
                 # print(f"Kp component: {self.Kp * self.vel_error}")
                 # print(f"Kd component: {self.Kd * self.vel_error_der}")
-                print(f"wheel_velocity_corrections: {wheel_velocity_corrections}")
+                # print(f"wheel_velocity_corrections: {wheel_velocity_corrections}")
                 self.last_vel_error = self.vel_error
                 # wheel_velocities = FF_wheel_vel + wheel_velocity_corrections
                 self._robots.set_joint_velocities(wheel_velocity_corrections)

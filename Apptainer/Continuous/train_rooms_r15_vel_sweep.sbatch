@@ -5,7 +5,7 @@
 #SBATCH --time=20:00:00
 #SBATCH --ntasks=1          # Request number of parallel tasks per job. Default is 1
 #SBATCH --cpus-per-task=2   # Request number of CPUs (threads) per task. Default is 1 (note: CPUs are always allocated to jobs per 2).
-#SBATCH --mem=24GB
+#SBATCH --mem=16GB
 #SBATCH --mail-type=END     # Set mail type to 'END' to receive a mail when the job finishes. 
 #SBATCH --output=rooms_r15_vel_sweep_output_%j.log
 #SBATCH --error=rooms_r15_vel_sweep_error_%j.log # Set name of error log. %j is the Slurm jobId

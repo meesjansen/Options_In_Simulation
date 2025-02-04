@@ -522,7 +522,7 @@ class ReachingTargetTask(RLTask):
                 self.last_torq_error = self.torq_error
                 # wheel_torqs = FF_wheel_torq + wheel_torq_corrections
                 self._robots.set_joint_efforts(wheel_torq_corrections)
-                print("Applied velocities:", wheel_torq_corrections)
+                # print("Applied velocities:", wheel_torq_corrections)
                 SimulationContext.step(self.world, render=False)
                 self.refresh_dof_state_tensors()
 
