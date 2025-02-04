@@ -509,7 +509,7 @@ class ReachingTargetTask(RLTask):
                 self.torq_error = (self.action_scale * self.actions - self.r * self.dof_vel) 
                 self.torq_error_der = (self.torq_error - self.last_torq_error) / self.sim_dt
                 FF_wheel_torq = torch.clip(self.action_scale * self.actions * self.torq_FF_gain + self.torq_constant, -80.0, 80.0)
-                print(f"FF_wheel_torq: {FF_wheel_torq}")
+                # print(f"FF_wheel_torq: {FF_wheel_torq}")
                 wheel_torq_corrections = torch.clip(
                     self.Kp * self.torq_error
                     + self.Kd * self.torq_error_der,
@@ -518,11 +518,11 @@ class ReachingTargetTask(RLTask):
                 )
                 # print(f"Kp component: {self.Kp * self.torq_error}")
                 # print(f"Kd component: {self.Kd * self.torq_error_der}")
-                print(f"wheel_torq_corrections: {wheel_torq_corrections}")
+                # print(f"wheel_torq_corrections: {wheel_torq_corrections}")
                 self.last_torq_error = self.torq_error
                 wheel_torqs = FF_wheel_torq + wheel_torq_corrections
                 self._robots.set_joint_efforts(wheel_torqs)
-                print("Applied velocities:", wheel_torqs)
+                # print("Applied velocities:", wheel_torqs)
                 SimulationContext.step(self.world, render=False)
                 self.refresh_dof_state_tensors()
 

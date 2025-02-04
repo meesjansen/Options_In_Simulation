@@ -205,8 +205,8 @@ cfg_ppo["state_preprocessor_kwargs"] = {"size": env.observation_space, "device":
 cfg_ppo["value_preprocessor"] = RunningStandardScaler
 cfg_ppo["value_preprocessor_kwargs"] = {"size": 1, "device": device}
 # logging to TensorBoard and write checkpoints
-cfg_ppo["experiment"]["write_interval"] = 500
-cfg_ppo["experiment"]["checkpoint_interval"] = 50_000
+cfg_ppo["experiment"]["write_interval"] = 100
+cfg_ppo["experiment"]["checkpoint_interval"] = 10_000
 
 
 agent = PPO(models=models_ppo,
