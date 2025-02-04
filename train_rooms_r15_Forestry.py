@@ -63,7 +63,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.PPOc_rooms_r15_torq_Forestry import ReachingTargetTask, TASK_CFG
+from my_envs.PPOc_rooms_r15_Forestry import ReachingTargetTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
