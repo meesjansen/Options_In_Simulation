@@ -511,7 +511,7 @@ class ReachingTargetTask(RLTask):
                 
                 sign_vel = torch.sign(self.dof_vel)
                 sign_torq = torch.sign(wheel_torq)
-                over_speed = torch.abs(self.dof_vel) > 1.5
+                over_speed = torch.abs(self.dof_vel) > 4.25 # 4.25 rad/s is the max speed of the robot or 0.5 m/s
 
                 # Condition: over_speed AND same sign of velocity & torque → set torque = 0
                 clamp_mask = over_speed & (sign_vel == sign_torq)
