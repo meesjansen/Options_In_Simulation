@@ -167,7 +167,7 @@ class ReachingTargetTask(RLTask):
         self._env_spacing = 0.0
         
                 # observation and action space DQN
-        self._num_observations = 163
+        self._num_observations = 161
         self._num_actions = 2  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
