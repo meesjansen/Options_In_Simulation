@@ -77,6 +77,8 @@ arg_parser.add_argument("--stiffness", type=float, default=0.05)
 arg_parser.add_argument("--damping", type=float, default=0.005)
 arg_parser.add_argument("--torq_constant", type=float, default=7.2)
 arg_parser.add_argument("--torq_FF_gain", type=float, default=0.1)
+arg_parser.add_argument("--actionScale", type=float, default=10.0)
+arg_parser.add_argument("--deltaActionScale", type=float, default=10.0)
 arg_parser.add_argument("--static_friction", type=float, default=1.0)
 arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
@@ -101,6 +103,8 @@ TASK_CFG["task"]["env"]["control"]["stiffness"] = parsed_config["stiffness"]
 TASK_CFG["task"]["env"]["control"]["damping"] = parsed_config["damping"]
 TASK_CFG["task"]["env"]["control"]["torq_constant"] = parsed_config["torq_constant"]
 TASK_CFG["task"]["env"]["control"]["torq_FF_gain"] = parsed_config["torq_FF_gain"]
+TASK_CFG["task"]["env"]["control"]["actionScale"] = parsed_config["actionScale"]
+TASK_CFG["task"]["env"]["control"]["deltaActionScale"] = parsed_config["deltaActionScale"]
 
 # friction
 TASK_CFG["task"]["sim"]["default_physics_material"]["static_friction"] = parsed_config["static_friction"]
