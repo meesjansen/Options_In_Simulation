@@ -513,8 +513,8 @@ class ReachingTargetTask(RLTask):
         self.max_torque = 1.0 * self.action_scale
         
         # Define delta range values
-        self.min_delta = -1.0 * self.action_scale
-        self.max_delta = 1.0 * self.action_scale
+        self.min_delta = -1.0 * self.delta_action_scale
+        self.max_delta = 1.0 * self.delta_action_scale
 
         # Compute the base torque from TASK_CFG parameters:
         base_torque = self.min_torque + (self.actions[:, 0] + 1) * 0.5 * (self.max_torque - self.min_torque)
