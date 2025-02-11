@@ -233,6 +233,7 @@ if WARM_START:
 
          # Use the observation tensor directly (no dictionary indexing needed)
          state = obs
+         print(state[0,:])
 
          # Extract the expert actions provided by the environment.
          expert_actions = extras["expert_actions"]
