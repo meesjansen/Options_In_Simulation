@@ -19,7 +19,6 @@ from omni.isaac.core.prims import GeometryPrim, GeometryPrimView
 
 from pxr import PhysxSchema, UsdPhysics
 
-
 from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10 
 
 from my_utils.origin_terrain_generator import *
@@ -175,7 +174,6 @@ class ReachingTargetTask(RLTask):
             dtype=np.float32  # Ensure data type is consistent
         )
         
-        # Using the shape argument
         self.action_space = spaces.Box(
             low=-1.0,
             high=1.0,
@@ -218,7 +216,7 @@ class ReachingTargetTask(RLTask):
             "slip_longitudinal": torch_zeros(),
         }
         
-        # --- NEW: Initialize warm-start flag (disabled by default) ---
+        # --- NEW: Initialize warm-start flag ---
         self.warm_start = False
 
         return
@@ -293,10 +291,10 @@ class ReachingTargetTask(RLTask):
         # 1mx1.6m rectangle (without center line)
         y = 0.1 * torch.tensor(
             [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5], device=self.device, requires_grad=False
-        )  # 10-50cm on each side
+        )
         x = 0.1 * torch.tensor(
             [-8, -7, -6, -5, -4, -3, -2, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
-        )  # 20-80cm on each side
+        )
         grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
 
         self.num_height_points = grid_x.numel()
@@ -332,7 +330,6 @@ class ReachingTargetTask(RLTask):
         scene.add(self._robots._base)
 
     def initialize_views(self, scene):
-        # initialize terrain variables even if we do not need to re-create the terrain mesh
         self.get_terrain(create_mesh=False)
 
         super().initialize_views(scene)
@@ -376,21 +373,18 @@ class ReachingTargetTask(RLTask):
 
         
     def post_reset(self):
-        
-        
         self.base_init_state = torch.tensor(self.base_init_state, dtype=torch.float, device=self.device, requires_grad=False)
         self.dof_init_state = torch.tensor(self.dof_init_state, dtype=torch.float, device=self.device, requires_grad=False)
 
         self.timeout_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
         self.episode_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
 
-        # initialize some data used later on
         self.up_axis_idx = 2
         self.common_step_counter = 0
         self.extras = {}
         self.commands = torch.zeros(
             self.num_envs, 4, dtype=torch.float, device=self.device, requires_grad=False
-        )  # x vel, y vel, yaw vel, heading
+        )
         self.commands_scale = torch.tensor(
             [self.lin_vel_scale, self.lin_vel_scale, self.ang_vel_scale],
             device=self.device,
@@ -415,7 +409,6 @@ class ReachingTargetTask(RLTask):
 
         self.last_dof_vel = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
         self.last_torq_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
-
 
         for i in range(self.num_envs):
             self.env_origins[i] = self.terrain_origins[self.terrain_levels[i], self.terrain_types[i]]
@@ -443,7 +436,6 @@ class ReachingTargetTask(RLTask):
         self.base_quat[env_ids] = self.base_init_state[3:7]
         self.base_velocities[env_ids] = self.base_init_state[7:]
 
-
         self.dof_vel[env_ids] = self.dof_init_state[4:8]
         self.dof_effort[env_ids] = self.dof_init_state[0:4]
     
@@ -461,16 +453,13 @@ class ReachingTargetTask(RLTask):
         self.commands[env_ids, 3] = torch_rand_float(
             self.command_yaw_range[0], self.command_yaw_range[1], (len(env_ids), 1), device=self.device
         ).squeeze()
-        self.commands[env_ids] *= (torch.norm(self.commands[env_ids, :2], dim=1) > 0.25).unsqueeze(
-            1
-        )  # set small commands to zero
+        self.commands[env_ids] *= (torch.norm(self.commands[env_ids, :2], dim=1) > 0.25).unsqueeze(1)
 
         self.last_actions[env_ids] = 0.0
         self.last_dof_vel[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
         self.episode_buf[env_ids] = 0 
 
-        # fill extras
         self.extras["episode"] = {}
         for key in self.episode_sums.keys():
             self.extras["episode"]["rew_" + key] = (
@@ -481,7 +470,6 @@ class ReachingTargetTask(RLTask):
 
     def update_terrain_level(self, env_ids):
         if not self.init_done or not self.curriculum:
-            # do not change on initial reset
             return
         root_pos, _ = self._robots.get_world_poses(clone=False)
         distance = torch.norm(root_pos[env_ids, :2] - self.env_origins[env_ids, :2], dim=1)
@@ -505,23 +493,20 @@ class ReachingTargetTask(RLTask):
         if not self.world.is_playing():
             return
             
-        # --- MODIFICATION: Use handcrafted (heuristic) actions during warm-start ---
+        # During warm-start, we override the given actions with the heuristic actions.
         if self.warm_start:
-            # Instead of using the provided actions, use expert torques.
             self.actions = self.get_heuristic_actions()
         else:
             self.actions = actions.clone().to(self.device)
 
         for _ in range(self.decimation):
             if self.world.is_playing():
-                
-                wheel_torq = self.action_scale * self.actions  # shape: [num_wheels]
+                wheel_torq = self.action_scale * self.actions
                 
                 sign_vel = torch.sign(self.dof_vel)
                 sign_torq = torch.sign(wheel_torq)
-                over_speed = torch.abs(self.dof_vel) > 4.25 # 4.25 rad/s is the max speed of the robot or 0.5 m/s
+                over_speed = torch.abs(self.dof_vel) > 4.25
 
-                # Condition: over_speed AND same sign of velocity & torque → set torque = 0
                 clamp_mask = over_speed & (sign_vel == sign_torq)
                 wheel_torq[clamp_mask] = 0.0
 
@@ -533,14 +518,11 @@ class ReachingTargetTask(RLTask):
                 self.refresh_dof_state_tensors()
 
 
-          
     def post_physics_step(self):
         self.progress_buf[:] += 1
         self.episode_buf[:] += 1
         
-       
         if self.world.is_playing():
-            
             self.refresh_dof_state_tensors()
             self.refresh_body_state_tensors()
 
@@ -548,7 +530,6 @@ class ReachingTargetTask(RLTask):
             if self.common_step_counter % self.push_interval == 0:
                 self.push_robots()
 
-            # prepare quantities
             self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 0:3])
             self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 3:6])
             self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
@@ -558,7 +539,6 @@ class ReachingTargetTask(RLTask):
 
             self.is_done()
             self.get_states()
-            # --- MODIFICATION: Skip reward computations during warm-start ---
             self.calculate_metrics()
             
             env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
@@ -570,10 +550,8 @@ class ReachingTargetTask(RLTask):
             self.last_actions[:] = self.actions[:]
             self.last_dof_vel[:] = self.dof_vel[:]
 
-        # --- MODIFICATION: During warm-start, override rewards to zero and include expert actions ---
+        # --- NEW: During warm-start, add expert actions to extras for imitation learning ---
         if self.warm_start:
-            self.rew_buf = torch.zeros_like(self.rew_buf)
-            # Add expert actions to extras so that the policy network can “observe” them for supervised loss.
             self.extras["expert_actions"] = self.get_heuristic_actions()
 
         return self.obs_buf, self.rew_buf, self.reset_buf, self.extras
@@ -581,61 +559,49 @@ class ReachingTargetTask(RLTask):
     def push_robots(self):
         self.base_velocities[:, 0:2] = torch_rand_float(
             -1.0, 1.0, (self.num_envs, 2), device=self.device
-        )  # lin vel x/y
+        )
         self._robots.set_velocities(self.base_velocities)
     
 
     def is_done(self):
         self.reset_buf.fill_(0)
 
-        # max episode length
         self.timeout_buf = torch.where(
             self.episode_buf >= self.max_episode_length - 1,
             torch.ones_like(self.timeout_buf),
             torch.zeros_like(self.timeout_buf),
         ) 
 
-        # Calculate the projected gravity in the robot's local frame
         projected_gravity = quat_apply(self.base_quat, self.gravity_vec)
 
-        # Detect if the robot is on its back based on positive Z-axis component of the projected gravity
-        positive_gravity_z_threshold = 0.0  # Adjust the threshold if needed
+        positive_gravity_z_threshold = 0.0
         self.has_fallen = projected_gravity[:, 2] > positive_gravity_z_threshold
         self.reset_buf = self.has_fallen.clone()
 
         self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)
 
     
-    def calculate_metrics(self) -> None:
-        # --- MODIFICATION: During warm-start, disable reward calculations ---
-        if self.warm_start:
-            v_wheel = self.r * self.dof_vel  # v_wheel = r * omega
-            base_lin_vel_expanded = self.base_lin_vel[:, 0].unsqueeze(1).expand(-1, v_wheel.shape[1])
-            self.lambda_slip = (v_wheel - base_lin_vel_expanded) / torch.maximum(v_wheel, base_lin_vel_expanded)
-
-            self.rew_buf = torch.zeros(self.num_envs, device=self.device)
-            return self.rew_buf
-
-        # velocity tracking reward
+    def calculate_metrics(self) -> torch.Tensor:
+        # Compute reward components as usual.
         lin_vel_error = torch.square(self.commands[:, 0] - self.base_lin_vel[:, 0])
         ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2])
         rew_lin_vel_xy = torch.exp(-lin_vel_error / 0.25) * self.rew_scales["lin_vel_xy"]
         rew_ang_vel_z = torch.exp(-ang_vel_error / 0.25) * self.rew_scales["ang_vel_z"]
 
-        # other base velocity penalties (necessary)
         rew_lin_vel_z = torch.square(self.base_lin_vel[:, 2]) * self.rew_scales["lin_vel_z"]
         rew_ang_vel_xy = torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1) * self.rew_scales["ang_vel_xy"]
 
-        # torque penalty, joint acceleration penalty, etc. can be computed as before…
         rew_fallen_over = self.has_fallen * self.rew_scales["fallen_over"]
 
         rew_action_rate = (
             torch.sum(torch.square(self.last_actions - self.actions), dim=1) * self.rew_scales["action_rate"]
         )
-        v_wheel = self.r * self.dof_vel  # v_wheel = r * omega
+
+        v_wheel = self.r * self.dof_vel
         base_lin_vel_expanded = self.base_lin_vel[:, 0].unsqueeze(1).expand(-1, v_wheel.shape[1])
         self.lambda_slip = (v_wheel - base_lin_vel_expanded) / torch.maximum(v_wheel, base_lin_vel_expanded)
         self.k_lambda = 0.3
+
         rew_slip_longitudinal = torch.prod(torch.exp(-0.5 * (self.lambda_slip / self.k_lambda) ** 2), dim=1) * self.rew_scales["slip_longitudinal"]
 
         self.rew_buf = (
@@ -682,7 +648,7 @@ class ReachingTargetTask(RLTask):
                 self.base_lin_vel * self.lin_vel_scale,
                 self.base_ang_vel * self.ang_vel_scale,
                 self.projected_gravity,
-                (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1),    # (num_envs, 1)
+                (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1),
                 (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1),
                 self.dof_vel * self.r * self.dof_vel_scale,
                 self.action_scale * self.actions,
@@ -735,7 +701,6 @@ def wrap_to_pi(angles):
 
 
 def get_axis_params(value, axis_idx, x_value=0.0, dtype=float, n_dims=3):
-    """construct arguments to `Vec` according to axis index."""
     zs = np.zeros((n_dims,))
     assert axis_idx < n_dims, "the axis dim should be within the vector dimensions"
     zs[axis_idx] = 1.0
@@ -745,10 +710,9 @@ def get_axis_params(value, axis_idx, x_value=0.0, dtype=float, n_dims=3):
 
 
 # --- NEW: Handcrafted heuristic function for warm-start ---
-# This method returns a constant (expert) torque for every environment.
 def get_heuristic_actions(self):
     expert_action_value = 0.5  # constant value; adjust as needed
     return torch.full((self.num_envs, self._num_actions), expert_action_value, device=self.device)
 
-# Bind the new method to the class.
+# Bind the method to the class.
 ReachingTargetTask.get_heuristic_actions = get_heuristic_actions
