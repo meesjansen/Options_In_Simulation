@@ -19,7 +19,6 @@ from omni.isaac.core.prims import GeometryPrim, GeometryPrimView
 
 from pxr import PhysxSchema, UsdPhysics
 
-
 from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10 
 
 from my_utils.origin_terrain_generator import *
@@ -503,7 +502,7 @@ class ReachingTargetTask(RLTask):
 
     def pre_physics_step(self, actions):
         if not self.world.is_playing():
-            return
+                return
             
         # --- MODIFICATION: Use handcrafted (heuristic) actions during warm-start ---
         if self.warm_start:
@@ -558,7 +557,6 @@ class ReachingTargetTask(RLTask):
 
             self.is_done()
             self.get_states()
-            # --- MODIFICATION: Skip reward computations during warm-start ---
             self.calculate_metrics()
             
             env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
@@ -570,10 +568,8 @@ class ReachingTargetTask(RLTask):
             self.last_actions[:] = self.actions[:]
             self.last_dof_vel[:] = self.dof_vel[:]
 
-        # --- MODIFICATION: During warm-start, override rewards to zero and include expert actions ---
+        # --- MODIFICATION: During warm-start, add expert actions for imitation learning ---
         if self.warm_start:
-            self.rew_buf = torch.zeros_like(self.rew_buf)
-            # Add expert actions to extras so that the policy network can “observe” them for supervised loss.
             self.extras["expert_actions"] = self.get_heuristic_actions()
 
         return self.obs_buf, self.rew_buf, self.reset_buf, self.extras
@@ -607,14 +603,6 @@ class ReachingTargetTask(RLTask):
 
     
     def calculate_metrics(self) -> None:
-        # --- MODIFICATION: During warm-start, disable reward calculations ---
-        if self.warm_start:
-            v_wheel = self.r * self.dof_vel  # v_wheel = r * omega
-            base_lin_vel_expanded = self.base_lin_vel[:, 0].unsqueeze(1).expand(-1, v_wheel.shape[1])
-            self.lambda_slip = (v_wheel - base_lin_vel_expanded) / torch.maximum(v_wheel, base_lin_vel_expanded)
-
-            self.rew_buf = torch.zeros(self.num_envs, device=self.device)
-            return self.rew_buf
 
         # velocity tracking reward
         lin_vel_error = torch.square(self.commands[:, 0] - self.base_lin_vel[:, 0])
@@ -626,16 +614,18 @@ class ReachingTargetTask(RLTask):
         rew_lin_vel_z = torch.square(self.base_lin_vel[:, 2]) * self.rew_scales["lin_vel_z"]
         rew_ang_vel_xy = torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1) * self.rew_scales["ang_vel_xy"]
 
-        # torque penalty, joint acceleration penalty, etc. can be computed as before…
+        # torque penalty, joint acceleration penalty, etc.
         rew_fallen_over = self.has_fallen * self.rew_scales["fallen_over"]
 
         rew_action_rate = (
             torch.sum(torch.square(self.last_actions - self.actions), dim=1) * self.rew_scales["action_rate"]
         )
+
         v_wheel = self.r * self.dof_vel  # v_wheel = r * omega
         base_lin_vel_expanded = self.base_lin_vel[:, 0].unsqueeze(1).expand(-1, v_wheel.shape[1])
         self.lambda_slip = (v_wheel - base_lin_vel_expanded) / torch.maximum(v_wheel, base_lin_vel_expanded)
         self.k_lambda = 0.3
+
         rew_slip_longitudinal = torch.prod(torch.exp(-0.5 * (self.lambda_slip / self.k_lambda) ** 2), dim=1) * self.rew_scales["slip_longitudinal"]
 
         self.rew_buf = (
