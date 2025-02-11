@@ -235,6 +235,9 @@ if WARM_START:
          done = terminated | truncated
          next_state = obs
 
+         print(state[0,:])
+
+
          # --- Compute losses ---
          # Actor imitation loss: MSE between actor output and expert actions.
          expert_actions = extras["expert_actions"]
