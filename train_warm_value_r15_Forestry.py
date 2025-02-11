@@ -1,718 +1,273 @@
 import torch
-import numpy as np
-import gym
-from gym import spaces
+import torch.nn as nn
 
-from my_envs.rl_task import RLTask 
+# Import the skrl components to build the RL system
+from skrl.models.torch import Model, GaussianMixin, DeterministicMixin
+from skrl.memories.torch import RandomMemory
+from skrl.resources.schedulers.torch import KLAdaptiveRL
+from skrl.resources.preprocessors.torch import RunningStandardScaler
+from skrl.utils.omniverse_isaacgym_utils import get_env_instance
+from skrl.envs.torch import wrap_env
+from skrl.utils import set_seed
 
-from omni.isaac.core.prims import RigidPrim, RigidPrimView
-from omni.isaac.core.articulations import ArticulationView
-from omni.isaac.core.objects import DynamicSphere
-from omni.isaac.core.utils.torch.rotations import *
-from omni.isaac.core.utils.prims import get_prim_at_path, define_prim
-from omni.isaac.core.utils.torch.maths import torch_rand_float
-from omni.isaac.core.utils.stage import get_current_stage, add_reference_to_stage, print_stage_prim_paths
-from omni.isaac.core.simulation_context import SimulationContext
-from omni.isaac.core.materials.physics_material import PhysicsMaterial
-from omni.isaac.core.materials import OmniPBR
-from omni.isaac.core.prims import GeometryPrim, GeometryPrimView
+from my_models.categorical import CategoricalMixin
+from my_agents.ppo import PPO
+from my_trainers.sequential import SequentialTrainer
 
-from pxr import PhysxSchema, UsdPhysics
-
-from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10 
-
-from my_utils.origin_terrain_generator import *
-from my_utils.terrain_utils import *
-
-TASK_CFG = {"test": False,
-            "device_id": 0,
-            "headless": True,
-            "sim_device": "gpu",
-            "enable_livestream": True,
-            "warp": False,
-            "seed": 42,
-            "task": {"name": "ReachingFood",
-                     "physics_engine": "physx",
-                     "env": {"numEnvs": 64, # has to be perfect square
-                             "envSpacing": 3.0,
-                             "episodeLength": 500,
-                             "enableDebugVis": False,
-                             "clipObservations": 1000.0,
-                             "controlFrequencyInv": 4,
-                             "baseInitState": {"pos": [0.0, 0.0, 0.0], # x,y,z [m]
-                                              "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
-                                              "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
-                                              "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
-                                                },
-                            "dofInitTorques": [0.0, 0.0, 0.0, 0.0],
-                            "dofInitVelocities": [0.0, 0.0, 0.0, 0.0],
-                            "terrain": {"staticFriction": 1.0,  # [-]
-                                        "dynamicFriction": 1.0,  # [-]
-                                        "restitution": 0.0,  # [-]
-                                        # rough terrain only:
-                                        "curriculum": True,
-                                        "maxInitMapLevel": 0,
-                                        "mapLength": 8.0,
-                                        "mapWidth": 8.0,
-                                        "numLevels": 4,
-                                        "numTerrains": 2,
-                                        # terrain types: [ smooth slope, rough slope, stairs up, stairs down, discrete]
-                                        "terrainProportions": [0.35, 0.55, 0.7, 0.85, 1.0],
-                                        # tri mesh only:
-                                        "slopeTreshold": 0.5,
-                                        },
-                            "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed      
-                            "learn" : {"linearVelocityScale": 2.0,
-                                       "angularVelocityScale": 0.25,
-                                       "dofPositionScale": 1.0,
-                                       "dofVelocityScale": 0.05,
-                                       "heightMeasurementScale": 5.0,
-                                       "terminalReward": 0.0,
-                                       "linearVelocityXYRewardScale": 1.0,
-                                       "linearVelocityZRewardScale": -4.0,
-                                       "angularVelocityZRewardScale": 1.0,
-                                       "angularVelocityXYRewardScale": -0.5,
-                                       "orientationRewardScale": -0.0,
-                                       "torqueRewardScale": -0.0,
-                                       "jointAccRewardScale": -0.0,
-                                       "baseHeightRewardScale": -0.0,
-                                       "actionRateRewardScale": -0.05,
-                                       "fallenOverRewardScale": -200.0,
-                                       "slipLongitudinalRewardScale": -5.0,
-                                       "episodeLength_s": 15.0,
-                                       "pushInterval_s": 20.0,},
-                            "randomCommandVelocityRanges": {"linear_x": [0.0, 0.25], # [m/s]
-                                                            "linear_y": [-0.5, 0.5], # [m/s]
-                                                            "yaw": [-3.14, 3.14]},   # [rad/s]
-                            "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
-                                        "stiffness": 0.05, # [N*m/rad] For torque setpoint control
-                                        "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 10.0,
-                                        "wheel_radius": 0.1175,},   # leave room to overshoot or corner 
-
-                            },
-                     "sim": {"dt": 0.005,  
-                             "use_gpu_pipeline": True,
-                             "gravity": [0.0, 0.0, -9.81],
-                             "add_ground_plane": False,
-                             "use_flatcache": True,
-                             "enable_scene_query_support": False,
-                             "enable_cameras": False,
-                             "default_physics_material": {"static_friction": 1.0,
-                                                         "dynamic_friction": 1.0,
-                                                         "restitution": 0.0},
-                             "physx": {"worker_thread_count": 4,
-                                      "solver_type": 1,
-                                      "use_gpu": True,
-                                      "solver_position_iteration_count": 4,
-                                      "solver_velocity_iteration_count": 4,
-                                      "contact_offset": 0.01,
-                                      "rest_offset": 0.0,
-                                      "bounce_threshold_velocity": 0.2,
-                                      "friction_offset_threshold": 0.04,
-                                      "friction_correlation_distance": 0.025,
-                                      "enable_sleeping": True,
-                                      "enable_stabilization": True,
-                                      "max_depenetration_velocity": 100.0,
-                                      "gpu_max_rigid_contact_count": 524288,
-                                      "gpu_max_rigid_patch_count": 33554432,
-                                      "gpu_found_lost_pairs_capacity": 524288,
-                                      "gpu_found_lost_aggregate_pairs_capacity": 262144,
-                                      "gpu_total_aggregate_pairs_capacity": 1048576,
-                                      "gpu_max_soft_body_contacts": 1048576,
-                                      "gpu_max_particle_contacts": 1048576,
-                                      "gpu_heap_capacity": 33554432,
-                                      "gpu_temp_buffer_capacity": 16777216,
-                                      "gpu_max_num_partitions": 8},
-                             "robot": {"override_usd_defaults": False,
-                                       "fixed_base": False,
-                                       "enable_self_collisions": False,
-                                       "enable_gyroscopic_forces": False,
-                                       "solver_position_iteration_count": 4,
-                                       "solver_velocity_iteration_count": 4,
-                                       "sleep_threshold": 0.005,
-                                       "stabilization_threshold": 0.001,
-                                       "density": -1,
-                                       "max_depenetration_velocity": 100.0,
-                                       "contact_offset": 0.005,
-                                       "rest_offset": 0.0,},
-}}}
-
-class RobotView(ArticulationView):
-    def __init__(
-            self, 
-            prim_paths_expr: str, 
-            name: str = "robot_view",
-            track_contact_forces=False,
-            prepare_contact_sensors=False,
-        ) -> None:
-        super().__init__(prim_paths_expr=prim_paths_expr, name=name, reset_xform_properties=False)
-
-        self._base = RigidPrimView(
-            prim_paths_expr="/World/envs/.*/robot/main_body",
-            name="base_view",
-            reset_xform_properties=False,
-            track_contact_forces=track_contact_forces,
-            prepare_contact_sensors=prepare_contact_sensors,
-        )
-
-class ReachingTargetTask(RLTask):
-    def __init__(self, name, sim_config, env, offset=None) -> None:
-        self.height_samples = None
-        self.custom_origins = False
-        self.init_done = False
-        self._env_spacing = 0.0
-        
-        # observation and action space (DQN)
-        self._num_observations = 163
-        self._num_actions = 4  # Designed discrete action space see pre_physics_step()
-
-        self.observation_space = spaces.Box(
-            low=-1.0,  # Replace with a specific lower bound if needed
-            high=1.0,  # Replace with a specific upper bound if needed
-            shape=(self._num_observations,),
-            dtype=np.float32  # Ensure data type is consistent
-        )
-        
-        self.action_space = spaces.Box(
-            low=-1.0,
-            high=1.0,
-            shape=(self._num_actions,),
-            dtype=np.float32
-        )
-
-        self.update_config(sim_config)
-
-        RLTask.__init__(self, name, env)
-
-        self.height_points = self.init_height_points()  
-        self.measured_heights = None
-
-        self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
-
-        self.linear_acceleration = torch.zeros((self.num_envs, 3), device=self.device)
-        self.angular_acceleration = torch.zeros((self.num_envs, 3), device=self.device)
-        self.previous_linear_velocity = torch.zeros((self.num_envs, 3), device=self.device)
-        self.previous_angular_velocity = torch.zeros((self.num_envs, 3), device=self.device)
-
-        self.last_torq_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
-        
-        torch_zeros = lambda: torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
-        self.episode_sums = {
-            "lin_vel_xy": torch_zeros(),
-            "lin_vel_z": torch_zeros(),
-            "ang_vel_z": torch_zeros(),
-            "ang_vel_xy": torch_zeros(),
-            "orient": torch_zeros(),
-            "torques": torch_zeros(),
-            "joint_acc": torch_zeros(),
-            "base_height": torch_zeros(),
-            "air_time": torch_zeros(),
-            "collision": torch_zeros(),
-            "stumble": torch_zeros(),
-            "action_rate": torch_zeros(),
-            "hip": torch_zeros(),
-            "fallen_over": torch_zeros(),
-            "slip_longitudinal": torch_zeros(),
-        }
-        
-        # --- NEW: Initialize warm-start flag ---
-        self.warm_start = False
-
-        return
-        
-
-    def update_config(self, sim_config):
-        self._sim_config = sim_config
-        self._cfg = sim_config.config
-        self._task_cfg = sim_config.task_config
-
-        # normalization
-        self.lin_vel_scale = self._task_cfg["env"]["learn"]["linearVelocityScale"]
-        self.ang_vel_scale = self._task_cfg["env"]["learn"]["angularVelocityScale"]
-        self.dof_pos_scale = self._task_cfg["env"]["learn"]["dofPositionScale"]
-        self.dof_vel_scale = self._task_cfg["env"]["learn"]["dofVelocityScale"]
-        self.height_meas_scale = self._task_cfg["env"]["learn"]["heightMeasurementScale"]
-        self.action_scale = self._task_cfg["env"]["control"]["actionScale"]
-
-        # reward scales
-        self.rew_scales = {}
-        self.rew_scales["termination"] = self._task_cfg["env"]["learn"]["terminalReward"]
-        self.rew_scales["lin_vel_xy"] = self._task_cfg["env"]["learn"]["linearVelocityXYRewardScale"]
-        self.rew_scales["lin_vel_z"] = self._task_cfg["env"]["learn"]["linearVelocityZRewardScale"]
-        self.rew_scales["ang_vel_z"] = self._task_cfg["env"]["learn"]["angularVelocityZRewardScale"]
-        self.rew_scales["ang_vel_xy"] = self._task_cfg["env"]["learn"]["angularVelocityXYRewardScale"]
-        self.rew_scales["orient"] = self._task_cfg["env"]["learn"]["orientationRewardScale"]
-        self.rew_scales["torque"] = self._task_cfg["env"]["learn"]["torqueRewardScale"]
-        self.rew_scales["joint_acc"] = self._task_cfg["env"]["learn"]["jointAccRewardScale"]
-        self.rew_scales["base_height"] = self._task_cfg["env"]["learn"]["baseHeightRewardScale"]
-        self.rew_scales["action_rate"] = self._task_cfg["env"]["learn"]["actionRateRewardScale"]
-        self.rew_scales["fallen_over"] = self._task_cfg["env"]["learn"]["fallenOverRewardScale"]
-        self.rew_scales["slip_longitudinal"] = self._task_cfg["env"]["learn"]["slipLongitudinalRewardScale"]
-
-        # command ranges
-        self.command_x_range = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_x"]
-        self.command_y_range = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_y"]
-        self.command_yaw_range = self._task_cfg["env"]["randomCommandVelocityRanges"]["yaw"]
-        self.yaw_constant = self._task_cfg["env"]["randomCommandVelocityRanges"]["yaw_constant"]
-
-        # base init state
-        pos = self._task_cfg["env"]["baseInitState"]["pos"]
-        rot = self._task_cfg["env"]["baseInitState"]["rot"]
-        v_lin = self._task_cfg["env"]["baseInitState"]["vLinear"]
-        v_ang = self._task_cfg["env"]["baseInitState"]["vAngular"]
-        self.base_init_state = pos + rot + v_lin + v_ang
-
-        # other
-        self.decimation = self._task_cfg["env"]["control"]["decimation"]
-        self.sim_dt = self._task_cfg["sim"]["dt"]
-        self.dt = self.decimation * self._task_cfg["sim"]["dt"]
-        self.max_episode_length_s = self._task_cfg["env"]["learn"]["episodeLength_s"]
-        self.max_episode_length = int(self.max_episode_length_s / self.dt + 0.5)
-        self.push_interval = int(self._task_cfg["env"]["learn"]["pushInterval_s"] / self.dt + 0.5)
-        self.Kp = self._task_cfg["env"]["control"]["stiffness"]
-        self.Kd = self._task_cfg["env"]["control"]["damping"]
-        self.r = self._task_cfg["env"]["control"]["wheel_radius"]
-        self.torq_constant = self._task_cfg["env"]["control"]["torq_constant"]
-        self.torq_FF_gain = self._task_cfg["env"]["control"]["torq_FF_gain"]
-        self.curriculum = self._task_cfg["env"]["terrain"]["curriculum"]
-      
-        for key in self.rew_scales.keys():
-            self.rew_scales[key] *= self.dt
-
-        # env config
-        self._num_envs = self._task_cfg["env"]["numEnvs"]
-        torques = self._task_cfg["env"]["dofInitTorques"]
-        dof_velocities = self._task_cfg["env"]["dofInitVelocities"]
-        self.dof_init_state = torques + dof_velocities
+# set the seed for reproducibility
+seed = set_seed(42)
 
 
-    def init_height_points(self):
-        # 1mx1.6m rectangle (without center line)
-        y = 0.1 * torch.tensor(
-            [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5], device=self.device, requires_grad=False
-        )
-        x = 0.1 * torch.tensor(
-            [-8, -7, -6, -5, -4, -3, -2, 2, 3, 4, 5, 6, 7, 8], device=self.device, requires_grad=False
-        )
-        grid_x, grid_y = torch.meshgrid(x, y, indexing='ij')
+# Define the models (stochastic and deterministic models) for the agent using helper mixin.
+# - Policy: takes as input the environment's observation/state and returns action probabilities
+# - Value: takes the state as input and provides a state value to guide the policy
+class Policy(GaussianMixin, Model):
+    def __init__(self, observation_space, action_space, device, clip_actions=False,
+                 clip_log_std=True, min_log_std=-20, max_log_std=2, reduction="sum"):
+        Model.__init__(self, observation_space, action_space, device)
+        GaussianMixin.__init__(self, clip_actions, clip_log_std, min_log_std, max_log_std, reduction)
 
-        self.num_height_points = grid_x.numel()
-        points = torch.zeros(self.num_envs, self.num_height_points, 3, device=self.device, requires_grad=False)
-        points[:, :, 0] = grid_x.flatten()
-        points[:, :, 1] = grid_y.flatten()
-        return points
+        self.net = nn.Sequential(nn.Linear(self.num_observations, 512),
+                                 nn.ELU(),
+                                 nn.Linear(512, 256),
+                                 nn.ELU(),
+                                 nn.Linear(256, 128),
+                                 nn.ELU(),
+                                 nn.Linear(128, self.num_actions))
+        self.log_std_parameter = nn.Parameter(torch.zeros(self.num_actions))
 
-  
-
-    def _create_trimesh(self, create_mesh=True):
-        self.terrain = Terrain(self._task_cfg["env"]["terrain"], num_robots=self.num_envs)
-        vertices = self.terrain.vertices
-        triangles = self.terrain.triangles
-        position = torch.tensor([-self.terrain.border_size, -self.terrain.border_size, 0.0])
-        if create_mesh:
-            add_terrain_to_stage(stage=self._stage, vertices=vertices, triangles=triangles, position=position)
-        self.height_samples = (
-            torch.tensor(self.terrain.heightsamples).view(self.terrain.tot_rows, self.terrain.tot_cols).to(self.device)
-        )
+    def compute(self, inputs, role):
+        return self.net(inputs["states"]), self.log_std_parameter, {}
 
 
-    def set_up_scene(self, scene) -> None:
-        self._stage = get_current_stage()
-        self.get_terrain()
-        self.get_robot()
+class Value(DeterministicMixin, Model):
+    def __init__(self, observation_space, action_space, device, clip_actions=False):
+        Model.__init__(self, observation_space, action_space, device)
+        DeterministicMixin.__init__(self, clip_actions)
 
-        super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"], copy_from_source=True)
+        self.net = nn.Sequential(nn.Linear(self.num_observations, 512),
+                                 nn.ELU(),
+                                 nn.Linear(512, 256),
+                                 nn.ELU(),
+                                 nn.Linear(256, 128),
+                                 nn.ELU(),
+                                 nn.Linear(128, 1))
 
-        # robot view
-        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot", name="robot_view")
-        scene.add(self._robots)
-        scene.add(self._robots._base)
-
-    def initialize_views(self, scene):
-        self.get_terrain(create_mesh=False)
-
-        super().initialize_views(scene)
-        if scene.object_exists("robot_view"):
-            scene.remove_object("robot_view", registry_only=True)
-        if scene.object_exists("base_view"):
-            scene.remove_object("base_view", registry_only=True)
-        self._robots = RobotView(
-            prim_paths_expr="/World/envs/.*/robot", name="robot_view", track_contact_forces=False
-        )
-        scene.add(self._robots)
-        scene.add(self._robots._base)
-      
-
-    def get_terrain(self, create_mesh=True):
-        self.env_origins = torch.zeros((self.num_envs, 3), device=self.device, requires_grad=False)
-        if not self.curriculum:
-            self._task_cfg["env"]["terrain"]["maxInitMapLevel"] = self._task_cfg["env"]["terrain"]["numLevels"] - 1
-        self.terrain_levels = torch.randint(
-            0, self._task_cfg["env"]["terrain"]["maxInitMapLevel"] + 1, (self.num_envs,), device=self.device
-        )
-        self.terrain_types = torch.randint(
-            0, self._task_cfg["env"]["terrain"]["numTerrains"], (self.num_envs,), device=self.device
-        )
-        self._create_trimesh(create_mesh=create_mesh)
-        self.terrain_origins = torch.from_numpy(self.terrain.env_origins).to(self.device).to(torch.float)
-
-    def get_robot(self):
-        robot_translation = torch.tensor([0.0, 0.0, 0.0])
-        robot_orientation = torch.tensor([1.0, 0.0, 0.0, 0.0])
-        robot = Robot_v10(
-            prim_path=self.default_zero_env_path + "/robot",
-            name="robot",
-            translation=robot_translation,
-            orientation=robot_orientation,
-        )
-        self._sim_config.apply_articulation_settings(
-            "robot", get_prim_at_path(robot.prim_path), self._sim_config.parse_actor_config("robot")
-        )
-        robot.set_robot_properties(self._stage, robot.prim)
-
-        
-    def post_reset(self):
-        self.base_init_state = torch.tensor(self.base_init_state, dtype=torch.float, device=self.device, requires_grad=False)
-        self.dof_init_state = torch.tensor(self.dof_init_state, dtype=torch.float, device=self.device, requires_grad=False)
-
-        self.timeout_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
-        self.episode_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
-
-        self.up_axis_idx = 2
-        self.common_step_counter = 0
-        self.extras = {}
-        self.commands = torch.zeros(
-            self.num_envs, 4, dtype=torch.float, device=self.device, requires_grad=False
-        )
-        self.commands_scale = torch.tensor(
-            [self.lin_vel_scale, self.lin_vel_scale, self.ang_vel_scale],
-            device=self.device,
-            requires_grad=False,
-        )        
-        self.gravity_vec = torch.tensor(
-            get_axis_params(-1.0, self.up_axis_idx), dtype=torch.float, device=self.device
-        ).repeat((self.num_envs, 1))
-        self.forward_vec = torch.tensor([1.0, 0.0, 0.0], dtype=torch.float, device=self.device).repeat(
-            (self.num_envs, 1)
-        )
-        
-        self.torques = torch.zeros(
-            self.num_envs, 4, dtype=torch.float, device=self.device, requires_grad=False
-        )
-        self.actions = torch.zeros(
-            self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False
-        )
-        self.last_actions = torch.zeros(
-            self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False
-        )
-
-        self.last_dof_vel = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
-        self.last_torq_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
-
-        for i in range(self.num_envs):
-            self.env_origins[i] = self.terrain_origins[self.terrain_levels[i], self.terrain_types[i]]
-        self.num_dof = self._robots.num_dof 
-        self.dof_pos = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
-        self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
-        self.dof_acc = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
-        self.dof_effort = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
-        self.base_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
-        self.base_quat = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device)
-        self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
-
-        indices = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
-        self.reset_idx(indices)
-        self.init_done = True
+    def compute(self, inputs, role):
+        return self.net(inputs["states"]), {}
 
 
-    def reset_idx(self, env_ids):
-        indices = env_ids.to(dtype=torch.int32)
+# instantiate and configure the task
+headless = True  # set headless to False for rendering
 
-        self.update_terrain_level(env_ids)
-        self.base_pos[env_ids] = self.base_init_state[0:3]
-        self.base_pos[env_ids, 0:3] += self.env_origins[env_ids]
-        self.base_pos[env_ids, 0:2] += torch_rand_float(-0.5, 0.5, (len(env_ids), 2), device=self.device)
-        self.base_quat[env_ids] = self.base_init_state[3:7]
-        self.base_velocities[env_ids] = self.base_init_state[7:]
+env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
-        self.dof_vel[env_ids] = self.dof_init_state[4:8]
-        self.dof_effort[env_ids] = self.dof_init_state[0:4]
+from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
+from my_envs.PPOc_rooms_r15_Forestry import ReachingTargetTask, TASK_CFG
+from argparse import ArgumentParser 
+
+arg_parser = ArgumentParser()
+arg_parser.add_argument("--linearVelocityXYRewardScale", type=float, default=1.0)
+arg_parser.add_argument("--linearVelocityZRewardScale", type=float, default=-4.0)
+arg_parser.add_argument("--angularVelocityXYRewardScale", type=float, default=-0.5)
+arg_parser.add_argument("--actionRateRewardScale", type=float, default=-0.05)
+arg_parser.add_argument("--fallenOverRewardScale", type=float, default=-200.0)
+arg_parser.add_argument("--slipLongitudinalRewardScale", type=float, default=-5.0)
+arg_parser.add_argument("--stiffness", type=float, default=0.05)
+arg_parser.add_argument("--damping", type=float, default=0.005)
+arg_parser.add_argument("--torq_constant", type=float, default=7.2)
+arg_parser.add_argument("--torq_FF_gain", type=float, default=0.1)
+arg_parser.add_argument("--static_friction", type=float, default=1.0)
+arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
+arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
+arg_parser.add_argument("--linear_x", type=float, default=1.0)
+
+parsed_config = arg_parser.parse_args().__dict__
+
+TASK_CFG["seed"] = seed
+TASK_CFG["headless"] = headless
+TASK_CFG["task"]["env"]["numEnvs"] = 16
+
+# sweep reward components
+TASK_CFG["task"]["env"]["learn"]["linearVelocityXYRewardScale"] = parsed_config["linearVelocityXYRewardScale"]
+TASK_CFG["task"]["env"]["learn"]["linearVelocityZRewardScale"] = parsed_config["linearVelocityZRewardScale"]
+TASK_CFG["task"]["env"]["learn"]["angularVelocityXYRewardScale"] = parsed_config["angularVelocityXYRewardScale"]
+TASK_CFG["task"]["env"]["learn"]["actionRateRewardScale"] = parsed_config["actionRateRewardScale"]
+TASK_CFG["task"]["env"]["learn"]["fallenOverRewardScale"] = parsed_config["fallenOverRewardScale"]
+TASK_CFG["task"]["env"]["learn"]["slipLongitudinalRewardScale"] = parsed_config["slipLongitudinalRewardScale"]
+
+# control
+TASK_CFG["task"]["env"]["control"]["stiffness"] = parsed_config["stiffness"]
+TASK_CFG["task"]["env"]["control"]["damping"] = parsed_config["damping"]
+TASK_CFG["task"]["env"]["control"]["torq_constant"] = parsed_config["torq_constant"]
+TASK_CFG["task"]["env"]["control"]["torq_FF_gain"] = parsed_config["torq_FF_gain"]
+
+# friction
+TASK_CFG["task"]["sim"]["default_physics_material"]["static_friction"] = parsed_config["static_friction"]
+TASK_CFG["task"]["sim"]["default_physics_material"]["dynamic_friction"] = parsed_config["dynamic_friction"]
+
+# commands
+TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["yaw_constant"] = parsed_config["yaw_constant"]
+TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["linear_x"] = parsed_config["linear_x"]
+
+sim_config = SimConfig(TASK_CFG)
+task = ReachingTargetTask(name="ReachingTarget", sim_config=sim_config, env=env)
+env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="torch", init_sim=True)
+
+
+# wrap the environment
+env = wrap_env(env, "omniverse-isaacgym")
+
+device = env.device
+
+# instantiate a memory as experience replay
+memory = RandomMemory(memory_size=1024, num_envs=env.num_envs, device=device, replacement=False)
+
+
+# Instantiate the agent's models.
+models_ppo = {}
+models_ppo["policy"] = Policy(env.observation_space, env.action_space, device)
+models_ppo["value"] = Value(env.observation_space, env.action_space, device)
+
+
+# Configure PPO agent hyperparameters.
+PPO_DEFAULT_CONFIG = {
+    "rollouts": 16,
+    "learning_epochs": 8,
+    "mini_batches": 2,
+    "discount_factor": 0.99,
+    "lambda": 0.95,
+    "learning_rate": 1e-3,
+    "learning_rate_scheduler": None,
+    "learning_rate_scheduler_kwargs": {},
+    "state_preprocessor": None,
+    "state_preprocessor_kwargs": {},
+    "value_preprocessor": None,
+    "value_preprocessor_kwargs": {},
+    "random_timesteps": 0,
+    "learning_starts": 0,
+    "grad_norm_clip": 0.5,
+    "ratio_clip": 0.2,
+    "value_clip": 0.2,
+    "clip_predicted_values": False,
+    "entropy_loss_scale": 0.0,
+    "value_loss_scale": 1.0,
+    "kl_threshold": 0,
+    "rewards_shaper": None,
+    "time_limit_bootstrap": False,
+    "experiment": {
+        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_rooms_r15_Forestry",
+        "experiment_name": "PPOc_rooms_r15_Forestry",
+        "write_interval": "auto",
+        "checkpoint_interval": "auto",
+        "store_separately": False,
+        "wandb": True,
+        "wandb_kwargs": {"project": "PPO_curriculum",
+                         "entity": "meesjansen-Delft Technical University",
+                         "name": "PPOc_rooms_r15_Forestry",
+                         "tags": ["PPOc", "Curriculum", "r15", "o163", "torq", "Forestry"],
+                         "dir": "/workspace/Options_In_Simulation/my_runs"}    
+                    }
+    }
+
+cfg_ppo = PPO_DEFAULT_CONFIG.copy()
+cfg_ppo["rollouts"] = 1024
+cfg_ppo["learning_epochs"] = 5
+cfg_ppo["mini_batches"] = 6
+cfg_ppo["discount_factor"] = 0.99
+cfg_ppo["lambda"] = 0.95
+cfg_ppo["learning_rate"] = 3e-4
+cfg_ppo["learning_rate_scheduler"] = KLAdaptiveRL
+cfg_ppo["learning_rate_scheduler_kwargs"] = {"kl_threshold": 0.008}
+cfg_ppo["random_timesteps"] = 0
+cfg_ppo["learning_starts"] = 0 
+cfg_ppo["grad_norm_clip"] = 1.0
+cfg_ppo["ratio_clip"] = 0.2
+cfg_ppo["value_clip"] = 0.2
+cfg_ppo["clip_predicted_values"] = True
+cfg_ppo["entropy_loss_scale"] = 0.001
+cfg_ppo["value_loss_scale"] = 1.0
+cfg_ppo["kl_threshold"] = 0
+cfg_ppo["rewards_shaper"] = None
+cfg_ppo["state_preprocessor"] = RunningStandardScaler
+cfg_ppo["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
+cfg_ppo["value_preprocessor"] = RunningStandardScaler
+cfg_ppo["value_preprocessor_kwargs"] = {"size": 1, "device": device}
+cfg_ppo["experiment"]["write_interval"] = 100
+cfg_ppo["experiment"]["checkpoint_interval"] = 20_000
+
+
+agent = PPO(models=models_ppo,
+            memory=memory,
+            cfg=cfg_ppo,
+            observation_space=env.observation_space,
+            action_space=env.action_space,
+            device=device)
+
+# --- NEW: Warm-Start Phase ---
+# In this phase we warm-start the networks by training the actor using an imitation (MSE) loss
+# against the expert (heuristic) commands, while simultaneously updating the critic using a one-step TD loss.
+WARM_START = True
+WARM_START_TIMESTEPS = 10000  # adjust as desired
+gamma = 0.99  # discount factor for critic update
+
+if WARM_START:
+    print("Starting warm-start training using imitation learning and TD critic updates...")
+    # Enable warm-start mode in the environment so that it uses the heuristic for expert actions.
+    task.warm_start = True
+    # Do NOT freeze the critic; use a single optimizer for both networks.
+    warm_optimizer = torch.optim.Adam(
+        list(agent.models["policy"].parameters()) + list(agent.models["value"].parameters()),
+        lr=cfg_ppo["learning_rate"]
+    )
+    mse_loss_fn = nn.MSELoss()
     
-        self._robots.set_world_poses(
-            positions=self.base_pos[env_ids].clone(), orientations=self.base_quat[env_ids].clone(), indices=indices
-        )
-        self._robots.set_velocities(velocities=self.base_velocities[env_ids].clone(), indices=indices)
-        self._robots.set_joint_efforts(self.dof_effort[env_ids].clone(), indices=indices)
-        self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
+    # Reset the environment (Gym v0.26+ reset returns (obs, infos))
+    obs, infos = env.reset()
+    for step in range(WARM_START_TIMESTEPS):
+         # Save the current state.
+         state = obs
+         
+         # Use a dummy action (the environment will use its heuristic when in warm-start mode)
+         dummy_action = torch.zeros(env.action_space.shape, device=device)
+         # Step the environment and unpack 5 values (obs, reward, terminated, truncated, extras)
+         obs, reward, terminated, truncated, extras = env.step(dummy_action)
+         done = terminated | truncated
+         next_state = obs
 
-        self.commands[env_ids, 0] = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_x"]
-        self.commands[env_ids, 1] = torch_rand_float(
-            self.command_y_range[0], self.command_y_range[1], (len(env_ids), 1), device=self.device
-        ).squeeze()
-        self.commands[env_ids, 3] = torch_rand_float(
-            self.command_yaw_range[0], self.command_yaw_range[1], (len(env_ids), 1), device=self.device
-        ).squeeze()
-        self.commands[env_ids] *= (torch.norm(self.commands[env_ids, :2], dim=1) > 0.25).unsqueeze(1)
+         # --- Compute losses ---
+         # Actor imitation loss: MSE between actor output and expert actions.
+         expert_actions = extras["expert_actions"]
+         policy_output, _, _ = agent.models["policy"].compute({"states": state}, role="policy")
+         actor_loss = mse_loss_fn(policy_output, expert_actions)
+         
+         # Critic loss: one-step TD error.
+         value_est, _ = agent.models["value"].compute({"states": state}, role="value")
+         with torch.no_grad():
+             next_value, _ = agent.models["value"].compute({"states": next_state}, role="value")
+             # If done, do not bootstrap next value.
+             target_value = reward + gamma * next_value * (~done).float()
+         critic_loss = mse_loss_fn(value_est, target_value)
+         
+         total_loss = actor_loss + critic_loss
+         
+         warm_optimizer.zero_grad()
+         total_loss.backward()
+         warm_optimizer.step()
+         
+         if step % 100 == 0:
+             print(f"Warm start step {step}: Actor Loss = {actor_loss.item():.4f}, Critic Loss = {critic_loss.item():.4f}")
+         
+         # Reset the environment if any episode is done.
+         if done.any():
+             obs, infos = env.reset()
+    print("Warm-start training completed. Transitioning to PPO training...")
+    # Disable warm-start mode.
+    task.warm_start = False
 
-        self.last_actions[env_ids] = 0.0
-        self.last_dof_vel[env_ids] = 0.0
-        self.progress_buf[env_ids] = 0
-        self.episode_buf[env_ids] = 0 
+# Configure and instantiate the RL trainer.
+cfg_trainer = {"timesteps": 307_206, "headless": True}
+trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
-        self.extras["episode"] = {}
-        for key in self.episode_sums.keys():
-            self.extras["episode"]["rew_" + key] = (
-                torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
-            )
-            self.episode_sums[key][env_ids] = 0.0
-        self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
-
-    def update_terrain_level(self, env_ids):
-        if not self.init_done or not self.curriculum:
-            return
-        root_pos, _ = self._robots.get_world_poses(clone=False)
-        distance = torch.norm(root_pos[env_ids, :2] - self.env_origins[env_ids, :2], dim=1)
-        self.terrain_levels[env_ids] -= 1 * (
-            distance < self.commands[env_ids, 0] * self.max_episode_length_s * 0.5
-        )
-        self.terrain_levels[env_ids] += 1 * (distance > self.terrain.env_length / 2)
-        self.terrain_levels[env_ids] = torch.clip(self.terrain_levels[env_ids], 0) % self.terrain.env_rows
-        self.env_origins[env_ids] = self.terrain_origins[self.terrain_levels[env_ids], self.terrain_types[env_ids]]
-        
-    def refresh_dof_state_tensors(self):
-        self.dof_pos = self._robots.get_joint_positions(clone=False)
-        self.dof_vel = self._robots.get_joint_velocities(clone=False)
-
-    def refresh_body_state_tensors(self):
-        self.base_pos, self.base_quat = self._robots.get_world_poses(clone=False)
-        self.base_velocities = self._robots.get_velocities(clone=False)
-    
-
-    def pre_physics_step(self, actions):
-        if not self.world.is_playing():
-            return
-            
-        # During warm-start, we override the given actions with the heuristic actions.
-        if self.warm_start:
-            self.actions = self.get_heuristic_actions()
-        else:
-            self.actions = actions.clone().to(self.device)
-
-        for _ in range(self.decimation):
-            if self.world.is_playing():
-                wheel_torq = self.action_scale * self.actions
-                
-                sign_vel = torch.sign(self.dof_vel)
-                sign_torq = torch.sign(wheel_torq)
-                over_speed = torch.abs(self.dof_vel) > 4.25
-
-                clamp_mask = over_speed & (sign_vel == sign_torq)
-                wheel_torq[clamp_mask] = 0.0
-
-                wheel_torqs = torch.clip(wheel_torq, -80.0, 80.0)
-
-                self._robots.set_joint_efforts(wheel_torqs)
-
-                SimulationContext.step(self.world, render=False)
-                self.refresh_dof_state_tensors()
-
-
-    def post_physics_step(self):
-        self.progress_buf[:] += 1
-        self.episode_buf[:] += 1
-        
-        if self.world.is_playing():
-            self.refresh_dof_state_tensors()
-            self.refresh_body_state_tensors()
-
-            self.common_step_counter += 1
-            if self.common_step_counter % self.push_interval == 0:
-                self.push_robots()
-
-            self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 0:3])
-            self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 3:6])
-            self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
-            forward = quat_apply(self.base_quat, self.forward_vec)
-            heading = torch.atan2(forward[:, 1], forward[:, 0])
-            self.commands[:, 2] = torch.clip(self.yaw_constant * wrap_to_pi(self.commands[:, 3] - heading), -1.0, 1.0)
-
-            self.is_done()
-            self.get_states()
-            self.calculate_metrics()
-            
-            env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
-            if len(env_ids) > 0:
-                self.reset_idx(env_ids)
-
-            self.get_observations()
-            
-            self.last_actions[:] = self.actions[:]
-            self.last_dof_vel[:] = self.dof_vel[:]
-
-        # --- NEW: During warm-start, add expert actions to extras for imitation learning ---
-        if self.warm_start:
-            self.extras["expert_actions"] = self.get_heuristic_actions()
-
-        return self.obs_buf, self.rew_buf, self.reset_buf, self.extras
-
-    def push_robots(self):
-        self.base_velocities[:, 0:2] = torch_rand_float(
-            -1.0, 1.0, (self.num_envs, 2), device=self.device
-        )
-        self._robots.set_velocities(self.base_velocities)
-    
-
-    def is_done(self):
-        self.reset_buf.fill_(0)
-
-        self.timeout_buf = torch.where(
-            self.episode_buf >= self.max_episode_length - 1,
-            torch.ones_like(self.timeout_buf),
-            torch.zeros_like(self.timeout_buf),
-        ) 
-
-        projected_gravity = quat_apply(self.base_quat, self.gravity_vec)
-
-        positive_gravity_z_threshold = 0.0
-        self.has_fallen = projected_gravity[:, 2] > positive_gravity_z_threshold
-        self.reset_buf = self.has_fallen.clone()
-
-        self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)
-
-    
-    def calculate_metrics(self) -> torch.Tensor:
-        # Compute reward components as usual.
-        lin_vel_error = torch.square(self.commands[:, 0] - self.base_lin_vel[:, 0])
-        ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2])
-        rew_lin_vel_xy = torch.exp(-lin_vel_error / 0.25) * self.rew_scales["lin_vel_xy"]
-        rew_ang_vel_z = torch.exp(-ang_vel_error / 0.25) * self.rew_scales["ang_vel_z"]
-
-        rew_lin_vel_z = torch.square(self.base_lin_vel[:, 2]) * self.rew_scales["lin_vel_z"]
-        rew_ang_vel_xy = torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1) * self.rew_scales["ang_vel_xy"]
-
-        rew_fallen_over = self.has_fallen * self.rew_scales["fallen_over"]
-
-        rew_action_rate = (
-            torch.sum(torch.square(self.last_actions - self.actions), dim=1) * self.rew_scales["action_rate"]
-        )
-
-        v_wheel = self.r * self.dof_vel
-        base_lin_vel_expanded = self.base_lin_vel[:, 0].unsqueeze(1).expand(-1, v_wheel.shape[1])
-        self.lambda_slip = (v_wheel - base_lin_vel_expanded) / torch.maximum(v_wheel, base_lin_vel_expanded)
-        self.k_lambda = 0.3
-
-        rew_slip_longitudinal = torch.prod(torch.exp(-0.5 * (self.lambda_slip / self.k_lambda) ** 2), dim=1) * self.rew_scales["slip_longitudinal"]
-
-        self.rew_buf = (
-            rew_lin_vel_xy
-            + rew_ang_vel_z
-            + rew_lin_vel_z
-            + rew_ang_vel_xy
-            + rew_action_rate
-            + rew_fallen_over
-            + rew_slip_longitudinal
-        )
-
-        self.rew_buf = torch.clip(self.rew_buf, min=0.0, max=None)
-        self.rew_buf += self.rew_scales["termination"] * self.reset_buf * ~self.timeout_buf
-
-        self.episode_sums["lin_vel_xy"] += rew_lin_vel_xy
-        self.episode_sums["ang_vel_z"] += rew_ang_vel_z
-        self.episode_sums["lin_vel_z"] += rew_lin_vel_z
-        self.episode_sums["ang_vel_xy"] += rew_ang_vel_xy
-        self.episode_sums["action_rate"] += rew_action_rate
-        self.episode_sums["fallen_over"] += rew_fallen_over
-        self.episode_sums["slip_longitudinal"] += rew_slip_longitudinal
-
-        self.reward_components = {
-            "rew_lin_vel_xy": rew_lin_vel_xy.mean().item(),
-            "rew_ang_vel_z": rew_ang_vel_z.mean().item(),
-            "rew_lin_vel_z": rew_lin_vel_z.mean().item(),
-            "rew_ang_vel_xy": rew_ang_vel_xy.mean().item(),
-            "rew_action_rate": rew_action_rate.mean().item(),
-            "rew_fallen_over": rew_fallen_over.mean().item(),
-            "rew_slip_longitudinal": rew_slip_longitudinal.mean().item(),
-        }
-      
-        return self.rew_buf
-
-
-    def get_observations(self):
-        self.measured_heights = self.get_heights()
-        heights = (
-            torch.clip(self.base_pos[:, 2].unsqueeze(1) - 0.5 - self.measured_heights, -1, 1.0) * self.height_meas_scale
-        )
-        self.obs_buf = torch.cat(
-            (
-                self.base_lin_vel * self.lin_vel_scale,
-                self.base_ang_vel * self.ang_vel_scale,
-                self.projected_gravity,
-                (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1),
-                (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1),
-                self.dof_vel * self.r * self.dof_vel_scale,
-                self.action_scale * self.actions,
-                self.lambda_slip,
-                heights,
-            ),
-            dim=-1,
-        )
-                    
-        return {self._robots.name: {"obs_buf": self.obs_buf}}
-    
-
-    def get_heights(self, env_ids=None):
-        if env_ids:
-            points = quat_apply_yaw(
-                self.base_quat[env_ids].repeat(1, self.num_height_points), self.height_points[env_ids]
-            ) + (self.base_pos[env_ids, 0:3]).unsqueeze(1)
-        else:
-            points = quat_apply_yaw(self.base_quat.repeat(1, self.num_height_points), self.height_points) + (
-                self.base_pos[:, 0:3]
-            ).unsqueeze(1)
-
-        points += self.terrain.border_size
-        points = (points / self.terrain.horizontal_scale).long()
-        px = points[:, :, 0].view(-1)
-        py = points[:, :, 1].view(-1)
-        px = torch.clip(px, 0, self.height_samples.shape[0] - 2)
-        py = torch.clip(py, 0, self.height_samples.shape[1] - 2)
-
-        heights1 = self.height_samples[px, py]
-        heights2 = self.height_samples[px + 1, py + 1]
-        heights = torch.min(heights1, heights2)
-
-        return heights.view(self.num_envs, -1) * self.terrain.vertical_scale
-
-
-@torch.jit.script
-def quat_apply_yaw(quat, vec):
-    quat_yaw = quat.clone().view(-1, 4)
-    quat_yaw[:, 1:3] = 0.0
-    quat_yaw = normalize(quat_yaw)
-    return quat_apply(quat_yaw, vec)
-
-
-@torch.jit.script
-def wrap_to_pi(angles):
-    angles %= 2 * np.pi
-    angles -= 2 * np.pi * (angles > np.pi)
-    return angles
-
-
-def get_axis_params(value, axis_idx, x_value=0.0, dtype=float, n_dims=3):
-    zs = np.zeros((n_dims,))
-    assert axis_idx < n_dims, "the axis dim should be within the vector dimensions"
-    zs[axis_idx] = 1.0
-    params = np.where(zs == 1.0, value, zs)
-    params[0] = x_value
-    return list(params.astype(dtype))
-
-
-# --- NEW: Handcrafted heuristic function for warm-start ---
-def get_heuristic_actions(self):
-    expert_action_value = 0.5  # constant value; adjust as needed
-    return torch.full((self.num_envs, self._num_actions), expert_action_value, device=self.device)
-
-# Bind the method to the class.
-ReachingTargetTask.get_heuristic_actions = get_heuristic_actions
+# Start PPO training.
+trainer.train()
