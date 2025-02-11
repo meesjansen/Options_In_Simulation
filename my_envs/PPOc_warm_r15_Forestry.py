@@ -609,6 +609,10 @@ class ReachingTargetTask(RLTask):
     def calculate_metrics(self) -> None:
         # --- MODIFICATION: During warm-start, disable reward calculations ---
         if self.warm_start:
+            v_wheel = self.r * self.dof_vel  # v_wheel = r * omega
+            base_lin_vel_expanded = self.base_lin_vel[:, 0].unsqueeze(1).expand(-1, v_wheel.shape[1])
+            self.lambda_slip = (v_wheel - base_lin_vel_expanded) / torch.maximum(v_wheel, base_lin_vel_expanded)
+
             self.rew_buf = torch.zeros(self.num_envs, device=self.device)
             return self.rew_buf
 
@@ -629,11 +633,7 @@ class ReachingTargetTask(RLTask):
             torch.sum(torch.square(self.last_actions - self.actions), dim=1) * self.rew_scales["action_rate"]
         )
 
-        v_wheel = self.r * self.dof_vel  # v_wheel = r * omega
-        base_lin_vel_expanded = self.base_lin_vel[:, 0].unsqueeze(1).expand(-1, v_wheel.shape[1])
-        self.lambda_slip = (v_wheel - base_lin_vel_expanded) / torch.maximum(v_wheel, base_lin_vel_expanded)
         self.k_lambda = 0.3
-
         rew_slip_longitudinal = torch.prod(torch.exp(-0.5 * (self.lambda_slip / self.k_lambda) ** 2), dim=1) * self.rew_scales["slip_longitudinal"]
 
         self.rew_buf = (
