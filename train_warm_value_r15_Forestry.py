@@ -208,7 +208,7 @@ agent = PPO(models=models_ppo,
 # In this phase we warm-start the networks by training the actor using an imitation (MSE) loss
 # against the expert (heuristic) commands, while simultaneously updating the critic using a one-step TD loss.
 WARM_START = True
-WARM_START_TIMESTEPS = 10000  # adjust as desired
+WARM_START_TIMESTEPS = 1000  # adjust as desired
 gamma = 0.99  # discount factor for critic update
 
 if WARM_START:

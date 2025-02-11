@@ -208,7 +208,7 @@ agent = PPO(models=models_ppo,
 # --- NEW: Warm-Start Phase ---
 # Here we perform supervised learning using MSE loss between the policy outputs and the handcrafted expert actions.
 WARM_START = True
-WARM_START_TIMESTEPS = 10000  # adjust the number of warm-start timesteps as desired
+WARM_START_TIMESTEPS = 1000  # adjust the number of warm-start timesteps as desired
 
 if WARM_START:
     print("Starting warm-start training using supervised learning (MSE loss)...")
