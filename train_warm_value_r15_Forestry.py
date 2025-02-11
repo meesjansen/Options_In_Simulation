@@ -156,16 +156,16 @@ PPO_DEFAULT_CONFIG = {
     "rewards_shaper": None,
     "time_limit_bootstrap": False,
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_rooms_r15_Forestry",
-        "experiment_name": "PPOc_rooms_r15_Forestry",
+        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_warm_value_r15_Forestry",
+        "experiment_name": "PPOc_warm_value_r15_Forestry",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "PPO_curriculum",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "PPOc_rooms_r15_Forestry",
-                         "tags": ["PPOc", "Curriculum", "r15", "o163", "torq", "Forestry"],
+                         "name": "PPOc_warm_value_r15_Forestry",
+                         "tags": ["PPOc", "warm_value_Curriculum", "r15", "o163", "torq", "Forestry"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
     }
