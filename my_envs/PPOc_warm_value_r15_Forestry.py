@@ -67,6 +67,7 @@ TASK_CFG = {"test": False,
                                        "dofPositionScale": 1.0,
                                        "dofVelocityScale": 0.05,
                                        "heightMeasurementScale": 5.0,
+                                       "lambdaSlipScale": 10.0,
                                        "terminalReward": 0.0,
                                        "linearVelocityXYRewardScale": 1.0,
                                        "linearVelocityZRewardScale": -4.0,
@@ -235,6 +236,7 @@ class ReachingTargetTask(RLTask):
         self.dof_vel_scale = self._task_cfg["env"]["learn"]["dofVelocityScale"]
         self.height_meas_scale = self._task_cfg["env"]["learn"]["heightMeasurementScale"]
         self.action_scale = self._task_cfg["env"]["control"]["actionScale"]
+        self.lambda_slip_scale = self._task_cfg["env"]["learn"]["lambdaSlipScale"]
 
         # reward scales
         self.rew_scales = {}
@@ -522,7 +524,7 @@ class ReachingTargetTask(RLTask):
 
                 # Condition: over_speed AND same sign of velocity & torque → set torque = 0
                 clamp_mask = over_speed & (sign_vel == sign_torq)
-                
+
                 wheel_torq[clamp_mask] = 0.0
 
                 wheel_torqs = torch.clip(wheel_torq, -80.0, 80.0)
@@ -676,8 +678,8 @@ class ReachingTargetTask(RLTask):
                 (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1),    # (num_envs, 1)
                 (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1),
                 self.dof_vel * self.r * self.dof_vel_scale,
-                self.action_scale * self.actions,
-                self.lambda_slip,
+                self.action_scale,
+                self.lambda_slip * self.lambda_slip_scale,
                 heights,
             ),
             dim=-1,
