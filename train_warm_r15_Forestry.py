@@ -221,21 +221,22 @@ if WARM_START:
     warm_optimizer = torch.optim.Adam(agent.models["policy"].parameters(), lr=cfg_ppo["learning_rate"])
     mse_loss_fn = nn.MSELoss()
     
-    # Reset the environment (note: Gym v0.26+ reset returns (obs, infos))
+    # Reset the environment (Gym v0.26+ reset returns (obs, infos))
     obs, infos = env.reset()
     for step in range(WARM_START_TIMESTEPS):
          # In warm-start mode the environment ignores the provided action and uses the heuristic.
          dummy_action = torch.zeros(env.action_space.shape, device=device)
-         # Unpack 5 values from env.step as per Gym API: obs, reward, terminated, truncated, extras
+         # Unpack 5 values from env.step (obs, reward, terminated, truncated, extras)
          obs, reward, terminated, truncated, extras = env.step(dummy_action)
          # Combine termination and truncation flags into one "done" signal
          done = terminated | truncated
 
-         # Extract the state tensor from the observation.
-         # (The observation dict key corresponds to the robot view name, e.g., "robot_view")
-         state = obs["robot_view"]["obs_buf"]
+         # Use the observation tensor directly (no dictionary indexing needed)
+         state = obs
+
          # Extract the expert actions provided by the environment.
          expert_actions = extras["expert_actions"]
+
          # Forward pass through the policy network.
          policy_output, _, _ = agent.models["policy"].compute({"states": state}, role="policy")
          loss = mse_loss_fn(policy_output, expert_actions)
@@ -244,7 +245,6 @@ if WARM_START:
          warm_optimizer.step()
          if step % 100 == 0:
              print(f"Warm start step {step}: MSE Loss = {loss.item()}")
-         # Reset the environment if done (reset returns a tuple (obs, infos))
          if done.any():
              obs, infos = env.reset()
     print("Warm-start training completed. Transitioning to PPO training...")
