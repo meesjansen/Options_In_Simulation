@@ -522,8 +522,7 @@ class ReachingTargetTask(RLTask):
 
                 # Condition: over_speed AND same sign of velocity & torque → set torque = 0
                 clamp_mask = over_speed & (sign_vel == sign_torq)
-                print(clamp_mask)
-                print(wheel_torq)
+                
                 wheel_torq[clamp_mask] = 0.0
 
                 wheel_torqs = torch.clip(wheel_torq, -80.0, 80.0)
