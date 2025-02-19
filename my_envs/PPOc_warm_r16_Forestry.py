@@ -84,7 +84,7 @@ TASK_CFG = {"test": False,
                                        "slipLongitudinalRewardScale": -5.0,
                                        "episodeLength_s": 15.0,
                                        "pushInterval_s": 20.0,},
-                            "randomCommandVelocityRanges": {"linear_x": [0.0, 0.25], # [m/s]
+                            "randomCommandVelocityRanges": {"linear_x": 0.0, # [m/s]
                                                             "linear_y": [-0.5, 0.5], # [m/s]
                                                             "yaw": [-3.14, 3.14], # [rad/s]
                                                             "yaw_constant": 0.5,},   # [rad/s]
@@ -281,8 +281,6 @@ class ReachingTargetTask(RLTask):
         self.Kp = self._task_cfg["env"]["control"]["stiffness"]
         self.Kd = self._task_cfg["env"]["control"]["damping"]
         self.r = self._task_cfg["env"]["control"]["wheel_radius"]
-        self.torq_constant = self._task_cfg["env"]["control"]["torq_constant"]
-        self.torq_FF_gain = self._task_cfg["env"]["control"]["torq_FF_gain"]
         self.curriculum = self._task_cfg["env"]["terrain"]["curriculum"]
       
         for key in self.rew_scales.keys():
