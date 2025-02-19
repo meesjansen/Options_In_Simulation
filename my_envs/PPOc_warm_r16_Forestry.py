@@ -461,7 +461,7 @@ class ReachingTargetTask(RLTask):
         self._robots.set_joint_efforts(self.dof_effort[env_ids].clone(), indices=indices)
         self._robots.set_joint_velocities(velocities=self.dof_vel[env_ids].clone(), indices=indices)   
 
-        # self.commands[env_ids, 0] = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_x"]
+        self.commands[env_ids, 0] = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_x"]
         self.commands[env_ids, 1] = torch_rand_float(
             self.command_y_range[0], self.command_y_range[1], (len(env_ids), 1), device=self.device
         ).squeeze()

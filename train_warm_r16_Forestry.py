@@ -77,7 +77,7 @@ arg_parser.add_argument("--torq_FF_gain", type=float, default=0.1)
 arg_parser.add_argument("--static_friction", type=float, default=1.0)
 arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
-arg_parser.add_argument("--linear_x", type=float, default=1.0)
+arg_parser.add_argument("--linear_x", type=float, default=0.0)
 
 parsed_config = arg_parser.parse_args().__dict__
 
