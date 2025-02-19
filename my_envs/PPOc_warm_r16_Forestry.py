@@ -1,4 +1,5 @@
 import torch
+import math
 import numpy as np
 import gym
 from gym import spaces
@@ -321,7 +322,7 @@ class ReachingTargetTask(RLTask):
         self.height_samples = (
             torch.tensor(self.terrain.heightsamples).view(self.terrain.tot_rows, self.terrain.tot_cols).to(self.device)
         )
-        print(f"height_samples: {self.height_samples.shape}")
+        print(f"height_samples: {self.height_samples}")
 
     def set_up_scene(self, scene) -> None:
         self._stage = get_current_stage()
