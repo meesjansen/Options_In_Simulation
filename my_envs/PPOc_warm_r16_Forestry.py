@@ -511,7 +511,7 @@ class ReachingTargetTask(RLTask):
         mask = self.distance[env_ids] > self.max_distance[env_ids]
         self.max_distance[env_ids][mask] = self.distance[env_ids][mask]
         mask = self.distance[env_ids] > (self.commands[env_ids, 0] * self.max_episode_length_s * 0.5)
-        self.max_distance[env_ids][mask] = torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
+        self.max_distance[env_ids][mask] = 0.0
         
     def sample_velocity_command(self, env_id: int):
         """
