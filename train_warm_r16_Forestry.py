@@ -222,41 +222,41 @@ print("Starting warm-start training using supervised learning (MSE loss) for mul
 # Define expert (heuristic) functions for each phase.
 def expert_straight(num_envs, num_actions, device):
     # All wheels same torque (e.g., 0.5)
-    return torch.full((num_envs, num_actions), 0.5, device=device)
+    return torch.full((num_envs, num_actions), 0.05, device=device)
 
 def expert_rotate_left(num_envs, num_actions, device):
     # Order assumed: [front_left, front_right, rear_left, rear_right]
     actions = torch.zeros((num_envs, num_actions), device=device)
-    actions[:, 0] = 0.5   # front_left positive
-    actions[:, 1] = -0.5  # front_right negative
-    actions[:, 2] = 0.5   # rear_left positive
-    actions[:, 3] = -0.5  # rear_right negative
+    actions[:, 0] = 0.05   # front_left positive
+    actions[:, 1] = -0.05  # front_right negative
+    actions[:, 2] = 0.05   # rear_left positive
+    actions[:, 3] = -0.05  # rear_right negative
     return actions
 
 def expert_rotate_right(num_envs, num_actions, device):
     actions = torch.zeros((num_envs, num_actions), device=device)
-    actions[:, 0] = -0.5  # front_left negative
-    actions[:, 1] = 0.5   # front_right positive
-    actions[:, 2] = -0.5  # rear_left negative
-    actions[:, 3] = 0.5   # rear_right positive
+    actions[:, 0] = -0.05  # front_left negative
+    actions[:, 1] = 0.05   # front_right positive
+    actions[:, 2] = -0.05  # rear_left negative
+    actions[:, 3] = 0.05   # rear_right positive
     return actions
 
 def expert_circle_left(num_envs, num_actions, device):
     # Forward torque on all wheels, with left wheels slightly lower torque than right wheels.
     actions = torch.zeros((num_envs, num_actions), device=device)
-    actions[:, 0] = 0.4  # front_left
-    actions[:, 1] = 0.6  # front_right
-    actions[:, 2] = 0.4  # rear_left
-    actions[:, 3] = 0.6  # rear_right
+    actions[:, 0] = 0.04  # front_left
+    actions[:, 1] = 0.06  # front_right
+    actions[:, 2] = 0.04  # rear_left
+    actions[:, 3] = 0.06  # rear_right
     return actions
 
 def expert_circle_right(num_envs, num_actions, device):
     # Forward torque on all wheels, with left wheels slightly higher torque than right wheels.
     actions = torch.zeros((num_envs, num_actions), device=device)
-    actions[:, 0] = 0.6  # front_left
-    actions[:, 1] = 0.4  # front_right
-    actions[:, 2] = 0.6  # rear_left
-    actions[:, 3] = 0.4  # rear_right
+    actions[:, 0] = 0.06  # front_left
+    actions[:, 1] = 0.04  # front_right
+    actions[:, 2] = 0.06  # rear_left
+    actions[:, 3] = 0.04  # rear_right
     return actions
 
 # List of warm-start phases: (phase_name, expert_function, num_timesteps)
