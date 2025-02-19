@@ -508,10 +508,10 @@ class ReachingTargetTask(RLTask):
         self.env_origins[env_ids] = self.terrain_origins[self.terrain_levels[env_ids], self.terrain_types[env_ids]]
 
 
-        if self.distance[env_ids] > self.max_distance[env_ids]:
-            self.max_distance[env_ids] = self.distance[env_ids]
-        if self.distance[env_ids] > self.commands[env_ids, 0] * self.max_episode_length_s * 0.5:
-            self.max_distance = torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
+        mask = self.distance[env_ids] > self.max_distance[env_ids]
+        self.max_distance[env_ids][mask] = self.distance[env_ids][mask]
+        mask = self.distance[env_ids] > (self.commands[env_ids, 0] * self.max_episode_length_s * 0.5)
+        self.max_distance[env_ids][mask] = torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
         
     def sample_velocity_command(self, env_id: int):
         """
