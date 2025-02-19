@@ -68,7 +68,7 @@ TASK_CFG = {"test": False,
                                        "angularVelocityScale": 0.25,
                                        "dofPositionScale": 1.0,
                                        "dofVelocityScale": 0.05,
-                                       "heightMeasurementScale": 5.0,
+                                       "heightMeasurementScale": 1.0,
                                        "lambdaSlipScale": 10.0,
                                        "terminalReward": 0.0,
                                        "linearVelocityXYRewardScale": 1.0,
@@ -91,7 +91,7 @@ TASK_CFG = {"test": False,
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 0.05, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 1.0,
+                                        "actionScale": 0.01,
                                         "wheel_radius": 0.1175,},   # leave room to overshoot or corner 
 
                             },
@@ -762,8 +762,9 @@ class ReachingTargetTask(RLTask):
     def get_observations(self):
         self.measured_heights = self.get_heights()
         print("measured_heights:", self.measured_heights.shape, self.measured_heights)
+        print("base_pos:", self.base_pos.shape, self.base_pos[:, 2].unsqueeze(1))
         heights = (
-            torch.clip(self.base_pos[:, 2].unsqueeze(1) - 0.5 - self.measured_heights, -1, 1.0) * self.height_meas_scale
+            torch.clip(self.measured_heights - self.base_pos[:, 2].unsqueeze(1), -1, 1.0) * self.height_meas_scale
         )
         self.obs_buf = torch.cat(
             (
