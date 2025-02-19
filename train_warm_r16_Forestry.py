@@ -59,6 +59,8 @@ headless = True  # set headless to False for rendering
 
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
+print("0-Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
+
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
 from my_envs.PPOc_warm_r16_Forestry import ReachingTargetTask, TASK_CFG
 from argparse import ArgumentParser 

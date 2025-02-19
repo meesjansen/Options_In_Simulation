@@ -281,6 +281,8 @@ class ReachingTargetTask(RLTask):
         self.Kp = self._task_cfg["env"]["control"]["stiffness"]
         self.Kd = self._task_cfg["env"]["control"]["damping"]
         self.r = self._task_cfg["env"]["control"]["wheel_radius"]
+        self.torq_constant = self._task_cfg["env"]["control"]["torq_constant"]
+        self.torq_FF_gain = self._task_cfg["env"]["control"]["torq_FF_gain"]
         self.curriculum = self._task_cfg["env"]["terrain"]["curriculum"]
       
         for key in self.rew_scales.keys():
