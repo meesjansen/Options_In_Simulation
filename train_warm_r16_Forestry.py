@@ -96,8 +96,6 @@ TASK_CFG["task"]["env"]["learn"]["slipLongitudinalRewardScale"] = parsed_config[
 # Control
 TASK_CFG["task"]["env"]["control"]["stiffness"] = parsed_config["stiffness"]
 TASK_CFG["task"]["env"]["control"]["damping"] = parsed_config["damping"]
-TASK_CFG["task"]["env"]["control"]["torq_constant"] = parsed_config["torq_constant"]
-TASK_CFG["task"]["env"]["control"]["torq_FF_gain"] = parsed_config["torq_FF_gain"]
 
 # Friction
 TASK_CFG["task"]["sim"]["default_physics_material"]["static_friction"] = parsed_config["static_friction"]
