@@ -536,7 +536,7 @@ class ReachingTargetTask(RLTask):
             x_vel = torch.normal(mean=0.5, std=sigma, size=(1,), device=self.device).item()
             return max(x_vel, 0.0)  # keep it non-negative if you want
 
-        elif self.terrain_levels == 2:
+        elif self.terrain_levels[env_id] == 2:
             # Task 2: sinusoidal with mean=1, frequency + amplitude changes
             # Suppose we let the frequency grow from 0.01..0.1 and amplitude from 0.1..1
             fraction = self.max_distance[env_id] / (self.commands[env_id, 0] * self.max_episode_length_s * 0.5)
@@ -548,7 +548,7 @@ class ReachingTargetTask(RLTask):
             x_vel = 0.5 + amp * math.sin(freq * t)
             return max(x_vel, 0.0)
 
-        elif self.terrain_levels == 3:
+        elif self.terrain_levels[env_id] == 3:
             # Task 3: range 0..10. Start with 0..5, then up to 10
             # We'll do a simple sub-task switch
             fraction = self.max_distance[env_id] / (self.commands[env_id, 0] * self.max_episode_length_s * 0.5)
@@ -776,7 +776,7 @@ class ReachingTargetTask(RLTask):
         print("base_ang_vel:", self.base_ang_vel.shape, self.base_ang_vel)
         print("projected_gravity:", self.projected_gravity.shape, self.projected_gravity)
         print("commands[:, 0]:", (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1).shape, (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1))
-        # print("commands[:, 2]:", (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1).shape, (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1))
+        print("commands[:, 2]:", (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1).shape, (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1))
         print("dof_vel:", self.dof_vel.shape, self.dof_vel)
         print("actions:", self.actions.shape, self.actions)
         print("lambda_slip:", self.lambda_slip.shape, self.lambda_slip)
