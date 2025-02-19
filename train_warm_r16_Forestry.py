@@ -72,8 +72,6 @@ arg_parser.add_argument("--fallenOverRewardScale", type=float, default=-200.0)
 arg_parser.add_argument("--slipLongitudinalRewardScale", type=float, default=-5.0)
 arg_parser.add_argument("--stiffness", type=float, default=0.05)
 arg_parser.add_argument("--damping", type=float, default=0.005)
-arg_parser.add_argument("--torq_constant", type=float, default=7.2)
-arg_parser.add_argument("--torq_FF_gain", type=float, default=0.1)
 arg_parser.add_argument("--static_friction", type=float, default=1.0)
 arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
@@ -147,16 +145,16 @@ PPO_DEFAULT_CONFIG = {
     "rewards_shaper": None,
     "time_limit_bootstrap": False,
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_warm_r15_Forestry",
-        "experiment_name": "PPOc_warm_r15_Forestry",
+        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_warm_r16_Forestry",
+        "experiment_name": "PPOc_warm_r16_Forestry",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "PPO_curriculum",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "PPOc_warm_r15_Forestry",
-                         "tags": ["PPOc", "warm-Curriculum", "r15", "o163", "torq", "Forestry"],
+                         "name": "PPOc_warm_r16_Forestry",
+                         "tags": ["PPOc", "warm-Curriculum", "r16", "o163", "torq", "Forestry"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
 }
