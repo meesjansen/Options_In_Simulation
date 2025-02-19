@@ -72,10 +72,12 @@ arg_parser.add_argument("--fallenOverRewardScale", type=float, default=-200.0)
 arg_parser.add_argument("--slipLongitudinalRewardScale", type=float, default=-5.0)
 arg_parser.add_argument("--stiffness", type=float, default=0.05)
 arg_parser.add_argument("--damping", type=float, default=0.005)
+arg_parser.add_argument("--torq_constant", type=float, default=7.2)
+arg_parser.add_argument("--torq_FF_gain", type=float, default=0.1)
 arg_parser.add_argument("--static_friction", type=float, default=1.0)
 arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
-arg_parser.add_argument("--linear_x", type=float, default=0.0)
+arg_parser.add_argument("--linear_x", type=float, default=1.0)
 
 parsed_config = arg_parser.parse_args().__dict__
 
@@ -83,7 +85,7 @@ TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
 TASK_CFG["task"]["env"]["numEnvs"] = 16
 
-# Sweep reward components
+# sweep reward components
 TASK_CFG["task"]["env"]["learn"]["linearVelocityXYRewardScale"] = parsed_config["linearVelocityXYRewardScale"]
 TASK_CFG["task"]["env"]["learn"]["linearVelocityZRewardScale"] = parsed_config["linearVelocityZRewardScale"]
 TASK_CFG["task"]["env"]["learn"]["angularVelocityXYRewardScale"] = parsed_config["angularVelocityXYRewardScale"]
@@ -91,15 +93,17 @@ TASK_CFG["task"]["env"]["learn"]["actionRateRewardScale"] = parsed_config["actio
 TASK_CFG["task"]["env"]["learn"]["fallenOverRewardScale"] = parsed_config["fallenOverRewardScale"]
 TASK_CFG["task"]["env"]["learn"]["slipLongitudinalRewardScale"] = parsed_config["slipLongitudinalRewardScale"]
 
-# Control
+# control
 TASK_CFG["task"]["env"]["control"]["stiffness"] = parsed_config["stiffness"]
 TASK_CFG["task"]["env"]["control"]["damping"] = parsed_config["damping"]
+TASK_CFG["task"]["env"]["control"]["torq_constant"] = parsed_config["torq_constant"]
+TASK_CFG["task"]["env"]["control"]["torq_FF_gain"] = parsed_config["torq_FF_gain"]
 
-# Friction
+# friction
 TASK_CFG["task"]["sim"]["default_physics_material"]["static_friction"] = parsed_config["static_friction"]
 TASK_CFG["task"]["sim"]["default_physics_material"]["dynamic_friction"] = parsed_config["dynamic_friction"]
 
-# Commands
+# commands
 TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["yaw_constant"] = parsed_config["yaw_constant"]
 TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["linear_x"] = parsed_config["linear_x"]
 
