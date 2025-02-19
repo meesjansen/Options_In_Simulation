@@ -84,7 +84,7 @@ TASK_CFG = {"test": False,
                                        "slipLongitudinalRewardScale": -5.0,
                                        "episodeLength_s": 15.0,
                                        "pushInterval_s": 20.0,},
-                            "randomCommandVelocityRanges": {"linear_x": 0.0, # [m/s]
+                            "randomCommandVelocityRanges": {"linear_x": [0.0, 0.25], # [m/s]
                                                             "linear_y": [-0.5, 0.5], # [m/s]
                                                             "yaw": [-3.14, 3.14], # [rad/s]
                                                             "yaw_constant": 0.5,},   # [rad/s]
@@ -555,7 +555,7 @@ class ReachingTargetTask(RLTask):
             t = float(self.common_step_counter) * self.dt
             scale = 2.0 # m/s
             Noise = 0.5 * t/self.max_episode_length_s
-            x_vel = torch.normal(mean=0.0, std=Noise, size=(1,), device=self.device).item().item() + scale * t/self.max_episode_length_s
+            x_vel = torch.normal(mean=0.0, std=Noise, size=(1,), device=self.device).item() + scale * t/self.max_episode_length_s
             return max(x_vel, 0.0)
 
         else:
