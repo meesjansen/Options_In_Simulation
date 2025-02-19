@@ -192,6 +192,8 @@ agent = PPO(models=models_ppo,
             action_space=env.action_space,
             device=device)
 
+print("Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
+
 ###############################################################################
 #                            Warm-Start Phase
 #
@@ -252,7 +254,6 @@ warm_start_phases = [
     ("circle_right", expert_circle_right, 100)
 ]
 
-print("Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
 # Enable warm-start mode in the environment.
 task.warm_start = True
 # Freeze the value network (only train the policy).
