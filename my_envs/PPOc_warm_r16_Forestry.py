@@ -78,7 +78,7 @@ TASK_CFG = {"test": False,
                                        "orientationRewardScale": -0.0,
                                        "torqueRewardScale": -0.0,
                                        "jointAccRewardScale": -0.0,
-                                       "baseHeightRewardScale": -0.0,
+                                       "baseHeightRewardScale": 0.0,
                                        "actionRateRewardScale": -0.05,
                                        "fallenOverRewardScale": -200.0,
                                        "slipLongitudinalRewardScale": -5.0,
@@ -91,7 +91,7 @@ TASK_CFG = {"test": False,
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 0.05, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 10.0,
+                                        "actionScale": 1.0,
                                         "wheel_radius": 0.1175,},   # leave room to overshoot or corner 
 
                             },
@@ -761,6 +761,7 @@ class ReachingTargetTask(RLTask):
 
     def get_observations(self):
         self.measured_heights = self.get_heights()
+        print("measured_heights:", self.measured_heights.shape, self.measured_heights)
         heights = (
             torch.clip(self.base_pos[:, 2].unsqueeze(1) - 0.5 - self.measured_heights, -1, 1.0) * self.height_meas_scale
         )
