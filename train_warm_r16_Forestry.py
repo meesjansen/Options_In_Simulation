@@ -107,6 +107,8 @@ TASK_CFG["task"]["sim"]["default_physics_material"]["dynamic_friction"] = parsed
 TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["yaw_constant"] = parsed_config["yaw_constant"]
 TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["linear_x"] = parsed_config["linear_x"]
 
+print("1-Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
+
 sim_config = SimConfig(TASK_CFG)
 task = ReachingTargetTask(name="ReachingTarget", sim_config=sim_config, env=env)
 env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="torch", init_sim=True)
@@ -188,6 +190,9 @@ cfg_ppo["value_preprocessor"] = RunningStandardScaler
 cfg_ppo["value_preprocessor_kwargs"] = {"size": 1, "device": device}
 cfg_ppo["experiment"]["write_interval"] = 100
 cfg_ppo["experiment"]["checkpoint_interval"] = 20_000
+
+print("2-Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
+
 
 agent = PPO(models=models_ppo,
             memory=memory,
