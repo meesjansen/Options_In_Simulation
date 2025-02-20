@@ -1,0 +1,2 @@
+Options In Simulation
+Welcome to Options In Simulation – a research and experimentation platform built on top of NVIDIA’s Omniverse simulation ecosystem. This project leverages the omniisaacgymenvs framework for creating robust, high-fidelity simulation environments and integrates the skrl framework to implement and compare state-of-the-art reinforcement learning algorithms. The aim is to provide a modular and extensible platform where researchers and students can introduce, test, and compare different simulation options and learning strategies.
