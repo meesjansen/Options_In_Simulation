@@ -42,7 +42,7 @@ This repository is ideal for students and researchers looking to explore simulat
 
 Before getting started, ensure that you have the following installed:
 
-- **Python 3.8+**
+- **Python 3.8+:** Will come with and thus depend on your IsaacSim Installation
 - **NVIDIA Omniverse IsaacSim:** Check compatibility with the version required by omniisaacgymenvs.
 - **omniisaacgymenvs:** Base simulation environment. Refer to the [official repository](https://github.com/NVIDIA-Omniverse/omniisaacgymenvs) for setup instructions.
 - **skrl Framework:** For reinforcement learning implementations. See the [skrl GitHub page](https://github.com/ToniRV/skrl) for details.
