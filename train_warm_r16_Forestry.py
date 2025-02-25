@@ -62,7 +62,7 @@ env = get_env_instance(headless=headless, enable_livestream=True, enable_viewpor
 print("0-Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.PPOc_rooms_r15 import ReachingTargetTask, TASK_CFG
+from my_envs.PPOc_warm_r16_Forestry import ReachingTargetTask, TASK_CFG
 from argparse import ArgumentParser 
 
 # arg_parser = ArgumentParser()
