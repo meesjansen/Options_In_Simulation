@@ -54,8 +54,8 @@ TASK_CFG = {"test": False,
                                         # rough terrain only:
                                         "curriculum": True,
                                         "maxInitMapLevel": 0,
-                                        "mapLength": 8.0,
-                                        "mapWidth": 8.0,
+                                        "mapLength": 16.0,
+                                        "mapWidth": 16.0,
                                         "numLevels": 6,
                                         "numTerrains": 2,
                                         # terrain types: [ smooth slope, rough slope, stairs up, stairs down, discrete]
@@ -91,7 +91,7 @@ TASK_CFG = {"test": False,
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 0.05, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 0.01,
+                                        "actionScale": 1.0,
                                         "wheel_radius": 0.1175,},   # leave room to overshoot or corner 
 
                             },
@@ -725,7 +725,7 @@ class ReachingTargetTask(RLTask):
             + rew_ang_vel_xy
             + rew_action_rate
             + rew_fallen_over
-            # + rew_slip_longitudinal
+            + rew_slip_longitudinal
         )
 
         print("Reward Components:")
@@ -782,14 +782,14 @@ class ReachingTargetTask(RLTask):
         )
 
         # Print the shape and values of each component
-        print("base_lin_vel:", self.base_lin_vel.shape, self.base_lin_vel)
-        print("base_ang_vel:", self.base_ang_vel.shape, self.base_ang_vel)
-        print("projected_gravity:", self.projected_gravity.shape, self.projected_gravity)
-        print("commands[:, 0]:", (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1).shape, (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1))
-        print("commands[:, 2]:", (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1).shape, (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1))
-        print("dof_vel:", self.dof_vel.shape, self.dof_vel)
-        print("actions:", self.actions.shape, self.actions)
-        print("lambda_slip:", self.lambda_slip.shape, self.lambda_slip)
+        # print("base_lin_vel:", self.base_lin_vel.shape, self.base_lin_vel)
+        # print("base_ang_vel:", self.base_ang_vel.shape, self.base_ang_vel)
+        # print("projected_gravity:", self.projected_gravity.shape, self.projected_gravity)
+        # print("commands[:, 0]:", (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1).shape, (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1))
+        # print("commands[:, 2]:", (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1).shape, (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1))
+        # print("dof_vel:", self.dof_vel.shape, self.dof_vel)
+        # print("actions:", self.actions.shape, self.actions)
+        # print("lambda_slip:", self.lambda_slip.shape, self.lambda_slip)
         print("heights:", heights.shape, heights)
                     
         return {self._robots.name: {"obs_buf": self.obs_buf}}
