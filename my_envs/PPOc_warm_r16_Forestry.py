@@ -767,7 +767,7 @@ class ReachingTargetTask(RLTask):
         print("measured_heights -0:", self.measured_heights.shape, self.measured_heights[0, :])
         print("base_pos -0:", self.base_pos.shape, self.base_pos[0, 2])
         heights = (
-            torch.clip(self.measured_heights, -1, 1.0) * self.height_meas_scale
+            torch.clip(self.base_pos[:, 2].unsqueeze(1) - self.measured_heights - 0.0622, -1, 1.0) * self.height_meas_scale
         )
         self.obs_buf = torch.cat(
             (
