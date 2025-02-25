@@ -196,7 +196,7 @@ cfg_ppo["value_preprocessor_kwargs"] = {"size": 1, "device": device}
 cfg_ppo["experiment"]["write_interval"] = 100
 cfg_ppo["experiment"]["checkpoint_interval"] = 20_000
 
-print("2-Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
+print("4-Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
 
 
 agent = PPO(models=models_ppo,
@@ -206,7 +206,7 @@ agent = PPO(models=models_ppo,
             action_space=env.action_space,
             device=device)
 
-print("Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
+print("5- Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
 
 ###############################################################################
 #                            Warm-Start Phase
@@ -268,58 +268,58 @@ warm_start_phases = [
     ("circle_right", expert_circle_right, 100)
 ]
 
-# Enable warm-start mode in the environment.
-task.warm_start = True
-# Freeze the value network (only train the policy).
-for param in agent.models["value"].parameters():
-    param.requires_grad = False
+# # Enable warm-start mode in the environment.
+# task.warm_start = True
+# # Freeze the value network (only train the policy).
+# for param in agent.models["value"].parameters():
+#     param.requires_grad = False
 
-# Create an optimizer for the policy network only.
-warm_optimizer = torch.optim.Adam(agent.models["policy"].parameters(), lr=cfg_ppo["learning_rate"])
-mse_loss_fn = nn.MSELoss()
+# # Create an optimizer for the policy network only.
+# warm_optimizer = torch.optim.Adam(agent.models["policy"].parameters(), lr=cfg_ppo["learning_rate"])
+# mse_loss_fn = nn.MSELoss()
 
-# Reset the environment (Gym v0.26+ reset returns (obs, infos))
-obs, infos = env.reset()
+# # Reset the environment (Gym v0.26+ reset returns (obs, infos))
+# obs, infos = env.reset()
 
-# Iterate over each warm-start phase.
-for phase_name, expert_fn, phase_steps in warm_start_phases:
-    print(f"--- Warm-start phase: {phase_name} ({phase_steps} timesteps) ---")
-    task.phase_name = phase_name
-    for step in range(phase_steps):
-        # Get the phase-specific expert actions.
-        expert_actions = expert_fn(env.num_envs, env.action_space.shape[0], device)
-        # Optionally, you could also set extras["expert_actions"] here if needed.
+# # Iterate over each warm-start phase.
+# for phase_name, expert_fn, phase_steps in warm_start_phases:
+#     print(f"--- Warm-start phase: {phase_name} ({phase_steps} timesteps) ---")
+#     task.phase_name = phase_name
+#     for step in range(phase_steps):
+#         # Get the phase-specific expert actions.
+#         expert_actions = expert_fn(env.num_envs, env.action_space.shape[0], device)
+#         # Optionally, you could also set extras["expert_actions"] here if needed.
 
-        obs, reward, terminated, truncated, extras = env.step(expert_actions)
-        done = terminated | truncated
-        state = obs  # observation tensor
+#         obs, reward, terminated, truncated, extras = env.step(expert_actions)
+#         done = terminated | truncated
+#         state = obs  # observation tensor
 
                
-        # Forward pass through the policy network.
-        policy_output, _, _ = agent.models["policy"].compute({"states": state}, role="policy")
+#         # Forward pass through the policy network.
+#         policy_output, _, _ = agent.models["policy"].compute({"states": state}, role="policy")
 
-        # render scene
-        if not headless:
-            env.render()
+#         # render scene
+#         if not headless:
+#             env.render()
 
-        loss = mse_loss_fn(policy_output, expert_actions)
-        warm_optimizer.zero_grad()
-        loss.backward()
-        warm_optimizer.step()
+#         loss = mse_loss_fn(policy_output, expert_actions)
+#         warm_optimizer.zero_grad()
+#         loss.backward()
+#         warm_optimizer.step()
         
-        if step % 100 == 0:
-            print(f"Phase {phase_name} step {step}: MSE Loss = {loss.item():.4f}")
-        if done.any():
-            obs, infos = env.reset()
-    # End of phase.
-    print(f"Phase {phase_name} completed.")
+#         if step % 100 == 0:
+#             print(f"Phase {phase_name} step {step}: MSE Loss = {loss.item():.4f}")
+#         if done.any():
+#             obs, infos = env.reset()
+#     # End of phase.
+#     print(f"Phase {phase_name} completed.")
 
-print("Warm-start training completed. Transitioning to PPO training...")
-# Unfreeze the value network.
-for param in agent.models["value"].parameters():
-    param.requires_grad = True
-# Disable warm-start mode.
-task.warm_start = False
+# print("Warm-start training completed. Transitioning to PPO training...")
+# # Unfreeze the value network.
+# for param in agent.models["value"].parameters():
+#     param.requires_grad = True
+# # Disable warm-start mode.
+# task.warm_start = False
 
 
 
