@@ -323,7 +323,7 @@ class ReachingTargetTask(RLTask):
         self.height_samples = (
             torch.tensor(self.terrain.heightsamples).view(self.terrain.tot_rows, self.terrain.tot_cols).to(self.device)
         )
-        print(f"height_samples: {self.height_samples}")
+        # print(f"height_samples: {self.height_samples}")
 
     def set_up_scene(self, scene) -> None:
         self._stage = get_current_stage()
@@ -508,10 +508,10 @@ class ReachingTargetTask(RLTask):
         self.env_origins[env_ids] = self.terrain_origins[self.terrain_levels[env_ids], self.terrain_types[env_ids]]
 
 
-        mask = self.distance[env_ids] > self.max_distance[env_ids]
-        self.max_distance[env_ids][mask] = self.distance[env_ids][mask]
-        mask = self.distance[env_ids] > (self.commands[env_ids, 0] * self.max_episode_length_s * 0.5)
-        self.max_distance[env_ids][mask] = 0.0
+        # mask = self.distance[env_ids] > self.max_distance[env_ids]
+        # self.max_distance[env_ids][mask] = self.distance[env_ids][mask]
+        # mask = self.distance[env_ids] > (self.commands[env_ids, 0] * self.max_episode_length_s * 0.5)
+        # self.max_distance[env_ids][mask] = 0.0
         
     def sample_velocity_command(self, env_id: int):
         """
@@ -785,7 +785,7 @@ class ReachingTargetTask(RLTask):
         # print("base_lin_vel:", self.base_lin_vel.shape, self.base_lin_vel)
         # print("base_ang_vel:", self.base_ang_vel.shape, self.base_ang_vel)
         # print("projected_gravity:", self.projected_gravity.shape, self.projected_gravity)
-        # print("commands[:, 0]:", (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1).shape, (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1))
+        print("commands[:, 0]:", (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1).shape, (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1))
         # print("commands[:, 2]:", (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1).shape, (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1))
         # print("dof_vel:", self.dof_vel.shape, self.dof_vel)
         # print("actions:", self.actions.shape, self.actions)
