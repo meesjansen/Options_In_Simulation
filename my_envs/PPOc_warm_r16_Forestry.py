@@ -92,7 +92,10 @@ TASK_CFG = {"test": False,
                                         "stiffness": 0.05, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
                                         "actionScale": 1.0,
-                                        "wheel_radius": 0.1175,},   # leave room to overshoot or corner 
+                                        "wheel_radius": 0.1175,
+                                        "torq_constant": 7.2,
+                                        "torq_FF_gain": 0.1,
+                                        },   # leave room to overshoot or corner 
 
                             },
                      "sim": {"dt": 0.005,  
