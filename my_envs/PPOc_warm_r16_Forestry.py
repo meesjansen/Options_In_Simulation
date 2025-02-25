@@ -593,7 +593,7 @@ class ReachingTargetTask(RLTask):
             if self.world.is_playing():
                 
                 wheel_torq = self.action_scale * self.actions  # shape: [num_wheels]
-                print(f"wheel_torq: {wheel_torq}")
+                # print(f"wheel_torq: {wheel_torq}")
                 
                 sign_vel = torch.sign(self.dof_vel)
                 sign_torq = torch.sign(wheel_torq)
@@ -731,12 +731,12 @@ class ReachingTargetTask(RLTask):
             + rew_slip_longitudinal
         )
 
-        print("Reward Components:")
-        print("rew_lin_vel_xy:", rew_lin_vel_xy.mean().item())
-        print("rew_lin_vel_z:", rew_lin_vel_z.mean().item())
-        print("rew_ang_vel_xy:", rew_ang_vel_xy.mean().item())
-        print("rew_action_rate:", rew_action_rate.mean().item())
-        print("rew_fallen_over:", rew_fallen_over.mean().item())
+        # print("Reward Components:")
+        # print("rew_lin_vel_xy:", rew_lin_vel_xy.mean().item())
+        # print("rew_lin_vel_z:", rew_lin_vel_z.mean().item())
+        # print("rew_ang_vel_xy:", rew_ang_vel_xy.mean().item())
+        # print("rew_action_rate:", rew_action_rate.mean().item())
+        # print("rew_fallen_over:", rew_fallen_over.mean().item())
 
         self.rew_buf = torch.clip(self.rew_buf, min=0.0, max=None)
         self.rew_buf += self.rew_scales["termination"] * self.reset_buf * ~self.timeout_buf
@@ -764,8 +764,8 @@ class ReachingTargetTask(RLTask):
 
     def get_observations(self):
         self.measured_heights = self.get_heights()
-        print("measured_heights:", self.measured_heights.shape, self.measured_heights)
-        print("base_pos:", self.base_pos.shape, self.base_pos[:, 2].unsqueeze(1))
+        print("measured_heights -0:", self.measured_heights.shape, self.measured_heights[0, :])
+        print("base_pos -0:", self.base_pos.shape, self.base_pos[0, 2].unsqueeze(1))
         heights = (
             torch.clip(self.measured_heights - self.base_pos[:, 2].unsqueeze(1), -1, 1.0) * self.height_meas_scale
         )
@@ -788,12 +788,12 @@ class ReachingTargetTask(RLTask):
         # print("base_lin_vel:", self.base_lin_vel.shape, self.base_lin_vel)
         # print("base_ang_vel:", self.base_ang_vel.shape, self.base_ang_vel)
         # print("projected_gravity:", self.projected_gravity.shape, self.projected_gravity)
-        print("commands[:, 0]:", (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1).shape, (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1))
+        print("commands[0, 0]:", (self.commands[0, 0] * self.commands_scale[0]).unsqueeze(1).shape, (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1))
         # print("commands[:, 2]:", (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1).shape, (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1))
         # print("dof_vel:", self.dof_vel.shape, self.dof_vel)
         # print("actions:", self.actions.shape, self.actions)
         # print("lambda_slip:", self.lambda_slip.shape, self.lambda_slip)
-        print("heights:", heights.shape, heights)
+        print("heights-0:", heights.shape, heights[0, :])
                     
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     
