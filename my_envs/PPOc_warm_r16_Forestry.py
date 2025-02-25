@@ -84,7 +84,7 @@ TASK_CFG = {"test": False,
                                        "slipLongitudinalRewardScale": -5.0,
                                        "episodeLength_s": 15.0,
                                        "pushInterval_s": 20.0,},
-                            "randomCommandVelocityRanges": {"linear_x": [0.0, 0.25], # [m/s]
+                            "randomCommandVelocityRanges": {"linear_x": 0.5, # [m/s]
                                                             "linear_y": [-0.5, 0.5], # [m/s]
                                                             "yaw": [-3.14, 3.14], # [rad/s]
                                                             "yaw_constant": 0.5,},   # [rad/s]
