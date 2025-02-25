@@ -53,9 +53,9 @@ TASK_CFG = {"test": False,
                                         # rough terrain only:
                                         "curriculum": True,
                                         "maxInitMapLevel": 0,
-                                        "mapLength": 8.0,
-                                        "mapWidth": 8.0,
-                                        "numLevels": 4,
+                                        "mapLength": 16.0,
+                                        "mapWidth": 16.0,
+                                        "numLevels": 6,
                                         "numTerrains": 2,
                                         # terrain types: [ smooth slope, rough slope, stairs up, stairs down, discrete]
                                         "terrainProportions": [0.35, 0.55, 0.7, 0.85, 1.0],
@@ -67,29 +67,34 @@ TASK_CFG = {"test": False,
                                        "angularVelocityScale": 0.25,
                                        "dofPositionScale": 1.0,
                                        "dofVelocityScale": 0.05,
-                                       "heightMeasurementScale": 5.0,
+                                       "heightMeasurementScale": 1.0,
+                                       "lambdaSlipScale": 10.0,
                                        "terminalReward": 0.0,
                                        "linearVelocityXYRewardScale": 1.0,
                                        "linearVelocityZRewardScale": -4.0,
-                                       "angularVelocityZRewardScale": 5.0,
+                                       "angularVelocityZRewardScale": 1.0,
                                        "angularVelocityXYRewardScale": -0.5,
                                        "orientationRewardScale": -0.0,
                                        "torqueRewardScale": -0.0,
                                        "jointAccRewardScale": -0.0,
-                                       "baseHeightRewardScale": -0.0,
+                                       "baseHeightRewardScale": 0.0,
                                        "actionRateRewardScale": -0.05,
-                                       "fallenOverRewardScale": -5.0,
-                                       "slipLongitudinalRewardScale": -0.5,
+                                       "fallenOverRewardScale": -200.0,
+                                       "slipLongitudinalRewardScale": -5.0,
                                        "episodeLength_s": 15.0,
                                        "pushInterval_s": 20.0,},
-                            "randomCommandVelocityRanges": {"linear_x": [-0.5, 0.5], # [m/s]
+                            "randomCommandVelocityRanges": {"linear_x": 0.5, # [m/s]
                                                             "linear_y": [-0.5, 0.5], # [m/s]
-                                                            "yaw": [-3.14, 3.14]},   # [rad/s]
+                                                            "yaw": [-3.14, 3.14], # [rad/s]
+                                                            "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 0.05, # [N*m/rad] For torque setpoint control
-                                        "damping": .01, # [N*m*s/rad]
+                                        "damping": .005, # [N*m*s/rad]
                                         "actionScale": 1.0,
-                                        "wheel_radius": 0.1175},   # leave room to overshoot or corner 
+                                        "wheel_radius": 0.1175,
+                                        "torq_constant": 7.2,
+                                        "torq_FF_gain": 0.1,
+                                        },   # leave room to overshoot or corner 
 
                             },
                      "sim": {"dt": 0.005,  
