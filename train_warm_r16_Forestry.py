@@ -57,7 +57,7 @@ class Value(DeterministicMixin, Model):
 # Instantiate and configure the task
 headless = True  # set headless to False for rendering
 
-env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
+env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 print("0-Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
 
@@ -65,49 +65,49 @@ from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
 from my_envs.PPOc_warm_r16_Forestry import ReachingTargetTask, TASK_CFG
 from argparse import ArgumentParser 
 
-# arg_parser = ArgumentParser()
-# arg_parser.add_argument("--linearVelocityXYRewardScale", type=float, default=1.0)
-# arg_parser.add_argument("--linearVelocityZRewardScale", type=float, default=-4.0)
-# arg_parser.add_argument("--angularVelocityXYRewardScale", type=float, default=-0.5)
-# arg_parser.add_argument("--actionRateRewardScale", type=float, default=-0.05)
-# arg_parser.add_argument("--fallenOverRewardScale", type=float, default=-200.0)
-# arg_parser.add_argument("--slipLongitudinalRewardScale", type=float, default=-5.0)
-# arg_parser.add_argument("--stiffness", type=float, default=0.05)
-# arg_parser.add_argument("--damping", type=float, default=0.005)
-# arg_parser.add_argument("--torq_constant", type=float, default=7.2)
-# arg_parser.add_argument("--torq_FF_gain", type=float, default=0.1)
-# arg_parser.add_argument("--static_friction", type=float, default=1.0)
-# arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
-# arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
-# arg_parser.add_argument("--linear_x", type=float, default=1.0)
+arg_parser = ArgumentParser()
+arg_parser.add_argument("--linearVelocityXYRewardScale", type=float, default=1.0)
+arg_parser.add_argument("--linearVelocityZRewardScale", type=float, default=-4.0)
+arg_parser.add_argument("--angularVelocityXYRewardScale", type=float, default=-0.5)
+arg_parser.add_argument("--actionRateRewardScale", type=float, default=-0.05)
+arg_parser.add_argument("--fallenOverRewardScale", type=float, default=-200.0)
+arg_parser.add_argument("--slipLongitudinalRewardScale", type=float, default=-5.0)
+arg_parser.add_argument("--stiffness", type=float, default=0.05)
+arg_parser.add_argument("--damping", type=float, default=0.005)
+arg_parser.add_argument("--torq_constant", type=float, default=7.2)
+arg_parser.add_argument("--torq_FF_gain", type=float, default=0.1)
+arg_parser.add_argument("--static_friction", type=float, default=1.0)
+arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
+arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
+arg_parser.add_argument("--linear_x", type=float, default=1.0)
 
-# parsed_config = arg_parser.parse_args().__dict__
+parsed_config = arg_parser.parse_args().__dict__
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
 TASK_CFG["task"]["env"]["numEnvs"] = 16
 
-# # sweep reward components
-# TASK_CFG["task"]["env"]["learn"]["linearVelocityXYRewardScale"] = parsed_config["linearVelocityXYRewardScale"]
-# TASK_CFG["task"]["env"]["learn"]["linearVelocityZRewardScale"] = parsed_config["linearVelocityZRewardScale"]
-# TASK_CFG["task"]["env"]["learn"]["angularVelocityXYRewardScale"] = parsed_config["angularVelocityXYRewardScale"]
-# TASK_CFG["task"]["env"]["learn"]["actionRateRewardScale"] = parsed_config["actionRateRewardScale"]
-# TASK_CFG["task"]["env"]["learn"]["fallenOverRewardScale"] = parsed_config["fallenOverRewardScale"]
-# TASK_CFG["task"]["env"]["learn"]["slipLongitudinalRewardScale"] = parsed_config["slipLongitudinalRewardScale"]
+# sweep reward components
+TASK_CFG["task"]["env"]["learn"]["linearVelocityXYRewardScale"] = parsed_config["linearVelocityXYRewardScale"]
+TASK_CFG["task"]["env"]["learn"]["linearVelocityZRewardScale"] = parsed_config["linearVelocityZRewardScale"]
+TASK_CFG["task"]["env"]["learn"]["angularVelocityXYRewardScale"] = parsed_config["angularVelocityXYRewardScale"]
+TASK_CFG["task"]["env"]["learn"]["actionRateRewardScale"] = parsed_config["actionRateRewardScale"]
+TASK_CFG["task"]["env"]["learn"]["fallenOverRewardScale"] = parsed_config["fallenOverRewardScale"]
+TASK_CFG["task"]["env"]["learn"]["slipLongitudinalRewardScale"] = parsed_config["slipLongitudinalRewardScale"]
 
-# # control
-# TASK_CFG["task"]["env"]["control"]["stiffness"] = parsed_config["stiffness"]
-# TASK_CFG["task"]["env"]["control"]["damping"] = parsed_config["damping"]
-# TASK_CFG["task"]["env"]["control"]["torq_constant"] = parsed_config["torq_constant"]
-# TASK_CFG["task"]["env"]["control"]["torq_FF_gain"] = parsed_config["torq_FF_gain"]
+# control
+TASK_CFG["task"]["env"]["control"]["stiffness"] = parsed_config["stiffness"]
+TASK_CFG["task"]["env"]["control"]["damping"] = parsed_config["damping"]
+TASK_CFG["task"]["env"]["control"]["torq_constant"] = parsed_config["torq_constant"]
+TASK_CFG["task"]["env"]["control"]["torq_FF_gain"] = parsed_config["torq_FF_gain"]
 
-# # friction
-# TASK_CFG["task"]["sim"]["default_physics_material"]["static_friction"] = parsed_config["static_friction"]
-# TASK_CFG["task"]["sim"]["default_physics_material"]["dynamic_friction"] = parsed_config["dynamic_friction"]
+# friction
+TASK_CFG["task"]["sim"]["default_physics_material"]["static_friction"] = parsed_config["static_friction"]
+TASK_CFG["task"]["sim"]["default_physics_material"]["dynamic_friction"] = parsed_config["dynamic_friction"]
 
-# # commands
-# TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["yaw_constant"] = parsed_config["yaw_constant"]
-# TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["linear_x"] = parsed_config["linear_x"]
+# commands
+TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["yaw_constant"] = parsed_config["yaw_constant"]
+TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["linear_x"] = parsed_config["linear_x"]
 
 print("1-Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
 
@@ -268,58 +268,58 @@ warm_start_phases = [
     ("circle_right", expert_circle_right, 100)
 ]
 
-# # Enable warm-start mode in the environment.
-# task.warm_start = True
-# # Freeze the value network (only train the policy).
-# for param in agent.models["value"].parameters():
-#     param.requires_grad = False
+# Enable warm-start mode in the environment.
+task.warm_start = True
+# Freeze the value network (only train the policy).
+for param in agent.models["value"].parameters():
+    param.requires_grad = False
 
-# # Create an optimizer for the policy network only.
-# warm_optimizer = torch.optim.Adam(agent.models["policy"].parameters(), lr=cfg_ppo["learning_rate"])
-# mse_loss_fn = nn.MSELoss()
+# Create an optimizer for the policy network only.
+warm_optimizer = torch.optim.Adam(agent.models["policy"].parameters(), lr=cfg_ppo["learning_rate"])
+mse_loss_fn = nn.MSELoss()
 
-# # Reset the environment (Gym v0.26+ reset returns (obs, infos))
-# obs, infos = env.reset()
+# Reset the environment (Gym v0.26+ reset returns (obs, infos))
+obs, infos = env.reset()
 
-# # Iterate over each warm-start phase.
-# for phase_name, expert_fn, phase_steps in warm_start_phases:
-#     print(f"--- Warm-start phase: {phase_name} ({phase_steps} timesteps) ---")
-#     task.phase_name = phase_name
-#     for step in range(phase_steps):
-#         # Get the phase-specific expert actions.
-#         expert_actions = expert_fn(env.num_envs, env.action_space.shape[0], device)
-#         # Optionally, you could also set extras["expert_actions"] here if needed.
+# Iterate over each warm-start phase.
+for phase_name, expert_fn, phase_steps in warm_start_phases:
+    print(f"--- Warm-start phase: {phase_name} ({phase_steps} timesteps) ---")
+    task.phase_name = phase_name
+    for step in range(phase_steps):
+        # Get the phase-specific expert actions.
+        expert_actions = expert_fn(env.num_envs, env.action_space.shape[0], device)
+        # Optionally, you could also set extras["expert_actions"] here if needed.
 
-#         obs, reward, terminated, truncated, extras = env.step(expert_actions)
-#         done = terminated | truncated
-#         state = obs  # observation tensor
+        obs, reward, terminated, truncated, extras = env.step(expert_actions)
+        done = terminated | truncated
+        state = obs  # observation tensor
 
                
-#         # Forward pass through the policy network.
-#         policy_output, _, _ = agent.models["policy"].compute({"states": state}, role="policy")
+        # Forward pass through the policy network.
+        policy_output, _, _ = agent.models["policy"].compute({"states": state}, role="policy")
 
-#         # render scene
-#         if not headless:
-#             env.render()
+        # render scene
+        if not headless:
+            env.render()
 
-#         loss = mse_loss_fn(policy_output, expert_actions)
-#         warm_optimizer.zero_grad()
-#         loss.backward()
-#         warm_optimizer.step()
+        loss = mse_loss_fn(policy_output, expert_actions)
+        warm_optimizer.zero_grad()
+        loss.backward()
+        warm_optimizer.step()
         
-#         if step % 100 == 0:
-#             print(f"Phase {phase_name} step {step}: MSE Loss = {loss.item():.4f}")
-#         if done.any():
-#             obs, infos = env.reset()
-#     # End of phase.
-#     print(f"Phase {phase_name} completed.")
+        if step % 100 == 0:
+            print(f"Phase {phase_name} step {step}: MSE Loss = {loss.item():.4f}")
+        if done.any():
+            obs, infos = env.reset()
+    # End of phase.
+    print(f"Phase {phase_name} completed.")
 
-# print("Warm-start training completed. Transitioning to PPO training...")
-# # Unfreeze the value network.
-# for param in agent.models["value"].parameters():
-#     param.requires_grad = True
-# # Disable warm-start mode.
-# task.warm_start = False
+print("Warm-start training completed. Transitioning to PPO training...")
+# Unfreeze the value network.
+for param in agent.models["value"].parameters():
+    param.requires_grad = True
+# Disable warm-start mode.
+task.warm_start = False
 
 
 
