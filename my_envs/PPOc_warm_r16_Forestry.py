@@ -511,10 +511,10 @@ class ReachingTargetTask(RLTask):
         self.env_origins[env_ids] = self.terrain_origins[self.terrain_levels[env_ids], self.terrain_types[env_ids]]
 
 
-        # mask = self.distance[env_ids] > self.max_distance[env_ids]
-        # self.max_distance[env_ids][mask] = self.distance[env_ids][mask]
-        # mask = self.distance[env_ids] > (self.commands[env_ids, 0] * self.max_episode_length_s * 0.5)
-        # self.max_distance[env_ids][mask] = 0.0
+        mask = self.distance[env_ids] > self.max_distance[env_ids]
+        self.max_distance[env_ids][mask] = self.distance[env_ids][mask]
+        mask = self.distance[env_ids] > (self.commands[env_ids, 0] * self.max_episode_length_s * 0.5)
+        self.max_distance[env_ids][mask] = 0.0
         
     def sample_velocity_command(self, env_id: int):
         """
