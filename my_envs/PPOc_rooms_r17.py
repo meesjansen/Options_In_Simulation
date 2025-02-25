@@ -1,5 +1,4 @@
 import torch
-import math
 import numpy as np
 import gym
 from gym import spaces
@@ -54,9 +53,9 @@ TASK_CFG = {"test": False,
                                         # rough terrain only:
                                         "curriculum": True,
                                         "maxInitMapLevel": 0,
-                                        "mapLength": 16.0,
-                                        "mapWidth": 16.0,
-                                        "numLevels": 6,
+                                        "mapLength": 8.0,
+                                        "mapWidth": 8.0,
+                                        "numLevels": 4,
                                         "numTerrains": 2,
                                         # terrain types: [ smooth slope, rough slope, stairs up, stairs down, discrete]
                                         "terrainProportions": [0.35, 0.55, 0.7, 0.85, 1.0],
@@ -68,34 +67,29 @@ TASK_CFG = {"test": False,
                                        "angularVelocityScale": 0.25,
                                        "dofPositionScale": 1.0,
                                        "dofVelocityScale": 0.05,
-                                       "heightMeasurementScale": 1.0,
-                                       "lambdaSlipScale": 10.0,
+                                       "heightMeasurementScale": 5.0,
                                        "terminalReward": 0.0,
                                        "linearVelocityXYRewardScale": 1.0,
                                        "linearVelocityZRewardScale": -4.0,
-                                       "angularVelocityZRewardScale": 1.0,
+                                       "angularVelocityZRewardScale": 5.0,
                                        "angularVelocityXYRewardScale": -0.5,
                                        "orientationRewardScale": -0.0,
                                        "torqueRewardScale": -0.0,
                                        "jointAccRewardScale": -0.0,
-                                       "baseHeightRewardScale": 0.0,
+                                       "baseHeightRewardScale": -0.0,
                                        "actionRateRewardScale": -0.05,
-                                       "fallenOverRewardScale": -200.0,
-                                       "slipLongitudinalRewardScale": -5.0,
+                                       "fallenOverRewardScale": -5.0,
+                                       "slipLongitudinalRewardScale": -0.5,
                                        "episodeLength_s": 15.0,
                                        "pushInterval_s": 20.0,},
-                            "randomCommandVelocityRanges": {"linear_x": 0.5, # [m/s]
+                            "randomCommandVelocityRanges": {"linear_x": [-0.5, 0.5], # [m/s]
                                                             "linear_y": [-0.5, 0.5], # [m/s]
-                                                            "yaw": [-3.14, 3.14], # [rad/s]
-                                                            "yaw_constant": 0.5,},   # [rad/s]
+                                                            "yaw": [-3.14, 3.14]},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 0.05, # [N*m/rad] For torque setpoint control
-                                        "damping": .005, # [N*m*s/rad]
+                                        "damping": .01, # [N*m*s/rad]
                                         "actionScale": 1.0,
-                                        "wheel_radius": 0.1175,
-                                        "torq_constant": 7.2,
-                                        "torq_FF_gain": 0.1,
-                                        },   # leave room to overshoot or corner 
+                                        "wheel_radius": 0.1175},   # leave room to overshoot or corner 
 
                             },
                      "sim": {"dt": 0.005,  
@@ -170,14 +164,14 @@ class ReachingTargetTask(RLTask):
         self.init_done = False
         self._env_spacing = 0.0
         
-        # observation and action space (DQN)
-        self._num_observations = 162
+                # observation and action space DQN
+        self._num_observations = 163
         self._num_actions = 4  # Designed discrete action space see pre_physics_step()
 
         self.observation_space = spaces.Box(
             low=-1.0,  # Replace with a specific lower bound if needed
             high=1.0,  # Replace with a specific upper bound if needed
-            shape=(self._num_observations,),
+            shape=(self.num_observations,),
             dtype=np.float32  # Ensure data type is consistent
         )
         
@@ -185,7 +179,7 @@ class ReachingTargetTask(RLTask):
         self.action_space = spaces.Box(
             low=-1.0,
             high=1.0,
-            shape=(self._num_actions,),
+            shape=(self.num_actions,),
             dtype=np.float32
         )
 
@@ -203,8 +197,7 @@ class ReachingTargetTask(RLTask):
         self.previous_linear_velocity = torch.zeros((self.num_envs, 3), device=self.device)
         self.previous_angular_velocity = torch.zeros((self.num_envs, 3), device=self.device)
 
-        self.last_torq_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
-        self.max_distance = torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
+        self.last_vel_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
         
         torch_zeros = lambda: torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
         self.episode_sums = {
@@ -224,11 +217,6 @@ class ReachingTargetTask(RLTask):
             "fallen_over": torch_zeros(),
             "slip_longitudinal": torch_zeros(),
         }
-        
-        # --- NEW: Initialize warm-start flag (disabled by default) ---
-        self.warm_start = False
-        self.phase_name = ""
-
         return
         
 
@@ -244,7 +232,6 @@ class ReachingTargetTask(RLTask):
         self.dof_vel_scale = self._task_cfg["env"]["learn"]["dofVelocityScale"]
         self.height_meas_scale = self._task_cfg["env"]["learn"]["heightMeasurementScale"]
         self.action_scale = self._task_cfg["env"]["control"]["actionScale"]
-        self.lambda_slip_scale = self._task_cfg["env"]["learn"]["lambdaSlipScale"]
 
         # reward scales
         self.rew_scales = {}
@@ -265,7 +252,6 @@ class ReachingTargetTask(RLTask):
         self.command_x_range = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_x"]
         self.command_y_range = self._task_cfg["env"]["randomCommandVelocityRanges"]["linear_y"]
         self.command_yaw_range = self._task_cfg["env"]["randomCommandVelocityRanges"]["yaw"]
-        self.yaw_constant = self._task_cfg["env"]["randomCommandVelocityRanges"]["yaw_constant"]
 
         # base init state
         pos = self._task_cfg["env"]["baseInitState"]["pos"]
@@ -276,7 +262,6 @@ class ReachingTargetTask(RLTask):
 
         # other
         self.decimation = self._task_cfg["env"]["control"]["decimation"]
-        self.sim_dt = self._task_cfg["sim"]["dt"]
         self.dt = self.decimation * self._task_cfg["sim"]["dt"]
         self.max_episode_length_s = self._task_cfg["env"]["learn"]["episodeLength_s"]
         self.max_episode_length = int(self.max_episode_length_s / self.dt + 0.5)
@@ -284,8 +269,6 @@ class ReachingTargetTask(RLTask):
         self.Kp = self._task_cfg["env"]["control"]["stiffness"]
         self.Kd = self._task_cfg["env"]["control"]["damping"]
         self.r = self._task_cfg["env"]["control"]["wheel_radius"]
-        self.torq_constant = self._task_cfg["env"]["control"]["torq_constant"]
-        self.torq_FF_gain = self._task_cfg["env"]["control"]["torq_FF_gain"]
         self.curriculum = self._task_cfg["env"]["terrain"]["curriculum"]
       
         for key in self.rew_scales.keys():
@@ -313,7 +296,6 @@ class ReachingTargetTask(RLTask):
         points[:, :, 0] = grid_x.flatten()
         points[:, :, 1] = grid_y.flatten()
         return points
-
 
   
 
