@@ -785,15 +785,15 @@ class ReachingTargetTask(RLTask):
         )
 
         # Print the shape and values of each component
-        # print("base_lin_vel:", self.base_lin_vel.shape, self.base_lin_vel)
-        # print("base_ang_vel:", self.base_ang_vel.shape, self.base_ang_vel)
-        # print("projected_gravity:", self.projected_gravity.shape, self.projected_gravity)
+        print("base_lin_vel shape and 0th env:", self.base_lin_vel.shape, self.base_lin_vel[0, :])
+        print("base_ang_vel shape and 0th env:", self.base_ang_vel.shape, self.base_ang_vel[0,:])
+        print("projected_gravity shape and 0th env:", self.projected_gravity.shape, self.projected_gravity[0, :])
         print("commands[0, 0]:", (self.commands[0, 0] * self.commands_scale[0]).shape, (self.commands[0, 0] * self.commands_scale[0]))
         # print("commands[:, 2]:", (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1).shape, (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1))
-        # print("dof_vel:", self.dof_vel.shape, self.dof_vel)
-        # print("actions:", self.actions.shape, self.actions)
-        # print("lambda_slip:", self.lambda_slip.shape, self.lambda_slip)
-        print("heights-0:", heights.shape, heights[0, :])
+        print("dof_vel shape and 0th env:", self.dof_vel.shape, self.dof_vel[0,:])
+        print("actions shape and 0th env:", self.actions.shape, self.actions[0, :])
+        print("lambda_slip shape and 0th env:", self.lambda_slip.shape, self.lambda_slip[0, :])
+        print("heights shape and 0th env:", heights.shape, heights[0, :])
                     
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     
