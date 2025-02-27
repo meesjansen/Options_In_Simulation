@@ -557,7 +557,7 @@ class ReachingTargetTask(RLTask):
         """
         Return a velocity command (x vel) for a single environment based on the current curriculum task.
         """
-        threshold_high = 0.7
+        threshold_high = 30.0
 
         if self.terrain_levels[env_id] == 1:
             # Task 1: normal distribution around 0.5, with sigma in [0.01..0.1]
