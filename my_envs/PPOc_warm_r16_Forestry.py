@@ -488,7 +488,6 @@ class ReachingTargetTask(RLTask):
         self.last_dof_vel[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
         self.episode_buf[env_ids] = 0 
-        self.distance_buf[env_ids] = 0.0
 
         # fill extras
         self.extras["episode"] = {}
