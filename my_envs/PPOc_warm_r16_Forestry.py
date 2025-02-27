@@ -513,7 +513,7 @@ class ReachingTargetTask(RLTask):
         # Use self.episode_sums as the cumulative performance indicator for each environment.
         # Define thresholds (tune these values as needed)
         threshold_low = 0.3   # indicates poor performance, make terrain easier (reduce difficulty)
-        threshold_high = 30.0  # indicates strong performance, increase terrain difficulty
+        threshold_high = 10.0  # indicates strong performance, increase terrain difficulty
 
         # Create boolean masks based on episode sums for the selected env_ids.
         low_mask = self.episode_sums["lin_vel_xy"][env_ids] < threshold_low
@@ -557,7 +557,7 @@ class ReachingTargetTask(RLTask):
         """
         Return a velocity command (x vel) for a single environment based on the current curriculum task.
         """
-        threshold_high = 30.0
+        threshold_high = 10.0
 
         if self.terrain_levels[env_id] == 1:
             # Task 1: normal distribution around 0.5, with sigma in [0.01..0.1]
@@ -584,8 +584,8 @@ class ReachingTargetTask(RLTask):
             # We'll do a simple sub-task switch
             fraction = self.episode_sums["lin_vel_xy"][env_id] / threshold_high 
             t = float(self.common_step_counter) * self.dt
-            scale = 1.0 # m/s
-            Noise = 0.5 * t/self.max_episode_length_s
+            scale = 0.5 # m/s
+            Noise = 0.5 * fraction
             x_vel = torch.normal(mean=0.0, std=Noise, size=(1,), device=self.device).item() + scale * t/self.max_episode_length_s
             return max(x_vel, 0.0)
 
@@ -617,7 +617,7 @@ class ReachingTargetTask(RLTask):
                 
                 sign_vel = torch.sign(self.dof_vel)
                 sign_torq = torch.sign(wheel_torq)
-                over_speed = torch.abs(self.dof_vel) > 4.25 * 3  # 4.25 rad/s is 0.5 m/s the max speed of the robot is 1.0 m/s
+                over_speed = torch.abs(self.dof_vel) > 4.25 * 2  # 4.25 rad/s is 0.5 m/s the max speed of the robot is 1.0 m/s
 
                 # Condition: over_speed AND same sign of velocity & torque → set torque = 0
                 clamp_mask = over_speed & (sign_vel == sign_torq)
@@ -777,6 +777,7 @@ class ReachingTargetTask(RLTask):
         self.episode_sums["action_rate"] += rew_action_rate
         self.episode_sums["fallen_over"] += rew_fallen_over
         self.episode_sums["slip_longitudinal"] += rew_slip_longitudinal
+        print(f"episode sum slip_longitudinal -0: {self.episode_sums['slip_longitudinal'].shape}, {self.episode_sums['slip_longitudinal'][0]}")
 
         self.reward_components = {
             "rew_lin_vel_xy": rew_lin_vel_xy.mean().item(),
