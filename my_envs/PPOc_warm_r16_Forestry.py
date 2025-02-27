@@ -195,6 +195,8 @@ class ReachingTargetTask(RLTask):
 
         self.height_points = self.init_height_points()  
         self.measured_heights = None
+        self.bounds = torch.tensor([-4.0, 4.0, -4.0, 4.0], device=self.device, dtype=torch.float)
+
 
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
 
@@ -486,6 +488,7 @@ class ReachingTargetTask(RLTask):
         self.last_dof_vel[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
         self.episode_buf[env_ids] = 0 
+        self.distance_buf[env_ids] = 0.0
 
         # fill extras
         self.extras["episode"] = {}
@@ -497,25 +500,34 @@ class ReachingTargetTask(RLTask):
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
 
     def update_terrain_level(self, env_ids):
+        # Only update terrain if initialization and curriculum are active.
         if not self.init_done or not self.curriculum:
-            # do not change on initial reset
             return
-        root_pos, _ = self._robots.get_world_poses(clone=False)
-        self.distance = torch.norm(root_pos[env_ids, :2] - self.env_origins[env_ids, :2], dim=1)
-                
-        self.terrain_levels[env_ids] -= 1 * (
-            self.distance < self.commands[env_ids, 0] * self.max_episode_length_s * 0.5
-        )
-        self.terrain_levels[env_ids] += 1 * (self.distance > self.terrain.env_length / 2)
-        self.terrain_levels[env_ids] = torch.clip(self.terrain_levels[env_ids], 0) % self.terrain.env_rows
-        self.env_origins[env_ids] = self.terrain_origins[self.terrain_levels[env_ids], self.terrain_types[env_ids]]
 
+        # Use self.episode_sums as the cumulative performance indicator for each environment.
+        # Define thresholds (tune these values as needed)
+        threshold_low = 0.0   # indicates poor performance, make terrain easier (reduce difficulty)
+        threshold_high = 100.0  # indicates strong performance, increase terrain difficulty
 
-        mask = self.distance[env_ids] > self.max_distance[env_ids]
-        self.max_distance[env_ids][mask] = self.distance[env_ids][mask]
-        mask = self.distance[env_ids] > (self.commands[env_ids, 0] * self.max_episode_length_s * 0.5)
-        self.max_distance[env_ids][mask] = 0.0
+        # Create boolean masks based on episode sums for the selected env_ids.
+        low_mask = self.episode_sums["lin_vel_xy"][env_ids] < threshold_low
+        high_mask = self.episode_sums["lin_vel_xy"][env_ids] > threshold_high
         
+        # For environments with low performance, decrease the terrain difficulty.
+        if low_mask.any():
+            self.terrain_levels[env_ids][low_mask] = torch.clamp(
+                self.terrain_levels[env_ids][low_mask] - 1, min=0
+            )
+        
+        # For environments with high performance, increase the terrain difficulty.
+        if high_mask.any():
+            self.terrain_levels[env_ids][high_mask] = torch.clamp(
+                self.terrain_levels[env_ids][high_mask] + 1, max=6
+            )
+        
+        # Finally, update the environment origins according to the new terrain level and terrain type.
+        self.env_origins[env_ids] = self.terrain_origins[self.terrain_levels[env_ids], self.terrain_types[env_ids]]
+            
     def sample_velocity_command(self, env_id: int):
         """
         Return a velocity command (x vel) for a single environment based on the current warm start phase.
@@ -539,10 +551,12 @@ class ReachingTargetTask(RLTask):
         """
         Return a velocity command (x vel) for a single environment based on the current curriculum task.
         """
+        threshold_high = 0.7
+
         if self.terrain_levels[env_id] == 1:
             # Task 1: normal distribution around 0.5, with sigma in [0.01..0.1]
             # Example: linearly scale sigma with episode_buf or a global counter
-            fraction = self.max_distance[env_id] / (self.commands[env_id, 0] * self.max_episode_length_s * 0.5)
+            fraction = self.episode_sums[env_id] / threshold_high 
             sigma = 0.01 + 0.09 * fraction
             x_vel = torch.normal(mean=0.5, std=sigma, size=(1,), device=self.device).item()
             return max(x_vel, 0.0)  # keep it non-negative if you want
@@ -690,6 +704,10 @@ class ReachingTargetTask(RLTask):
 
         self.reset_buf = torch.where(self.timeout_buf.bool(), torch.ones_like(self.reset_buf), self.reset_buf)
 
+        self.out_of_bounds = ((self.base_pos[:, 0] - self.env_origins[:, 0]) < self.bounds[0]) | ((self.base_pos[:, 0] - self.env_origins[:, 0]) > self.bounds[1]) | \
+                        ((self.base_pos[:, 1] - self.env_origins[:, 1]) < self.bounds[2]) | ((self.base_pos[:, 1] - self.env_origins[:, 1]) > self.bounds[3])
+        self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
+
     
     def calculate_metrics(self) -> None:
         # During warm-start, disable reward calculations
@@ -745,6 +763,7 @@ class ReachingTargetTask(RLTask):
         self.rew_buf += self.rew_scales["termination"] * self.reset_buf * ~self.timeout_buf
 
         self.episode_sums["lin_vel_xy"] += rew_lin_vel_xy
+        print("episode_sums lin vel xy -0:", self.episode_sums["lin_vel_xy"].shape, self.episode_sums["lin_vel_xy"][0])
         self.episode_sums["ang_vel_z"] += rew_ang_vel_z
         self.episode_sums["lin_vel_z"] += rew_lin_vel_z
         self.episode_sums["ang_vel_xy"] += rew_ang_vel_xy
