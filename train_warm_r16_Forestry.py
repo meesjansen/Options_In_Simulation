@@ -312,6 +312,7 @@ for phase_name, expert_fn, phase_steps in warm_start_phases:
             print(f"Phase {phase_name} step {step}: MSE Loss = {loss.item():.4f}")
         if done.any():
             obs, infos = env.reset()
+            print("which reset is hit?")
     # End of phase.
     print(f"Phase {phase_name} completed.")
 

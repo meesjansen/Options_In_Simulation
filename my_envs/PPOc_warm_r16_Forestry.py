@@ -389,6 +389,8 @@ class ReachingTargetTask(RLTask):
 
         
     def post_reset(self):
+
+        print("post_reset hit")
         
         self.base_init_state = torch.tensor(self.base_init_state, dtype=torch.float, device=self.device, requires_grad=False)
         self.dof_init_state = torch.tensor(self.dof_init_state, dtype=torch.float, device=self.device, requires_grad=False)
@@ -446,6 +448,9 @@ class ReachingTargetTask(RLTask):
 
 
     def reset_idx(self, env_ids):
+
+        print("reset_idx hit")
+
         indices = env_ids.to(dtype=torch.int32)
 
         self.update_terrain_level(env_ids)
@@ -523,7 +528,7 @@ class ReachingTargetTask(RLTask):
         # For environments with high performance, increase the terrain difficulty.
         if high_mask.any():
             self.terrain_levels[env_ids][high_mask] = torch.clamp(
-                self.terrain_levels[env_ids][high_mask] + 1, max=6
+                self.terrain_levels[env_ids][high_mask] + 1, max=5
             )
         
         # Finally, update the environment origins according to the new terrain level and terrain type.
@@ -579,7 +584,7 @@ class ReachingTargetTask(RLTask):
             # We'll do a simple sub-task switch
             fraction = self.episode_sums["lin_vel_xy"][env_id] / threshold_high 
             t = float(self.common_step_counter) * self.dt
-            scale = 2.0 # m/s
+            scale = 1.0 # m/s
             Noise = 0.5 * t/self.max_episode_length_s
             x_vel = torch.normal(mean=0.0, std=Noise, size=(1,), device=self.device).item() + scale * t/self.max_episode_length_s
             return max(x_vel, 0.0)
@@ -617,10 +622,10 @@ class ReachingTargetTask(RLTask):
                 # Condition: over_speed AND same sign of velocity & torque → set torque = 0
                 clamp_mask = over_speed & (sign_vel == sign_torq)
                 wheel_torq[clamp_mask] = 0.0
-                print(f"clamp mask: {clamp_mask}")
-                print(f"wheel_torq: {wheel_torq}")
+                print(f"clamp mask: {clamp_mask[0,:]}")
+                print(f"wheel_torq: {wheel_torq[0,:]}")
 
-                self.wheel_torqs = torch.clip(wheel_torq, -80.0, 80.0)
+                self.wheel_torqs = torch.clip(wheel_torq, -20.0, 20.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
