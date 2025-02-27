@@ -291,7 +291,7 @@ for phase_name, expert_fn, phase_steps in warm_start_phases:
         # Optionally, you could also set extras["expert_actions"] here if needed.
 
         obs, reward, terminated, truncated, extras = env.step(expert_actions)
-        print(f"reward: {reward}")
+        print(f"obs warm: {obs[0,:]}")
         done = terminated | truncated
         state = obs  # observation tensor
 

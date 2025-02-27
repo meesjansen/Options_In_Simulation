@@ -617,11 +617,12 @@ class ReachingTargetTask(RLTask):
                 
                 sign_vel = torch.sign(self.dof_vel)
                 sign_torq = torch.sign(wheel_torq)
-                over_speed = torch.abs(self.dof_vel) > 4.25  # 4.25 rad/s is 0.5 m/s the max speed of the robot is 1.0 m/s
+                over_speed = torch.abs(self.dof_vel) > 4.25 * 3  # 4.25 rad/s is 0.5 m/s the max speed of the robot is 1.0 m/s
 
                 # Condition: over_speed AND same sign of velocity & torque → set torque = 0
                 clamp_mask = over_speed & (sign_vel == sign_torq)
                 wheel_torq[clamp_mask] = 0.0
+                print(f"dof_vel: {self.dof_vel[0,:]}")
                 print(f"clamp mask: {clamp_mask[0,:]}")
                 print(f"wheel_torq: {wheel_torq[0,:]}")
 
@@ -792,8 +793,6 @@ class ReachingTargetTask(RLTask):
 
     def get_observations(self):
         self.measured_heights = self.get_heights()
-        print("measured_heights -0:", self.measured_heights.shape, self.measured_heights[0, :])
-        print("base_pos -0:", self.base_pos.shape, self.base_pos[0, 2])
         heights = (
             torch.clip(self.base_pos[:, 2].unsqueeze(1) - self.measured_heights - 0.0622, -1, 1.0) * self.height_meas_scale
         )
