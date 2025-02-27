@@ -66,6 +66,7 @@ TASK_CFG = {"test": False,
                             "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed      
                             "learn" : {"linearVelocityScale": 1.0,
                                        "angularVelocityScale": 1.0,
+                                        "gravityScale": 0.1,
                                        "dofPositionScale": 1.0,
                                        "dofVelocityScale": 1.0,
                                        "heightMeasurementScale": 1.0,
@@ -242,6 +243,7 @@ class ReachingTargetTask(RLTask):
         # normalization
         self.lin_vel_scale = self._task_cfg["env"]["learn"]["linearVelocityScale"]
         self.ang_vel_scale = self._task_cfg["env"]["learn"]["angularVelocityScale"]
+        self.gravity_scale = self._task_cfg["env"]["learn"]["gravityScale"]
         self.dof_pos_scale = self._task_cfg["env"]["learn"]["dofPositionScale"]
         self.dof_vel_scale = self._task_cfg["env"]["learn"]["dofVelocityScale"]
         self.height_meas_scale = self._task_cfg["env"]["learn"]["heightMeasurementScale"]
@@ -505,8 +507,8 @@ class ReachingTargetTask(RLTask):
 
         # Use self.episode_sums as the cumulative performance indicator for each environment.
         # Define thresholds (tune these values as needed)
-        threshold_low = 0.0   # indicates poor performance, make terrain easier (reduce difficulty)
-        threshold_high = 100.0  # indicates strong performance, increase terrain difficulty
+        threshold_low = 0.3   # indicates poor performance, make terrain easier (reduce difficulty)
+        threshold_high = 30.0  # indicates strong performance, increase terrain difficulty
 
         # Create boolean masks based on episode sums for the selected env_ids.
         low_mask = self.episode_sums["lin_vel_xy"][env_ids] < threshold_low
@@ -555,7 +557,7 @@ class ReachingTargetTask(RLTask):
         if self.terrain_levels[env_id] == 1:
             # Task 1: normal distribution around 0.5, with sigma in [0.01..0.1]
             # Example: linearly scale sigma with episode_buf or a global counter
-            fraction = self.episode_sums[env_id] / threshold_high 
+            fraction = self.episode_sums["lin_vel_xy"][env_id] / threshold_high 
             sigma = 0.01 + 0.09 * fraction
             x_vel = torch.normal(mean=0.5, std=sigma, size=(1,), device=self.device).item()
             return max(x_vel, 0.0)  # keep it non-negative if you want
@@ -563,7 +565,7 @@ class ReachingTargetTask(RLTask):
         elif self.terrain_levels[env_id] == 2:
             # Task 2: sinusoidal with mean=1, frequency + amplitude changes
             # Suppose we let the frequency grow from 0.01..0.1 and amplitude from 0.1..1
-            fraction = self.max_distance[env_id] / (self.commands[env_id, 0] * self.max_episode_length_s * 0.5)
+            fraction = self.episode_sums["lin_vel_xy"][env_id] / threshold_high 
             freq = 0.01 + 0.09 * fraction
             amp  = 0.1  
             if fraction > 0.5:
@@ -575,7 +577,7 @@ class ReachingTargetTask(RLTask):
         elif self.terrain_levels[env_id] == 3:
             # Task 3: range 0..10. Start with 0..5, then up to 10
             # We'll do a simple sub-task switch
-            fraction = self.max_distance[env_id] / (self.commands[env_id, 0] * self.max_episode_length_s * 0.5)
+            fraction = self.episode_sums["lin_vel_xy"][env_id] / threshold_high 
             t = float(self.common_step_counter) * self.dt
             scale = 2.0 # m/s
             Noise = 0.5 * t/self.max_episode_length_s
@@ -794,7 +796,7 @@ class ReachingTargetTask(RLTask):
             (
                 self.base_lin_vel * self.lin_vel_scale,
                 self.base_ang_vel * self.ang_vel_scale,
-                self.projected_gravity,
+                self.projected_gravity * self.gravity_scale,
                 (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1),    # (num_envs, 1)
                 # (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1),
                 self.dof_vel * self.r * self.dof_vel_scale,
@@ -812,7 +814,7 @@ class ReachingTargetTask(RLTask):
         print("commands[0, 0]:", (self.commands[0, 0] * self.commands_scale[0]).shape, (self.commands[0, 0] * self.commands_scale[0]))
         # print("commands[:, 2]:", (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1).shape, (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1))
         print("dof_lin_vel shape and 0th env:", self.dof_vel.shape, self.dof_vel[0,:] * self.r)
-        print("dof_lin_vel shape and 0th env:", self.dof_vel.shape, self.dof_vel[0,:] * self.r)
+        print("dof_lin_vel shape and 0th env:", self.dof_vel.shape, self.dof_vel[0,:])
         print("actions shape and 0th env:", self.actions.shape, self.actions[0, :])
         print("lambda_slip shape and 0th env:", self.lambda_slip.shape, self.lambda_slip[0, :])
         print("heights shape and 0th env:", heights.shape, heights[0, :])
