@@ -64,12 +64,12 @@ TASK_CFG = {"test": False,
                                         "slopeTreshold": 0.5,
                                         },
                             "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed      
-                            "learn" : {"linearVelocityScale": 2.0,
-                                       "angularVelocityScale": 0.25,
+                            "learn" : {"linearVelocityScale": 1.0,
+                                       "angularVelocityScale": 1.0,
                                        "dofPositionScale": 1.0,
-                                       "dofVelocityScale": 0.05,
+                                       "dofVelocityScale": 1.0,
                                        "heightMeasurementScale": 1.0,
-                                       "lambdaSlipScale": 10.0,
+                                       "lambdaSlipScale": 1.0,
                                        "terminalReward": 0.0,
                                        "linearVelocityXYRewardScale": 1.0,
                                        "linearVelocityZRewardScale": -4.0,
@@ -91,7 +91,7 @@ TASK_CFG = {"test": False,
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 0.05, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 1.0,
+                                        "actionScale": 10.0,
                                         "wheel_radius": 0.1175,
                                         "torq_constant": 7.2,
                                         "torq_FF_gain": 0.1,
@@ -597,15 +597,17 @@ class ReachingTargetTask(RLTask):
                 
                 sign_vel = torch.sign(self.dof_vel)
                 sign_torq = torch.sign(wheel_torq)
-                over_speed = torch.abs(self.dof_vel) > 4.25 * 2 # 4.25 rad/s is 0.5 m/s the max speed of the robot is 1.0 m/s
+                over_speed = torch.abs(self.dof_vel) > 4.25  # 4.25 rad/s is 0.5 m/s the max speed of the robot is 1.0 m/s
 
                 # Condition: over_speed AND same sign of velocity & torque → set torque = 0
                 clamp_mask = over_speed & (sign_vel == sign_torq)
                 wheel_torq[clamp_mask] = 0.0
+                print(f"clamp mask: {clamp_mask}")
+                print(f"wheel_torq: {wheel_torq}")
 
-                wheel_torqs = torch.clip(wheel_torq, -80.0, 80.0)
+                self.wheel_torqs = torch.clip(wheel_torq, -80.0, 80.0)
 
-                self._robots.set_joint_efforts(wheel_torqs)
+                self._robots.set_joint_efforts(self.wheel_torqs)
 
                 SimulationContext.step(self.world, render=False)
                 self.refresh_dof_state_tensors()
@@ -710,11 +712,12 @@ class ReachingTargetTask(RLTask):
         rew_ang_vel_xy = torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1) * self.rew_scales["ang_vel_xy"]
 
         # torque penalty, joint acceleration penalty, etc. can be computed as before…
-        rew_fallen_over = self.has_fallen * self.rew_scales["fallen_over"]
-
         rew_action_rate = (
             torch.sum(torch.square(self.last_actions - self.actions), dim=1) * self.rew_scales["action_rate"]
         )
+
+        rew_fallen_over = self.has_fallen * self.rew_scales["fallen_over"]
+
         v_wheel = self.r * self.dof_vel  # v_wheel = r * omega
         base_lin_vel_expanded = self.base_lin_vel[:, 0].unsqueeze(1).expand(-1, v_wheel.shape[1])
         self.lambda_slip = (v_wheel - base_lin_vel_expanded) / torch.maximum(v_wheel, base_lin_vel_expanded)
@@ -777,7 +780,7 @@ class ReachingTargetTask(RLTask):
                 (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1),    # (num_envs, 1)
                 # (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1),
                 self.dof_vel * self.r * self.dof_vel_scale,
-                self.actions,
+                self.wheel_torqs,
                 self.lambda_slip * self.lambda_slip_scale,
                 heights,
             ),
@@ -790,7 +793,8 @@ class ReachingTargetTask(RLTask):
         print("projected_gravity shape and 0th env:", self.projected_gravity.shape, self.projected_gravity[0, :])
         print("commands[0, 0]:", (self.commands[0, 0] * self.commands_scale[0]).shape, (self.commands[0, 0] * self.commands_scale[0]))
         # print("commands[:, 2]:", (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1).shape, (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1))
-        print("dof_vel shape and 0th env:", self.dof_vel.shape, self.dof_vel[0,:])
+        print("dof_lin_vel shape and 0th env:", self.dof_vel.shape, self.dof_vel[0,:] * self.r)
+        print("dof_lin_vel shape and 0th env:", self.dof_vel.shape, self.dof_vel[0,:] * self.r)
         print("actions shape and 0th env:", self.actions.shape, self.actions[0, :])
         print("lambda_slip shape and 0th env:", self.lambda_slip.shape, self.lambda_slip[0, :])
         print("heights shape and 0th env:", heights.shape, heights[0, :])
