@@ -677,6 +677,8 @@ class ReachingTargetTask(RLTask):
             # Add expert actions to extras so that the policy network can “observe” them for supervised loss.
             self.extras["expert_actions"] = self.actions
 
+        print("rew_buf returned by post_physics_step: ", self.rew_buf)
+
         return self.obs_buf, self.rew_buf, self.reset_buf, self.extras
 
     def push_robots(self):
@@ -696,6 +698,8 @@ class ReachingTargetTask(RLTask):
             torch.zeros_like(self.timeout_buf),
         ) 
 
+
+
         # Calculate the projected gravity in the robot's local frame
         projected_gravity = quat_apply(self.base_quat, self.gravity_vec)
 
@@ -709,6 +713,11 @@ class ReachingTargetTask(RLTask):
         self.out_of_bounds = ((self.base_pos[:, 0] - self.env_origins[:, 0]) < self.bounds[0]) | ((self.base_pos[:, 0] - self.env_origins[:, 0]) > self.bounds[1]) | \
                         ((self.base_pos[:, 1] - self.env_origins[:, 1]) < self.bounds[2]) | ((self.base_pos[:, 1] - self.env_origins[:, 1]) > self.bounds[3])
         self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
+
+        print("Number of has_fallen non-zeros: ", (self.has_fallen != 0).sum().item())
+        print("Number of out_of_bounds non-zeros: ", (self.out_of_bounds != 0).sum().item())
+        print("Number of timeout non-zeros: ", (self.timeout_buf != 0).sum().item())
+        print("reset_buf after is_done: ", self.reset_buf)
 
     
     def calculate_metrics(self) -> None:
@@ -767,6 +776,7 @@ class ReachingTargetTask(RLTask):
         self.episode_sums["slip_longitudinal"] += rew_slip_longitudinal
         # print("episode_sums lin vel xy -0:", self.episode_sums["lin_vel_xy"].shape, self.episode_sums["lin_vel_xy"][0])
         # print(f"episode sum slip_longitudinal -0: {self.episode_sums['slip_longitudinal'].shape}, {self.episode_sums['slip_longitudinal'][0]}")
+
 
         self.reward_components = {
             "rew_lin_vel_xy": rew_lin_vel_xy.mean().item(),
