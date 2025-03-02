@@ -330,7 +330,6 @@ class ReachingTargetTask(RLTask):
         self.height_samples = (
             torch.tensor(self.terrain.heightsamples).view(self.terrain.tot_rows, self.terrain.tot_cols).to(self.device)
         )
-        # print(f"height_samples: {self.height_samples}")
 
     def set_up_scene(self, scene) -> None:
         self._stage = get_current_stage()
@@ -613,7 +612,6 @@ class ReachingTargetTask(RLTask):
             if self.world.is_playing():
                 
                 wheel_torq = self.action_scale * self.actions  # shape: [num_wheels]
-                # print(f"wheel_torq: {wheel_torq}")
                 
                 sign_vel = torch.sign(self.dof_vel)
                 sign_torq = torch.sign(wheel_torq)
@@ -622,10 +620,7 @@ class ReachingTargetTask(RLTask):
                 # Condition: over_speed AND same sign of velocity & torque → set torque = 0
                 clamp_mask = over_speed & (sign_vel == sign_torq)
                 wheel_torq[clamp_mask] = 0.0
-                # print(f"dof_vel: {self.dof_vel[0,:]}")
-                # print(f"clamp mask: {clamp_mask[0,:]}")
-                # print(f"wheel_torq: {wheel_torq[0,:]}")
-
+               
                 self.wheel_torqs = torch.clip(wheel_torq, -20.0, 20.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
@@ -759,25 +754,19 @@ class ReachingTargetTask(RLTask):
             + rew_slip_longitudinal
         )
 
-        # print("Reward Components:")
-        # print("rew_lin_vel_xy:", rew_lin_vel_xy.mean().item())
-        # print("rew_lin_vel_z:", rew_lin_vel_z.mean().item())
-        # print("rew_ang_vel_xy:", rew_ang_vel_xy.mean().item())
-        # print("rew_action_rate:", rew_action_rate.mean().item())
-        # print("rew_fallen_over:", rew_fallen_over.mean().item())
-
+        
         self.rew_buf = torch.clip(self.rew_buf, min=0.0, max=None)
         self.rew_buf += self.rew_scales["termination"] * self.reset_buf * ~self.timeout_buf
 
         self.episode_sums["lin_vel_xy"] += rew_lin_vel_xy
-        print("episode_sums lin vel xy -0:", self.episode_sums["lin_vel_xy"].shape, self.episode_sums["lin_vel_xy"][0])
         self.episode_sums["ang_vel_z"] += rew_ang_vel_z
         self.episode_sums["lin_vel_z"] += rew_lin_vel_z
         self.episode_sums["ang_vel_xy"] += rew_ang_vel_xy
         self.episode_sums["action_rate"] += rew_action_rate
         self.episode_sums["fallen_over"] += rew_fallen_over
         self.episode_sums["slip_longitudinal"] += rew_slip_longitudinal
-        print(f"episode sum slip_longitudinal -0: {self.episode_sums['slip_longitudinal'].shape}, {self.episode_sums['slip_longitudinal'][0]}")
+        # print("episode_sums lin vel xy -0:", self.episode_sums["lin_vel_xy"].shape, self.episode_sums["lin_vel_xy"][0])
+        # print(f"episode sum slip_longitudinal -0: {self.episode_sums['slip_longitudinal'].shape}, {self.episode_sums['slip_longitudinal'][0]}")
 
         self.reward_components = {
             "rew_lin_vel_xy": rew_lin_vel_xy.mean().item(),
@@ -812,17 +801,9 @@ class ReachingTargetTask(RLTask):
             dim=-1,
         )
 
-        # Print the shape and values of each component
-        # print("base_lin_vel shape and 0th env:", self.base_lin_vel.shape, self.base_lin_vel[0, :])
-        # print("base_ang_vel shape and 0th env:", self.base_ang_vel.shape, self.base_ang_vel[0,:])
-        # print("projected_gravity shape and 0th env:", self.projected_gravity.shape, self.projected_gravity[0, :])
-        # print("commands[0, 0]:", (self.commands[0, 0] * self.commands_scale[0]).shape, (self.commands[0, 0] * self.commands_scale[0]))
-        # print("commands[:, 2]:", (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1).shape, (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1))
-        print("self.dof_vel[0,:] * self.r shape and 0th env:", self.dof_vel.shape, self.dof_vel[0,:] * self.r)
-        print("self.dof_vel shape and 0th env:", self.dof_vel.shape, self.dof_vel[0,:])
-        # print("actions shape and 0th env:", self.actions.shape, self.actions[0, :])
-        print("lambda_slip shape and 0th env:", self.lambda_slip.shape, self.lambda_slip[0, :])
-        # print("heights shape and 0th env:", heights.shape, heights[0, :])
+        # print("self.dof_vel[0,:] * self.r shape and 0th env:", self.dof_vel.shape, self.dof_vel[0,:] * self.r)
+        # print("self.dof_vel shape and 0th env:", self.dof_vel.shape, self.dof_vel[0,:])
+        # print("lambda_slip shape and 0th env:", self.lambda_slip.shape, self.lambda_slip[0, :])
                     
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     
