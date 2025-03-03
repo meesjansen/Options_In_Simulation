@@ -227,10 +227,10 @@ def expert_rotate_left(num_envs, num_actions, device):
 
 def expert_rotate_right(num_envs, num_actions, device):
     actions = torch.zeros((num_envs, num_actions), device=device)
-    actions[:, 0] = 0.294  # front_left negative
-    actions[:, 1] = 0.294   # front_right positive
-    actions[:, 2] = -0.294  # rear_left negative
-    actions[:, 3] = -0.294   # rear_right positive
+    actions[:, 0] = 0.294 * 2.0  # front_left negative
+    actions[:, 1] = 0.294 * 2.0  # front_right positive
+    actions[:, 2] = -0.294 * 2.0 # rear_left negative
+    actions[:, 3] = -0.294 * 2.0  # rear_right positive
     return actions
 
 def expert_circle_left(num_envs, num_actions, device):
@@ -253,7 +253,7 @@ def expert_circle_right(num_envs, num_actions, device):
 
 # List of warm-start phases: (phase_name, expert_function, num_timesteps)
 warm_start_phases = [
-    ("straight", expert_straight, 100),
+    ("straight", expert_straight, 1000),
     ("rotate_left", expert_rotate_left, 100),
     ("rotate_right", expert_rotate_right, 1000),
     # ("circle_left", expert_circle_left, 1000),
