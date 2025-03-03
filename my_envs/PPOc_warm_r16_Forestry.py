@@ -41,7 +41,7 @@ TASK_CFG = {"test": False,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
                              "controlFrequencyInv": 4,
-                             "baseInitState": {"pos": [0.0, 0.0, 0.2], # x,y,z [m]
+                             "baseInitState": {"pos": [0.0, 0.0, 0.1], # x,y,z [m]
                                               "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
                                               "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
                                               "vAngular": [0.0, 0.0, 0.0],  # x,y,z [rad/s]
