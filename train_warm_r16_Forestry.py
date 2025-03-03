@@ -261,11 +261,11 @@ def expert_circle_right(num_envs, num_actions, device):
 
 # List of warm-start phases: (phase_name, expert_function, num_timesteps)
 warm_start_phases = [
-    ("straight", expert_straight, 1000),
-    ("rotate_left", expert_rotate_left, 10),
-    ("rotate_right", expert_rotate_right, 10),
-    ("circle_left", expert_circle_left, 10),
-    ("circle_right", expert_circle_right, 10)
+    ("straight", expert_straight, 200),
+    ("rotate_left", expert_rotate_left, 200),
+    ("rotate_right", expert_rotate_right, 200),
+    ("circle_left", expert_circle_left, 200),
+    ("circle_right", expert_circle_right, 200)
 ]
 
 # Enable warm-start mode in the environment.
@@ -291,7 +291,6 @@ for phase_name, expert_fn, phase_steps in warm_start_phases:
         # Optionally, you could also set extras["expert_actions"] here if needed.
 
         obs, reward, terminated, truncated, extras = env.step(expert_actions)
-        # print(f"obs warm: {obs[0,:]}")
         done = terminated | truncated
         state = obs  # observation tensor
 
