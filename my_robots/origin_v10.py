@@ -53,16 +53,16 @@ class AvularOrigin_v10(Robot):
 
         # Define the collision prim paths for each wheel.
         # Adjust the paths to match your USD hierarchy (here we assume your robot is loaded at prim_path).
-        wheel_collision_paths = [
-            f"{prim_path}/left_front_wheel/left_front_wheel_collision",
-            f"{prim_path}/right_front_wheel/right_front_wheel_collision",
-            f"{prim_path}/left_rear_wheel/left_rear_wheel_collision",
-            f"{prim_path}/right_rear_wheel/right_rear_wheel_collision"
-        ]
+        # wheel_collision_paths = [
+        #     f"{prim_path}/left_front_wheel/left_front_wheel_collision",
+        #     f"{prim_path}/right_front_wheel/right_front_wheel_collision",
+        #     f"{prim_path}/left_rear_wheel/left_rear_wheel_collision",
+        #     f"{prim_path}/right_rear_wheel/right_rear_wheel_collision"
+        # ]
 
-        # Enable the custom collision geometry for each wheel
-        for path in wheel_collision_paths:
-            AvularOrigin_v10.enable_custom_geometry_for_collision(path)
+        # # Enable the custom collision geometry for each wheel
+        # for path in wheel_collision_paths:
+        #     AvularOrigin_v10.enable_custom_geometry_for_collision(path)
 
     @staticmethod
     def enable_custom_geometry_for_collision(collision_prim_path: str):
