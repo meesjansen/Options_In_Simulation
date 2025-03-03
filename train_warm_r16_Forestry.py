@@ -220,25 +220,25 @@ def expert_rotate_left(num_envs, num_actions, device):
     # Order assumed: [front_left, front_right, rear_left, rear_right]
     actions = torch.zeros((num_envs, num_actions), device=device)
     actions[:, 0] = -0.294   # front_left positive
-    actions[:, 1] = -0.294  # front_right negative
-    actions[:, 2] = 0.294   # rear_left positive
+    actions[:, 1] = -0.294  # rear_left negative
+    actions[:, 2] = 0.294   # front_left positive
     actions[:, 3] = 0.294  # rear_right negative
     return actions
 
 def expert_rotate_right(num_envs, num_actions, device):
     actions = torch.zeros((num_envs, num_actions), device=device)
-    actions[:, 0] = -0.294  # front_left negative
+    actions[:, 0] = 0.294  # front_left negative
     actions[:, 1] = 0.294   # front_right positive
     actions[:, 2] = -0.294  # rear_left negative
-    actions[:, 3] = 0.294   # rear_right positive
+    actions[:, 3] = -0.294   # rear_right positive
     return actions
 
 def expert_circle_left(num_envs, num_actions, device):
     # Forward torque on all wheels, with left wheels slightly lower torque than right wheels.
     actions = torch.zeros((num_envs, num_actions), device=device)
     actions[:, 0] = -0.294  # front_left
-    actions[:, 1] = 0.294 * 2.0  # front_right
-    actions[:, 2] = -0.294  # rear_left
+    actions[:, 1] = -0.294 * 2.0  # front_right
+    actions[:, 2] = 0.294  # rear_left
     actions[:, 3] = 0.294 * 2.0  # rear_right
     return actions
 
@@ -246,15 +246,15 @@ def expert_circle_right(num_envs, num_actions, device):
     # Forward torque on all wheels, with left wheels slightly higher torque than right wheels.
     actions = torch.zeros((num_envs, num_actions), device=device)
     actions[:, 0] = 0.294 * 2.0  # front_left
-    actions[:, 1] = -0.294  # front_right
-    actions[:, 2] = 0.294 * 2.0  # rear_left
+    actions[:, 1] = 0.294  # front_right
+    actions[:, 2] = -0.294 * 2.0  # rear_left
     actions[:, 3] = -0.294  # rear_right
     return actions
 
 # List of warm-start phases: (phase_name, expert_function, num_timesteps)
 warm_start_phases = [
     ("straight", expert_straight, 100),
-    ("rotate_left", expert_rotate_left, 1000),
+    ("rotate_left", expert_rotate_left, 100),
     ("rotate_right", expert_rotate_right, 1000),
     # ("circle_left", expert_circle_left, 1000),
     # ("circle_right", expert_circle_right, 1000)
