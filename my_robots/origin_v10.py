@@ -66,3 +66,13 @@ class AvularOrigin_v10(Robot):
                 rb.GetMaxLinearVelocityAttr().Set(1000.0)
                 rb.GetAngularDampingAttr().Set(0.0)
                 rb.GetMaxAngularVelocityAttr().Set(64 / np.pi * 180)
+
+            # collisions_prim = link_prim.GetChild("collisions")
+            # if collisions_prim and collisions_prim.IsValid():
+            #     # Ensure PhysxCollisionAPI is applied
+            #     if not PhysxSchema.PhysxCollisionAPI.Has(collisions_prim):
+            #         PhysxSchema.PhysxCollisionAPI.Apply(collisions_prim)
+
+            #     collision_api = PhysxSchema.PhysxCollisionAPI.Get(collisions_prim)
+            #     collision_api.GetCustomGeometryAttr().Set(True)
+            #     print(f"Custom geometry enabled for: {collisions_prim.GetPath()}")
