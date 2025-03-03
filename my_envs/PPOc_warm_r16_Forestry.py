@@ -336,12 +336,34 @@ class ReachingTargetTask(RLTask):
         self.get_terrain()
         self.get_robot()
 
+        wheel_collision_paths = [
+            "/World/envs/env_0/robot/left_front_wheel/collision",
+            "/World/envs/env_0/robot/right_front_wheel/collision",
+            "/World/envs/env_0/robot/left_rear_wheel/collision",
+            "/World/envs/env_0/robot/right_rear_wheel/collision"
+        ]
+        for path in wheel_collision_paths:
+            self._enable_custom_geometry_for_collision(path)
+
         super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"], copy_from_source=True)
 
         # robot view
         self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot", name="robot_view")
         scene.add(self._robots)
         scene.add(self._robots._base)
+
+    def _enable_custom_geometry_for_collision(self, collision_prim_path: str):
+
+        collision_prim = get_prim_at_path(collision_prim_path)
+        
+        if collision_prim:
+            if not PhysxSchema.PhysxCollisionAPI.Has(collision_prim):
+                PhysxSchema.PhysxCollisionAPI.Apply(collision_prim)
+            physx_collision_api = PhysxSchema.PhysxCollisionAPI.Get(collision_prim)
+            physx_collision_api.GetCustomGeometryAttr().Set(True)
+            print(f"[set_up_scene] Custom geometry enabled for: {collision_prim_path}")
+        else:
+            print(f"[set_up_scene] WARNING: Collision prim not found at {collision_prim_path}")
 
     def initialize_views(self, scene):
         # initialize terrain variables even if we do not need to re-create the terrain mesh

@@ -50,29 +50,7 @@ class AvularOrigin_v10(Robot):
                 "right_rear_wheel",
         ]
 
-        wheel_collision_paths = [
-            "/World/YourRobot/left_front_wheel/left_front_wheel_collision",
-            "/World/YourRobot/right_front_wheel/right_front_wheel_collision",
-            "/World/YourRobot/left_rear_wheel/left_rear_wheel_collision",
-            "/World/YourRobot/right_rear_wheel/right_rear_wheel_collision"
-        ]
-
-        # # Roep de functie voor elk wiel aan
-        # for path in wheel_collision_paths:
-        #     enable_custom_geometry_for_collision(path)
-
-    def enable_custom_geometry_for_collision(collision_prim_path: str):
-        # Haal de collision prim op aan de hand van het pad
-        collision_prim = get_prim_at_path(collision_prim_path)
-        if collision_prim is not None and collision_prim.HasAPI(PhysxSchema.PhysxCollisionAPI):
-            # Verkrijg de PhysxCollisionAPI en zet de custom geometry flag aan
-            physx_collision_api = PhysxSchema.PhysxCollisionAPI.Get(collision_prim)
-            physx_collision_api.GetCustomGeometryAttr().Set(True)
-            print(f"Custom geometry enabled for: {collision_prim_path}")
-        else:
-            print(f"Prim op {collision_prim_path} heeft geen PhysxCollisionAPI.")
-
-
+        
             
     @property
     def dof_names(self):
