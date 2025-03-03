@@ -343,19 +343,7 @@ class ReachingTargetTask(RLTask):
         scene.add(self._robots)
         scene.add(self._robots._base)
 
-    def _enable_custom_geometry_for_collision(self, collision_prim_path: str):
-
-        collision_prim = get_prim_at_path(collision_prim_path)
-
-        if collision_prim:
-            if not PhysxSchema.PhysxCollisionAPI.Has(collision_prim):
-                PhysxSchema.PhysxCollisionAPI.Apply(collision_prim)
-            physx_collision_api = PhysxSchema.PhysxCollisionAPI.Get(collision_prim)
-            physx_collision_api.GetCustomGeometryAttr().Set(True)
-            print(f"[set_up_scene] Custom geometry enabled for: {collision_prim_path}")
-        else:
-            print(f"[set_up_scene] WARNING: Collision prim not found at {collision_prim_path}")
-
+ 
     def initialize_views(self, scene):
         # initialize terrain variables even if we do not need to re-create the terrain mesh
         self.get_terrain(create_mesh=False)
@@ -655,6 +643,9 @@ class ReachingTargetTask(RLTask):
 
             # prepare quantities
             self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 0:3])
+            print(f"ergo lin velocities: {self.base_lin_vel[0, 0:3]}")
+            print(f"global lin velocities: {self.base_velocities[0, 0:3]}")
+
             self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 3:6])
             self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
             forward = quat_apply(self.base_quat, self.forward_vec)
@@ -777,7 +768,7 @@ class ReachingTargetTask(RLTask):
         self.episode_sums["action_rate"] += rew_action_rate
         self.episode_sums["fallen_over"] += rew_fallen_over
         self.episode_sums["slip_longitudinal"] += rew_slip_longitudinal
-        print("episode_sums lin vel xy -0:", self.episode_sums["lin_vel_xy"].shape, self.episode_sums["lin_vel_xy"][0])
+        # print("episode_sums lin vel xy -0:", self.episode_sums["lin_vel_xy"].shape, self.episode_sums["lin_vel_xy"][0])
         # print(f"episode sum slip_longitudinal -0: {self.episode_sums['slip_longitudinal'].shape}, {self.episode_sums['slip_longitudinal'][0]}")
 
 
@@ -814,8 +805,7 @@ class ReachingTargetTask(RLTask):
             dim=-1,
         )
 
-        print(f"forward linear velocity: {self.base_lin_vel[0,0] * self.lin_vel_scale}")
-                            
+                          
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     
 

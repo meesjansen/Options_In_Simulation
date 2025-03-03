@@ -57,9 +57,7 @@ class Value(DeterministicMixin, Model):
 # Instantiate and configure the task
 headless = True  # set headless to False for rendering
 
-env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
-
-print("0-Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
+env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
 from my_envs.PPOc_warm_r16_Forestry import ReachingTargetTask, TASK_CFG
@@ -109,14 +107,11 @@ TASK_CFG["task"]["sim"]["default_physics_material"]["dynamic_friction"] = parsed
 TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["yaw_constant"] = parsed_config["yaw_constant"]
 TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["linear_x"] = parsed_config["linear_x"]
 
-print("1-Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
 
 sim_config = SimConfig(TASK_CFG)
 task = ReachingTargetTask(name="ReachingTarget", sim_config=sim_config, env=env)
-print("2-Starting warm-start trainitrain_rooms_r15.pyng using supervised learning (MSE loss) for multiple phases...")
 
 env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="torch", init_sim=True)
-print("3-Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
 
 # Wrap the environment
 env = wrap_env(env, "omniverse-isaacgym")
@@ -196,8 +191,6 @@ cfg_ppo["value_preprocessor_kwargs"] = {"size": 1, "device": device}
 cfg_ppo["experiment"]["write_interval"] = 100
 cfg_ppo["experiment"]["checkpoint_interval"] = 20_000
 
-print("4-Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
-
 
 agent = PPO(models=models_ppo,
             memory=memory,
@@ -206,7 +199,6 @@ agent = PPO(models=models_ppo,
             action_space=env.action_space,
             device=device)
 
-print("5- Starting warm-start training using supervised learning (MSE loss) for multiple phases...")
 
 ###############################################################################
 #                            Warm-Start Phase
@@ -261,11 +253,11 @@ def expert_circle_right(num_envs, num_actions, device):
 
 # List of warm-start phases: (phase_name, expert_function, num_timesteps)
 warm_start_phases = [
-    ("straight", expert_straight, 200),
-    ("rotate_left", expert_rotate_left, 200),
-    ("rotate_right", expert_rotate_right, 200),
-    ("circle_left", expert_circle_left, 200),
-    ("circle_right", expert_circle_right, 200)
+    ("straight", expert_straight, 2000),
+    ("rotate_left", expert_rotate_left, 1000),
+    ("rotate_right", expert_rotate_right, 1000),
+    # ("circle_left", expert_circle_left, 1000),
+    # ("circle_right", expert_circle_right, 1000)
 ]
 
 # Enable warm-start mode in the environment.
@@ -307,11 +299,11 @@ for phase_name, expert_fn, phase_steps in warm_start_phases:
         loss.backward()
         warm_optimizer.step()
         
-        if step % 100 == 0:
+        if step % 200 == 0:
             print(f"Phase {phase_name} step {step}: MSE Loss = {loss.item():.4f}")
         if done.any():
             obs, infos = env.reset()
-            print("which reset is hit?")
+            # print("which reset is hit?")
     # End of phase.
     print(f"Phase {phase_name} completed.")
 
