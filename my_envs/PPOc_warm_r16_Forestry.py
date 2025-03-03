@@ -389,8 +389,6 @@ class ReachingTargetTask(RLTask):
         
     def post_reset(self):
 
-        print("post_reset hit")
-        
         self.base_init_state = torch.tensor(self.base_init_state, dtype=torch.float, device=self.device, requires_grad=False)
         self.dof_init_state = torch.tensor(self.dof_init_state, dtype=torch.float, device=self.device, requires_grad=False)
 
@@ -447,8 +445,6 @@ class ReachingTargetTask(RLTask):
 
 
     def reset_idx(self, env_ids):
-
-        print("reset_idx hit")
 
         indices = env_ids.to(dtype=torch.int32)
 
@@ -677,7 +673,6 @@ class ReachingTargetTask(RLTask):
             # Add expert actions to extras so that the policy network can “observe” them for supervised loss.
             self.extras["expert_actions"] = self.actions
 
-        print("reset_buf returned by post_physics_step: ", self.reset_buf)
 
         return self.obs_buf, self.rew_buf, self.reset_buf, self.extras
 
@@ -714,12 +709,7 @@ class ReachingTargetTask(RLTask):
                         ((self.base_pos[:, 1] - self.env_origins[:, 1]) < self.bounds[2]) | ((self.base_pos[:, 1] - self.env_origins[:, 1]) > self.bounds[3])
         self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
 
-        print("Number of has_fallen non-zeros: ", (self.has_fallen != 0).sum().item())
-        print("Number of out_of_bounds non-zeros: ", (self.out_of_bounds != 0).sum().item())
-        print("Number of timeout non-zeros: ", (self.timeout_buf != 0).sum().item())
-        print("reset_buf after is_done: ", self.reset_buf)
 
-    
     def calculate_metrics(self) -> None:
         # During warm-start, disable reward calculations
         if self.warm_start:
@@ -774,7 +764,7 @@ class ReachingTargetTask(RLTask):
         self.episode_sums["action_rate"] += rew_action_rate
         self.episode_sums["fallen_over"] += rew_fallen_over
         self.episode_sums["slip_longitudinal"] += rew_slip_longitudinal
-        # print("episode_sums lin vel xy -0:", self.episode_sums["lin_vel_xy"].shape, self.episode_sums["lin_vel_xy"][0])
+        print("episode_sums lin vel xy -0:", self.episode_sums["lin_vel_xy"].shape, self.episode_sums["lin_vel_xy"][0])
         # print(f"episode sum slip_longitudinal -0: {self.episode_sums['slip_longitudinal'].shape}, {self.episode_sums['slip_longitudinal'][0]}")
 
 
@@ -811,10 +801,8 @@ class ReachingTargetTask(RLTask):
             dim=-1,
         )
 
-        # print("self.dof_vel[0,:] * self.r shape and 0th env:", self.dof_vel.shape, self.dof_vel[0,:] * self.r)
-        # print("self.dof_vel shape and 0th env:", self.dof_vel.shape, self.dof_vel[0,:])
-        # print("lambda_slip shape and 0th env:", self.lambda_slip.shape, self.lambda_slip[0, :])
-                    
+        print(f"forward linear velocity: {self.base_lin_vel[0,0] * self.lin_vel_scale}")
+                            
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     
 
