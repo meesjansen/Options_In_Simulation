@@ -337,10 +337,10 @@ class ReachingTargetTask(RLTask):
         self.get_robot()
 
         wheel_collision_paths = [
-            "/World/envs/env_0/robot/left_front_wheel/collisions",
-            "/World/envs/env_0/robot/right_front_wheel/collisions",
-            "/World/envs/env_0/robot/left_rear_wheel/collisions",
-            "/World/envs/env_0/robot/right_rear_wheel/collisions"
+            "/World/envs/env_0/robot/left_front_wheel",
+            "/World/envs/env_0/robot/right_front_wheel",
+            "/World/envs/env_0/robot/left_rear_wheel",
+            "/World/envs/env_0/robot/right_rear_wheel"
         ]
         for path in wheel_collision_paths:
             self._enable_custom_geometry_for_collision(path)
