@@ -677,7 +677,7 @@ class ReachingTargetTask(RLTask):
             # Add expert actions to extras so that the policy network can “observe” them for supervised loss.
             self.extras["expert_actions"] = self.actions
 
-        print("rew_buf returned by post_physics_step: ", self.rew_buf)
+        print("reset_buf returned by post_physics_step: ", self.reset_buf)
 
         return self.obs_buf, self.rew_buf, self.reset_buf, self.extras
 
