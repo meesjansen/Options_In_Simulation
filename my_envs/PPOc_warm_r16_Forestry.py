@@ -644,6 +644,7 @@ class ReachingTargetTask(RLTask):
             # prepare quantities
             self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 0:3])
             print(f"ergo lin velocities: {self.base_lin_vel[0, 0:3]}")
+            print(f"quaternion description: {self.base_quat[0, :]}")
             print(f"global lin velocities: {self.base_velocities[0, 0:3]}")
 
             self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 3:6])
