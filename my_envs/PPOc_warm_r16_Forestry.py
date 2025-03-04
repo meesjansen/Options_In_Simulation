@@ -817,9 +817,9 @@ class ReachingTargetTask(RLTask):
         )
         self.obs_buf = torch.cat(
             (
-                self.v_forward_projected * self.lin_vel_scale,
-                self.v_lateral_projected * self.lin_vel_scale,
-                self.v_upward_projected * self.lin_vel_scale,
+                self.v_forward_projected.unsqueeze(1) * self.lin_vel_scale,
+                self.v_lateral_projected.unsqueeze(1) * self.lin_vel_scale,
+                self.v_upward_projected.unsqueeze(1) * self.lin_vel_scale,
                 self.base_ang_vel * self.ang_vel_scale,
                 self.projected_gravity * self.gravity_scale,
                 (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1),    # (num_envs, 1)
