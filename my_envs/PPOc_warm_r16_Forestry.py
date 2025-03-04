@@ -651,6 +651,26 @@ class ReachingTargetTask(RLTask):
             self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
             forward = quat_apply(self.base_quat, self.forward_vec)
             heading = torch.atan2(forward[:, 1], forward[:, 0])
+
+            # Normalize the forward direction (for each environment)
+            forward_norm = forward / torch.norm(forward, dim=1, keepdim=True)
+
+            # Define the lateral direction as perpendicular to the forward direction in the horizontal plane.
+            # One simple choice: lateral = [-forward_y, forward_x, 0]
+            lateral_dir = torch.stack([-forward_norm[:, 1], forward_norm[:, 0], torch.zeros_like(forward_norm[:, 0])], dim=1)
+
+            # Example: if self.base_velocities[:, 0:3] are the global linear velocities, project them:
+            v_global = self.base_velocities[:, 0:3]  # shape: [num_env, 3]
+            v_forward_projected = torch.sum(v_global * forward_norm, dim=1)   # dot product, shape: [num_env]
+            v_lateral_projected = torch.sum(v_global * lateral_dir, dim=1)      # dot product, shape: [num_env]
+
+            # Print or use the forward and lateral speeds:
+            print("Forward speeds:", v_forward_projected)
+            print("Lateral speeds:", v_lateral_projected)
+
+            print(f"self.forward_vec: {self.forward_vec}")
+            print(f"forward: {forward}")
+            print(f"heading: {heading}")
             self.commands[:, 2] = torch.clip(self.yaw_constant * wrap_to_pi(self.commands[:, 3] - heading), -1.0, 1.0)
 
             self.is_done()
@@ -712,7 +732,7 @@ class ReachingTargetTask(RLTask):
 
         self.out_of_bounds = ((self.base_pos[:, 0] - self.env_origins[:, 0]) < self.bounds[0]) | ((self.base_pos[:, 0] - self.env_origins[:, 0]) > self.bounds[1]) | \
                         ((self.base_pos[:, 1] - self.env_origins[:, 1]) < self.bounds[2]) | ((self.base_pos[:, 1] - self.env_origins[:, 1]) > self.bounds[3])
-        self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
+        # self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
 
 
     def calculate_metrics(self) -> None:
