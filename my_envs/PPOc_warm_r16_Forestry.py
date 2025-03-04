@@ -612,7 +612,7 @@ class ReachingTargetTask(RLTask):
                 
                 sign_vel = torch.sign(self.dof_vel)
                 sign_torq = torch.sign(wheel_torq)
-                over_speed = torch.abs(self.dof_vel) > 4.25 * 2  # 4.25 rad/s is 0.5 m/s the max speed of the robot is 1.0 m/s
+                over_speed = torch.abs(self.dof_vel) > 4.25 * 1.2   # 4.25 rad/s is 0.5 m/s the max speed of the robot is 1.0 m/s
 
                 # Condition: over_speed AND same sign of velocity & torque → set torque = 0
                 clamp_mask = over_speed & (sign_vel == sign_torq)
@@ -755,8 +755,10 @@ class ReachingTargetTask(RLTask):
 
         # other base velocity penalties (necessary)
         rew_lin_vel_z = torch.square(self.v_upward_projected) * self.rew_scales["lin_vel_z"]
-        rew_ang_vel_xy = torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1) * self.rew_scales["ang_vel_xy"]
-
+        rew_ang_vel_xy = torch.sum(
+                torch.square(torch.stack([self.pitch_dot, self.roll_dot], dim=1)), dim=1
+            ) * self.rew_scales["ang_vel_xy"]
+        
         # torque penalty, joint acceleration penalty, etc. can be computed as before…
         rew_action_rate = (
             torch.sum(torch.square(self.last_actions - self.actions), dim=1) * self.rew_scales["action_rate"]
@@ -822,7 +824,7 @@ class ReachingTargetTask(RLTask):
                 self.projected_gravity * self.gravity_scale,
                 (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1),    # (num_envs, 1)
                 # (self.commands[:, 2] * self.commands_scale[2]).unsqueeze(1),
-                self.dof_vel * self.r * self.dof_vel_scale,
+                self.dof_vel * self.r * self.lin_vel_scale,
                 self.actions,
                 self.lambda_slip * self.lambda_slip_scale,
                 heights,
