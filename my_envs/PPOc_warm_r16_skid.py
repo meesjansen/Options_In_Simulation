@@ -753,7 +753,7 @@ class ReachingTargetTask(RLTask):
 
         # other base velocity penalties (necessary)
         rew_lin_vel_z = torch.square(self.v_upward_projected) * self.rew_scales["lin_vel_z"]
-        rew_ang_vel_xy = torch.sum(torch.square(self.base_ang_vel[:, :2], dim=1)) * self.rew_scales["ang_vel_xy"]
+        rew_ang_vel_xy = torch.sum(torch.square(self.base_ang_vel[:, :2])) * self.rew_scales["ang_vel_xy"]
 
         
         # torque penalty, joint acceleration penalty, etc. can be computed as before…
