@@ -599,33 +599,46 @@ class ReachingTargetTask(RLTask):
         self.base_velocities = self._robots.get_velocities(clone=False)
     
 
+
     def pre_physics_step(self, actions):
-        if not self.world.is_playing():
-            return
-        
-        self.actions = actions.clone().to(self.device)
+            if not self.world.is_playing():
+                return
+            
+            self.actions = actions.clone().to(self.device)
+            base_vel = self.actions[:, 0] * self.lin_vel_scale
+            delta_vel = self.actions[:, 1] * self.lin_vel_scale
 
-        for _ in range(self.decimation):
-            if self.world.is_playing():
-                
-                wheel_torq = self.action_scale * self.actions  # shape: [num_wheels]
-                
-                sign_vel = torch.sign(self.dof_vel)
-                sign_torq = torch.sign(wheel_torq)
-                over_speed = torch.abs(self.dof_vel) > 4.25 * 1.2   # 4.25 rad/s is 0.5 m/s the max speed of the robot is 1.0 m/s
+            updated_rad = torch.zeros((self.num_envs, 4), device=self.device)
 
-                # Condition: over_speed AND same sign of velocity & torque → set torque = 0
-                clamp_mask = over_speed & (sign_vel == sign_torq)
-                wheel_torq[clamp_mask] = 0.0
-               
-                self.wheel_torqs = torch.clip(wheel_torq, -20.0, 20.0)
+            # Front left wheel
+            updated_rad[:, 0] = (base_vel + delta_vel) / self.r
+            # Rear left wheel
+            updated_rad[:, 1] = (base_vel + delta_vel) / self.r
+            # Front right wheel
+            updated_rad[:, 2] = (base_vel - delta_vel) / self.r
+            # Rear right wheel
+            updated_rad[:, 3] = (base_vel - delta_vel) / self.r
 
-                self._robots.set_joint_efforts(self.wheel_torqs)
+            # print(f"updated_efforts: {updated_efforts}")
 
-                SimulationContext.step(self.world, render=False)
-                self.refresh_dof_state_tensors()
+            for _ in range(self.decimation):
+                if self.world.is_playing():
 
+                    rad = updated_rad.clone()
 
+                    sign_vel = torch.sign(self.dof_vel)
+                    wheel_torq = self._robots.get_applied_joint_efforts()
+                    sign_torq = torch.sign(wheel_torq)
+                    over_speed = torch.abs(self.dof_vel) > 4.25 * 1.2
+
+                    # Condition: over_speed AND same sign of velocity & torque → set torque = 0
+                    clamp_mask = over_speed & (sign_vel == sign_torq)
+                    rad[clamp_mask] = 0.0
+                    
+                    self._robots.set_joint_velocities(rad)
+
+                    SimulationContext.step(self.world, render=False)
+                    self.refresh_dof_state_tensors()
           
     def post_physics_step(self):
         self.progress_buf[:] += 1
