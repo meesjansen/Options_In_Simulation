@@ -157,7 +157,7 @@ PPO_DEFAULT_CONFIG = {
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "PPO_curriculum",
+        "wandb_kwargs": {"project": "warm_cold",
                          "entity": "meesjansen-Delft Technical University",
                          "name": "PPOc_warm_r16_Forestry",
                          "tags": ["PPOc", "warm-Curriculum", "r16", "o163", "torq", "Forestry"],
