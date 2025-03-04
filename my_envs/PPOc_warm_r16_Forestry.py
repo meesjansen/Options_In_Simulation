@@ -648,21 +648,6 @@ class ReachingTargetTask(RLTask):
             forward = quat_apply(self.base_quat, self.forward_vec)
             heading = torch.atan2(forward[:, 1], forward[:, 0])
            
-            # 1) Extract roll, pitch, yaw from self.base_quat
-            roll, pitch, yaw = quat_to_rpy(self.base_quat)  # each shape [num_envs]
-
-            # 2) Rotate the global angular velocity into local frame
-            global_angular_vel = self.base_velocities[:, 3:6]
-            local_angular_vel = quat_rotate_inverse(self.base_quat, global_angular_vel)
-            p = local_angular_vel[:, 0]
-            q = local_angular_vel[:, 1]
-            r = local_angular_vel[:, 2]
-
-            # 3) Convert (p, q, r) to roll_rate, pitch_rate, yaw_rate
-            self.roll_dot, self.pitch_dot, self.yaw_dot = body_rates_to_rpy_rates(p, q, r, roll, pitch)
-            print(self.roll_dot[0], self.pitch_dot[0], self.yaw_dot[0])
-            print(self.base_ang_vel[0,:])
-
             forward_norm = forward / torch.norm(forward, dim=1, keepdim=True)
             lateral_dir = torch.stack([-forward_norm[:, 1], forward_norm[:, 0], torch.zeros_like(forward_norm[:, 0])], dim=1)
             up_local = torch.tensor([0.0, 0.0, 1.0], device=self.device).repeat((self.num_envs, 1))
@@ -793,10 +778,7 @@ class ReachingTargetTask(RLTask):
         self.episode_sums["action_rate"] += rew_action_rate
         self.episode_sums["fallen_over"] += rew_fallen_over
         self.episode_sums["slip_longitudinal"] += rew_slip_longitudinal
-        # print("episode_sums lin vel xy -0:", self.episode_sums["lin_vel_xy"].shape, self.episode_sums["lin_vel_xy"][0])
-        # print(f"episode sum slip_longitudinal -0: {self.episode_sums['slip_longitudinal'].shape}, {self.episode_sums['slip_longitudinal'][0]}")
-
-
+        
         self.reward_components = {
             "rew_lin_vel_xy": rew_lin_vel_xy.mean().item(),
             "rew_ang_vel_z": rew_ang_vel_z.mean().item(),
@@ -884,55 +866,6 @@ def get_axis_params(value, axis_idx, x_value=0.0, dtype=float, n_dims=3):
     params[0] = x_value
     return list(params.astype(dtype))
 
-def quat_to_rpy(quat):
-    """
-    Convert quaternion(s) of shape [N,4] to roll-pitch-yaw angles.
-    quat = [w, x, y, z].
-    Return (roll, pitch, yaw) each of shape [N].
-    """
-    # Normalize just in case
-    quat = quat / torch.norm(quat, dim=1, keepdim=True)
-    w = quat[:, 0]
-    x = quat[:, 1]
-    y = quat[:, 2]
-    z = quat[:, 3]
 
-    # Roll (φ)
-    sinr_cosp = 2.0 * (w * x + y * z)
-    cosr_cosp = w*w + z*z - x*x - y*y
-    roll = torch.atan2(sinr_cosp, cosr_cosp)
-
-    # Pitch (θ)
-    sinp = 2.0 * (w*y - z*x)
-    # Clamp the value to the valid range: -1..1
-    sinp = torch.clamp(sinp, -1.0, 1.0)
-    pitch = torch.asin(sinp)
-
-    # Yaw (ψ)
-    siny_cosp = 2.0 * (w*z + x*y)
-    cosy_cosp = w*w + x*x - y*y - z*z
-    yaw = torch.atan2(siny_cosp, cosy_cosp)
-
-    return roll, pitch, yaw
-
-def body_rates_to_rpy_rates(
-    p, q, r, roll, pitch
-):
-    """
-    Convert body angular rates p,q,r into roll_dot, pitch_dot, yaw_dot
-    given roll=φ and pitch=θ. All are shape [N].
-    """
-
-    sinφ = torch.sin(roll)
-    cosφ = torch.cos(roll)
-    sinθ = torch.sin(pitch)
-    cosθ = torch.cos(pitch)
-    tθ = sinθ / (cosθ + 1e-6)  # avoid division by zero
-
-    roll_dot  = p + q * sinφ * tθ + r * cosφ * tθ
-    pitch_dot =         q * cosφ       - r * sinφ
-    yaw_dot   =         q * sinφ/cosθ  + r * cosφ/cosθ
-
-    return roll_dot, pitch_dot, yaw_dot
 
 
