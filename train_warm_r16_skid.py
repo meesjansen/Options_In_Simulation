@@ -151,16 +151,16 @@ PPO_DEFAULT_CONFIG = {
     "rewards_shaper": None,
     "time_limit_bootstrap": False,
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_warm_r16_Forestry",
-        "experiment_name": "PPOc_warm_r16_Forestry",
+        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_warm_r16_skid",
+        "experiment_name": "PPOc_warm_r16_skid",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "PPO_curriculum",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "PPOc_warm_r16_Forestry",
-                         "tags": ["PPOc", "warm-Curriculum", "r16", "o163", "torq", "Forestry"],
+                         "name": "PPOc_warm_r16_skid",
+                         "tags": ["PPOc", "warm-Curriculum", "r16", "o163", "vel", "skid with clamping"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
 }
@@ -200,119 +200,119 @@ agent = PPO(models=models_ppo,
             device=device)
 
 
-# ###############################################################################
-# #                            Warm-Start Phase
-# #
-# # We now add five sequential phases:
-# # 1. Drive straight (all wheels same torque).
-# # 2. Rotate left (left wheels positive, right wheels negative).
-# # 3. Rotate right (left wheels negative, right wheels positive).
-# # 4. Drive in a small circle to the left (differential: left wheels lower).
-# # 5. Drive in a small circle to the right (differential: left wheels higher).
-# ###############################################################################
+###############################################################################
+#                            Warm-Start Phase
+#
+# We now add five sequential phases:
+# 1. Drive straight (all wheels same torque).
+# 2. Rotate left (left wheels positive, right wheels negative).
+# 3. Rotate right (left wheels negative, right wheels positive).
+# 4. Drive in a small circle to the left (differential: left wheels lower).
+# 5. Drive in a small circle to the right (differential: left wheels higher).
+###############################################################################
 
-# # Define expert (heuristic) functions for each phase.
-# def expert_straight(num_envs, num_actions, device):
-#     # All wheels same torque (e.g., 0.5)
-#     return torch.full((num_envs, num_actions), 0.012, device=device)
+# Define expert (heuristic) functions for each phase.
+def expert_straight(num_envs, num_actions, device):
+    actions = torch.tensor([0.5, 0.0], device=device).repeat(num_envs, 1)
+    return actions
 
-# def expert_rotate_left(num_envs, num_actions, device):
-#     # Order assumed: [front_left, front_right, rear_left, rear_right]
-#     actions = torch.zeros((num_envs, num_actions), device=device)
-#     actions[:, 0] = -0.1   # front_left positive
-#     actions[:, 1] = -0.1  # rear_left negative
-#     actions[:, 2] = 0.1   # front_left positive
-#     actions[:, 3] = 0.1  # rear_right negative
-#     return actions
+def expert_rotate_left(num_envs, num_actions, device):
+    # Order assumed: [front_left, front_right, rear_left, rear_right]
+    actions = torch.zeros((num_envs, num_actions), device=device)
+    actions[:, 0] = -0.1   # front_left positive
+    actions[:, 1] = -0.1  # rear_left negative
+    actions[:, 2] = 0.1   # front_left positive
+    actions[:, 3] = 0.1  # rear_right negative
+    return actions
 
-# def expert_rotate_right(num_envs, num_actions, device):
-#     actions = torch.zeros((num_envs, num_actions), device=device)
-#     actions[:, 0] = 0.294 * 2.0  # front_left negative
-#     actions[:, 1] = 0.294 * 2.0  # front_right positive
-#     actions[:, 2] = -0.294 * 2.0 # rear_left negative
-#     actions[:, 3] = -0.294 * 2.0  # rear_right positive
-#     return actions
+def expert_rotate_right(num_envs, num_actions, device):
+    actions = torch.zeros((num_envs, num_actions), device=device)
+    actions[:, 0] = 0.294 * 2.0  # front_left negative
+    actions[:, 1] = 0.294 * 2.0  # front_right positive
+    actions[:, 2] = -0.294 * 2.0 # rear_left negative
+    actions[:, 3] = -0.294 * 2.0  # rear_right positive
+    return actions
 
-# def expert_circle_left(num_envs, num_actions, device):
-#     # Forward torque on all wheels, with left wheels slightly lower torque than right wheels.
-#     actions = torch.zeros((num_envs, num_actions), device=device)
-#     actions[:, 0] = -0.294  # front_left
-#     actions[:, 1] = -0.294 * 2.0  # front_right
-#     actions[:, 2] = 0.294  # rear_left
-#     actions[:, 3] = 0.294 * 2.0  # rear_right
-#     return actions
+def expert_circle_left(num_envs, num_actions, device):
+    # Forward torque on all wheels, with left wheels slightly lower torque than right wheels.
+    actions = torch.zeros((num_envs, num_actions), device=device)
+    actions[:, 0] = -0.294  # front_left
+    actions[:, 1] = -0.294 * 2.0  # front_right
+    actions[:, 2] = 0.294  # rear_left
+    actions[:, 3] = 0.294 * 2.0  # rear_right
+    return actions
 
-# def expert_circle_right(num_envs, num_actions, device):
-#     # Forward torque on all wheels, with left wheels slightly higher torque than right wheels.
-#     actions = torch.zeros((num_envs, num_actions), device=device)
-#     actions[:, 0] = 0.294 * 2.0  # front_left
-#     actions[:, 1] = 0.294  # front_right
-#     actions[:, 2] = -0.294 * 2.0  # rear_left
-#     actions[:, 3] = -0.294  # rear_right
-#     return actions
+def expert_circle_right(num_envs, num_actions, device):
+    # Forward torque on all wheels, with left wheels slightly higher torque than right wheels.
+    actions = torch.zeros((num_envs, num_actions), device=device)
+    actions[:, 0] = 0.294 * 2.0  # front_left
+    actions[:, 1] = 0.294  # front_right
+    actions[:, 2] = -0.294 * 2.0  # rear_left
+    actions[:, 3] = -0.294  # rear_right
+    return actions
 
-# # List of warm-start phases: (phase_name, expert_function, num_timesteps)
-# warm_start_phases = [
-#     ("straight", expert_straight, 10000),
-#     # ("rotate_left", expert_rotate_left, 10000),
-#     # ("rotate_right", expert_rotate_right, 100),
-#     # ("circle_left", expert_circle_left, 1000),
-#     # ("circle_right", expert_circle_right, 1000)
-# ]
+# List of warm-start phases: (phase_name, expert_function, num_timesteps)
+warm_start_phases = [
+    ("straight", expert_straight, 10000),
+    # ("rotate_left", expert_rotate_left, 10000),
+    # ("rotate_right", expert_rotate_right, 100),
+    # ("circle_left", expert_circle_left, 1000),
+    # ("circle_right", expert_circle_right, 1000)
+]
 
-# # Enable warm-start mode in the environment.
-# task.warm_start = True
-# # Freeze the value network (only train the policy).
-# for param in agent.models["value"].parameters():
-#     param.requires_grad = False
+# Enable warm-start mode in the environment.
+task.warm_start = True
+# Freeze the value network (only train the policy).
+for param in agent.models["value"].parameters():
+    param.requires_grad = False
 
-# # Create an optimizer for the policy network only.
-# warm_optimizer = torch.optim.Adam(agent.models["policy"].parameters(), lr=cfg_ppo["learning_rate"])
-# mse_loss_fn = nn.MSELoss()
+# Create an optimizer for the policy network only.
+warm_optimizer = torch.optim.Adam(agent.models["policy"].parameters(), lr=cfg_ppo["learning_rate"])
+mse_loss_fn = nn.MSELoss()
 
-# # Reset the environment (Gym v0.26+ reset returns (obs, infos))
-# obs, infos = env.reset()
+# Reset the environment (Gym v0.26+ reset returns (obs, infos))
+obs, infos = env.reset()
 
-# # Iterate over each warm-start phase.
-# for phase_name, expert_fn, phase_steps in warm_start_phases:
-#     print(f"--- Warm-start phase: {phase_name} ({phase_steps} timesteps) ---")
-#     task.phase_name = phase_name
-#     for step in range(phase_steps):
-#         # Get the phase-specific expert actions.
-#         expert_actions = expert_fn(env.num_envs, env.action_space.shape[0], device)
-#         # Optionally, you could also set extras["expert_actions"] here if needed.
+# Iterate over each warm-start phase.
+for phase_name, expert_fn, phase_steps in warm_start_phases:
+    print(f"--- Warm-start phase: {phase_name} ({phase_steps} timesteps) ---")
+    task.phase_name = phase_name
+    for step in range(phase_steps):
+        # Get the phase-specific expert actions.
+        expert_actions = expert_fn(env.num_envs, env.action_space.shape[0], device)
+        # Optionally, you could also set extras["expert_actions"] here if needed.
 
-#         obs, reward, terminated, truncated, extras = env.step(expert_actions)
-#         done = terminated | truncated
-#         state = obs  # observation tensor
+        obs, reward, terminated, truncated, extras = env.step(expert_actions)
+        done = terminated | truncated
+        state = obs  # observation tensor
 
                
-#         # Forward pass through the policy network.
-#         policy_output, _, _ = agent.models["policy"].compute({"states": state}, role="policy")
+        # Forward pass through the policy network.
+        policy_output, _, _ = agent.models["policy"].compute({"states": state}, role="policy")
 
-#         # render scene
-#         if not headless:
-#             env.render()
+        # render scene
+        if not headless:
+            env.render()
 
-#         loss = mse_loss_fn(policy_output, expert_actions)
-#         warm_optimizer.zero_grad()
-#         loss.backward()
-#         warm_optimizer.step()
+        loss = mse_loss_fn(policy_output, expert_actions)
+        warm_optimizer.zero_grad()
+        loss.backward()
+        warm_optimizer.step()
         
-#         if step % 200 == 0:
-#             print(f"Phase {phase_name} step {step}: MSE Loss = {loss.item():.4f}")
-#         if done.any():
-#             obs, infos = env.reset()
-#             # print("which reset is hit?")
-#     # End of phase.
-#     print(f"Phase {phase_name} completed.")
+        if step % 200 == 0:
+            print(f"Phase {phase_name} step {step}: MSE Loss = {loss.item():.4f}")
+        if done.any():
+            obs, infos = env.reset()
+            # print("which reset is hit?")
+    # End of phase.
+    print(f"Phase {phase_name} completed.")
 
-# print("Warm-start training completed. Transitioning to PPO training...")
-# # Unfreeze the value network.
-# for param in agent.models["value"].parameters():
-#     param.requires_grad = True
-# # Disable warm-start mode.
-# task.warm_start = False
+print("Warm-start training completed. Transitioning to PPO training...")
+# Unfreeze the value network.
+for param in agent.models["value"].parameters():
+    param.requires_grad = True
+# Disable warm-start mode.
+task.warm_start = False
 
 
 
