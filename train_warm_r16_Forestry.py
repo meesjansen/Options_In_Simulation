@@ -214,15 +214,15 @@ agent = PPO(models=models_ppo,
 # Define expert (heuristic) functions for each phase.
 def expert_straight(num_envs, num_actions, device):
     # All wheels same torque (e.g., 0.5)
-    return torch.full((num_envs, num_actions), 0.015, device=device)
+    return torch.full((num_envs, num_actions), 0.012, device=device)
 
 def expert_rotate_left(num_envs, num_actions, device):
     # Order assumed: [front_left, front_right, rear_left, rear_right]
     actions = torch.zeros((num_envs, num_actions), device=device)
-    actions[:, 0] = -0.294   # front_left positive
-    actions[:, 1] = -0.294  # rear_left negative
-    actions[:, 2] = 0.294   # front_left positive
-    actions[:, 3] = 0.294  # rear_right negative
+    actions[:, 0] = -0.05   # front_left positive
+    actions[:, 1] = -0.05  # rear_left negative
+    actions[:, 2] = 0.05   # front_left positive
+    actions[:, 3] = 0.05  # rear_right negative
     return actions
 
 def expert_rotate_right(num_envs, num_actions, device):
@@ -253,9 +253,9 @@ def expert_circle_right(num_envs, num_actions, device):
 
 # List of warm-start phases: (phase_name, expert_function, num_timesteps)
 warm_start_phases = [
-    ("straight", expert_straight, 10000),
-    ("rotate_left", expert_rotate_left, 100),
-    ("rotate_right", expert_rotate_right, 1000),
+    ("straight", expert_straight, 500),
+    ("rotate_left", expert_rotate_left, 10000),
+    ("rotate_right", expert_rotate_right, 100),
     # ("circle_left", expert_circle_left, 1000),
     # ("circle_right", expert_circle_right, 1000)
 ]
