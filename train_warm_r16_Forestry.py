@@ -57,7 +57,7 @@ class Value(DeterministicMixin, Model):
 # Instantiate and configure the task
 headless = True  # set headless to False for rendering
 
-env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
+env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
 from my_envs.PPOc_warm_r16_Forestry import ReachingTargetTask, TASK_CFG
@@ -219,10 +219,10 @@ def expert_straight(num_envs, num_actions, device):
 def expert_rotate_left(num_envs, num_actions, device):
     # Order assumed: [front_left, front_right, rear_left, rear_right]
     actions = torch.zeros((num_envs, num_actions), device=device)
-    actions[:, 0] = -0.012   # front_left positive
-    actions[:, 1] = -0.012  # rear_left negative
-    actions[:, 2] = 0.012   # front_left positive
-    actions[:, 3] = 0.012  # rear_right negative
+    actions[:, 0] = -0.1   # front_left positive
+    actions[:, 1] = -0.1  # rear_left negative
+    actions[:, 2] = 0.1   # front_left positive
+    actions[:, 3] = 0.1  # rear_right negative
     return actions
 
 def expert_rotate_right(num_envs, num_actions, device):
