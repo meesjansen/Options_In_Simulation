@@ -83,7 +83,7 @@ parsed_config = arg_parser.parse_args().__dict__
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 1
+TASK_CFG["task"]["env"]["numEnvs"] = 16
 
 # sweep reward components
 TASK_CFG["task"]["env"]["learn"]["linearVelocityXYRewardScale"] = parsed_config["linearVelocityXYRewardScale"]

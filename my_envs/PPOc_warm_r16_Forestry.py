@@ -647,10 +647,7 @@ class ReachingTargetTask(RLTask):
             self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
             forward = quat_apply(self.base_quat, self.forward_vec)
             heading = torch.atan2(forward[:, 1], forward[:, 0])
-            # print("global angular vel", self.base_velocities[:, 3:6])
-            # print("quaternion", self.base_quat)
-            # print("local angular vel", self.base_ang_vel)
-            print("local angular vel around z", self.base_ang_vel[:, 2])
+           
             # 1) Extract roll, pitch, yaw from self.base_quat
             roll, pitch, yaw = quat_to_rpy(self.base_quat)  # each shape [num_envs]
 
@@ -662,13 +659,9 @@ class ReachingTargetTask(RLTask):
             r = local_angular_vel[:, 2]
 
             # 3) Convert (p, q, r) to roll_rate, pitch_rate, yaw_rate
-            roll_dot, pitch_dot, yaw_dot = body_rates_to_rpy_rates(p, q, r, roll, pitch)
-
-            print("roll rates", roll_dot)
-            print("pitch rates", pitch_dot)
-            print("yaw rates", yaw_dot)
-
-
+            self.roll_dot, self.pitch_dot, self.yaw_dot = body_rates_to_rpy_rates(p, q, r, roll, pitch)
+            print(self.roll_dot[0], self.pitch_dot[0], self.yaw_dot[0])
+            print(self.base_ang_vel[0,:])
 
             forward_norm = forward / torch.norm(forward, dim=1, keepdim=True)
             lateral_dir = torch.stack([-forward_norm[:, 1], forward_norm[:, 0], torch.zeros_like(forward_norm[:, 0])], dim=1)
@@ -676,13 +669,9 @@ class ReachingTargetTask(RLTask):
             up_dir = quat_apply(self.base_quat, up_local)
 
             v_global = self.base_velocities[:, 0:3]  # shape: [num_env, 3]
-            v_forward_projected = torch.sum(v_global * forward_norm, dim=1)   # dot product, shape: [num_env]
-            v_lateral_projected = torch.sum(v_global * lateral_dir, dim=1)      # dot product, shape: [num_env]
-            v_upward_projected = torch.sum(v_global * up_dir, dim=1)
-
-            # Print or use the forward and lateral speeds:
-            print("Forward speeds:", v_forward_projected)
-            print("Lateral speeds:", v_lateral_projected)
+            self.v_forward_projected = torch.sum(v_global * forward_norm, dim=1)   # dot product, shape: [num_env]
+            self.v_lateral_projected = torch.sum(v_global * lateral_dir, dim=1)      # dot product, shape: [num_env]
+            self.v_upward_projected = torch.sum(v_global * up_dir, dim=1)
 
             self.commands[:, 2] = torch.clip(self.yaw_constant * wrap_to_pi(self.commands[:, 3] - heading), -1.0, 1.0)
 
@@ -752,20 +741,20 @@ class ReachingTargetTask(RLTask):
         # During warm-start, disable reward calculations
         if self.warm_start:
             v_wheel = self.r * self.dof_vel  # v_wheel = r * omega
-            base_lin_vel_expanded = self.base_lin_vel[:, 0].unsqueeze(1).expand(-1, v_wheel.shape[1])
+            base_lin_vel_expanded = self.v_forward_projected.unsqueeze(1).expand(-1, v_wheel.shape[1])
             self.lambda_slip = (v_wheel - base_lin_vel_expanded) / torch.maximum(v_wheel, base_lin_vel_expanded)
 
             self.rew_buf = torch.zeros(self.num_envs, device=self.device)
             return self.rew_buf
 
         # velocity tracking reward
-        lin_vel_error = torch.square(self.commands[:, 0] - self.base_lin_vel[:, 0])
+        lin_vel_error = torch.square(self.commands[:, 0] - self.v_forward_projected)
         ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2])
         rew_lin_vel_xy = torch.exp(-lin_vel_error / 0.25) * self.rew_scales["lin_vel_xy"]
         rew_ang_vel_z = torch.exp(-ang_vel_error / 0.25) * self.rew_scales["ang_vel_z"]
 
         # other base velocity penalties (necessary)
-        rew_lin_vel_z = torch.square(self.base_lin_vel[:, 2]) * self.rew_scales["lin_vel_z"]
+        rew_lin_vel_z = torch.square(self.v_upward_projected) * self.rew_scales["lin_vel_z"]
         rew_ang_vel_xy = torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1) * self.rew_scales["ang_vel_xy"]
 
         # torque penalty, joint acceleration penalty, etc. can be computed as before…
@@ -776,7 +765,7 @@ class ReachingTargetTask(RLTask):
         rew_fallen_over = self.has_fallen * self.rew_scales["fallen_over"]
 
         v_wheel = self.r * self.dof_vel  # v_wheel = r * omega
-        base_lin_vel_expanded = self.base_lin_vel[:, 0].unsqueeze(1).expand(-1, v_wheel.shape[1])
+        base_lin_vel_expanded = self.v_forward_projected.unsqueeze(1).expand(-1, v_wheel.shape[1])
         self.lambda_slip = (v_wheel - base_lin_vel_expanded) / torch.maximum(v_wheel, base_lin_vel_expanded)
         self.k_lambda = 0.3
         rew_slip_longitudinal = torch.prod(torch.exp(-0.5 * (self.lambda_slip / self.k_lambda) ** 2), dim=1) * self.rew_scales["slip_longitudinal"]
@@ -826,7 +815,9 @@ class ReachingTargetTask(RLTask):
         )
         self.obs_buf = torch.cat(
             (
-                self.base_lin_vel * self.lin_vel_scale,
+                self.v_forward_projected * self.lin_vel_scale,
+                self.v_lateral_projected * self.lin_vel_scale,
+                self.v_upward_projected * self.lin_vel_scale,
                 self.base_ang_vel * self.ang_vel_scale,
                 self.projected_gravity * self.gravity_scale,
                 (self.commands[:, 0] * self.commands_scale[0]).unsqueeze(1),    # (num_envs, 1)
