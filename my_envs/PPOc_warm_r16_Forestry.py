@@ -647,18 +647,38 @@ class ReachingTargetTask(RLTask):
             self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
             forward = quat_apply(self.base_quat, self.forward_vec)
             heading = torch.atan2(forward[:, 1], forward[:, 0])
-            print("global angular vel", self.base_velocities[:, 3:6])
-            print("quaternion", self.base_quat)
-            print("local angular vel", self.base_ang_vel)
+            # print("global angular vel", self.base_velocities[:, 3:6])
+            # print("quaternion", self.base_quat)
+            # print("local angular vel", self.base_ang_vel)
             print("local angular vel around z", self.base_ang_vel[:, 2])
+            # 1) Extract roll, pitch, yaw from self.base_quat
+            roll, pitch, yaw = quat_to_rpy(self.base_quat)  # each shape [num_envs]
+
+            # 2) Rotate the global angular velocity into local frame
+            global_angular_vel = self.base_velocities[:, 3:6]
+            local_angular_vel = quat_rotate_inverse(self.base_quat, global_angular_vel)
+            p = local_angular_vel[:, 0]
+            q = local_angular_vel[:, 1]
+            r = local_angular_vel[:, 2]
+
+            # 3) Convert (p, q, r) to roll_rate, pitch_rate, yaw_rate
+            roll_dot, pitch_dot, yaw_dot = body_rates_to_rpy_rates(p, q, r, roll, pitch)
+
+            print("roll rates", roll_dot)
+            print("pitch rates", pitch_dot)
+            print("yaw rates", yaw_dot)
+
 
 
             forward_norm = forward / torch.norm(forward, dim=1, keepdim=True)
             lateral_dir = torch.stack([-forward_norm[:, 1], forward_norm[:, 0], torch.zeros_like(forward_norm[:, 0])], dim=1)
+            up_local = torch.tensor([0.0, 0.0, 1.0], device=self.device).repeat((self.num_envs, 1))
+            up_dir = quat_apply(self.base_quat, up_local)
 
             v_global = self.base_velocities[:, 0:3]  # shape: [num_env, 3]
             v_forward_projected = torch.sum(v_global * forward_norm, dim=1)   # dot product, shape: [num_env]
             v_lateral_projected = torch.sum(v_global * lateral_dir, dim=1)      # dot product, shape: [num_env]
+            v_upward_projected = torch.sum(v_global * up_dir, dim=1)
 
             # Print or use the forward and lateral speeds:
             print("Forward speeds:", v_forward_projected)
@@ -725,7 +745,7 @@ class ReachingTargetTask(RLTask):
 
         self.out_of_bounds = ((self.base_pos[:, 0] - self.env_origins[:, 0]) < self.bounds[0]) | ((self.base_pos[:, 0] - self.env_origins[:, 0]) > self.bounds[1]) | \
                         ((self.base_pos[:, 1] - self.env_origins[:, 1]) < self.bounds[2]) | ((self.base_pos[:, 1] - self.env_origins[:, 1]) > self.bounds[3])
-        # self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
+        self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
 
 
     def calculate_metrics(self) -> None:
@@ -870,5 +890,56 @@ def get_axis_params(value, axis_idx, x_value=0.0, dtype=float, n_dims=3):
     params = np.where(zs == 1.0, value, zs)
     params[0] = x_value
     return list(params.astype(dtype))
+
+def quat_to_rpy(quat):
+    """
+    Convert quaternion(s) of shape [N,4] to roll-pitch-yaw angles.
+    quat = [w, x, y, z].
+    Return (roll, pitch, yaw) each of shape [N].
+    """
+    # Normalize just in case
+    quat = quat / torch.norm(quat, dim=1, keepdim=True)
+    w = quat[:, 0]
+    x = quat[:, 1]
+    y = quat[:, 2]
+    z = quat[:, 3]
+
+    # Roll (φ)
+    sinr_cosp = 2.0 * (w * x + y * z)
+    cosr_cosp = w*w + z*z - x*x - y*y
+    roll = torch.atan2(sinr_cosp, cosr_cosp)
+
+    # Pitch (θ)
+    sinp = 2.0 * (w*y - z*x)
+    # Clamp the value to the valid range: -1..1
+    sinp = torch.clamp(sinp, -1.0, 1.0)
+    pitch = torch.asin(sinp)
+
+    # Yaw (ψ)
+    siny_cosp = 2.0 * (w*z + x*y)
+    cosy_cosp = w*w + x*x - y*y - z*z
+    yaw = torch.atan2(siny_cosp, cosy_cosp)
+
+    return roll, pitch, yaw
+
+def body_rates_to_rpy_rates(
+    p, q, r, roll, pitch
+):
+    """
+    Convert body angular rates p,q,r into roll_dot, pitch_dot, yaw_dot
+    given roll=φ and pitch=θ. All are shape [N].
+    """
+
+    sinφ = torch.sin(roll)
+    cosφ = torch.cos(roll)
+    sinθ = torch.sin(pitch)
+    cosθ = torch.cos(pitch)
+    tθ = sinθ / (cosθ + 1e-6)  # avoid division by zero
+
+    roll_dot  = p + q * sinφ * tθ + r * cosφ * tθ
+    pitch_dot =         q * cosφ       - r * sinφ
+    yaw_dot   =         q * sinφ/cosθ  + r * cosφ/cosθ
+
+    return roll_dot, pitch_dot, yaw_dot
 
 
