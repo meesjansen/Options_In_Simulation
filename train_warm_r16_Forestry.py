@@ -253,7 +253,7 @@ def expert_circle_right(num_envs, num_actions, device):
 
 # List of warm-start phases: (phase_name, expert_function, num_timesteps)
 warm_start_phases = [
-    ("straight", expert_straight, 10000),
+    ("straight", expert_straight, 50000),
     # ("rotate_left", expert_rotate_left, 10000),
     # ("rotate_right", expert_rotate_right, 100),
     # ("circle_left", expert_circle_left, 1000),

@@ -60,7 +60,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.PPOc_cold_r16_Forestry import ReachingTargetTask, TASK_CFG
+from my_envs.PPOc_cold_r16_skid import ReachingTargetTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
@@ -151,16 +151,16 @@ PPO_DEFAULT_CONFIG = {
     "rewards_shaper": None,
     "time_limit_bootstrap": False,
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_cold_r16_Forestry",
-        "experiment_name": "PPOc_cold_r16_Forestry",
+        "directory": "/workspace/Options_In_Simulation/my_runs/PPOc_cold_r16_skid",
+        "experiment_name": "PPOc_cold_r16_skid",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "PPO_curriculum",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "PPOc_cold_r16_Forestry",
-                         "tags": ["PPOc", "cold-Curriculum", "r16", "o163", "torq", "Forestry"],
+                         "name": "PPOc_cold_r16_skid",
+                         "tags": ["PPOc", "cold-Curriculum", "r16", "o163", "vel", "skid with clamping"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
 }
