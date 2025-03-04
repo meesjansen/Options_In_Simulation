@@ -826,6 +826,7 @@ class ReachingTargetTask(RLTask):
             dim=-1,
         )
 
+        print(self.v_forward_projected.unsqueeze(1) * self.lin_vel_scale)
                           
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     
