@@ -110,7 +110,7 @@ TASK_CFG = {"test": False,
                                                          "dynamic_friction": 1.0,
                                                          "restitution": 0.0},
                              "physx": {"worker_thread_count": 4,
-                                      "solver_type": 1,
+                                      "solver_type": 0,
                                       "use_gpu": True,
                                       "solver_position_iteration_count": 4,
                                       "solver_velocity_iteration_count": 4,
@@ -643,23 +643,19 @@ class ReachingTargetTask(RLTask):
 
             # prepare quantities
             self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 0:3])
-            print(f"ergo lin velocities: {self.base_lin_vel[0, 0:3]}")
-            print(f"quaternion description: {self.base_quat[0, :]}")
-            print(f"global lin velocities: {self.base_velocities[0, 0:3]}")
-
             self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 3:6])
             self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
             forward = quat_apply(self.base_quat, self.forward_vec)
             heading = torch.atan2(forward[:, 1], forward[:, 0])
+            print("global angular vel", self.base_velocities[:, 3:6])
+            print("quaternion", self.base_quat)
+            print("local angular vel", self.base_ang_vel)
+            print("local angular vel around z", self.base_ang_vel[:, 2])
 
-            # Normalize the forward direction (for each environment)
+
             forward_norm = forward / torch.norm(forward, dim=1, keepdim=True)
-
-            # Define the lateral direction as perpendicular to the forward direction in the horizontal plane.
-            # One simple choice: lateral = [-forward_y, forward_x, 0]
             lateral_dir = torch.stack([-forward_norm[:, 1], forward_norm[:, 0], torch.zeros_like(forward_norm[:, 0])], dim=1)
 
-            # Example: if self.base_velocities[:, 0:3] are the global linear velocities, project them:
             v_global = self.base_velocities[:, 0:3]  # shape: [num_env, 3]
             v_forward_projected = torch.sum(v_global * forward_norm, dim=1)   # dot product, shape: [num_env]
             v_lateral_projected = torch.sum(v_global * lateral_dir, dim=1)      # dot product, shape: [num_env]
@@ -668,9 +664,6 @@ class ReachingTargetTask(RLTask):
             print("Forward speeds:", v_forward_projected)
             print("Lateral speeds:", v_lateral_projected)
 
-            print(f"self.forward_vec: {self.forward_vec}")
-            print(f"forward: {forward}")
-            print(f"heading: {heading}")
             self.commands[:, 2] = torch.clip(self.yaw_constant * wrap_to_pi(self.commands[:, 3] - heading), -1.0, 1.0)
 
             self.is_done()
