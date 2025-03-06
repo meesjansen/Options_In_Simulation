@@ -508,8 +508,8 @@ class ReachingTargetTask(RLTask):
 
         # Use self.episode_sums as the cumulative performance indicator for each environment.
         # Define thresholds (tune these values as needed)
-        threshold_low = 0.3   # indicates poor performance, make terrain easier (reduce difficulty)
-        threshold_high = 10.0  # indicates strong performance, increase terrain difficulty
+        threshold_low = 5.0   # indicates poor performance, make terrain easier (reduce difficulty)
+        threshold_high = 7.0  # indicates strong performance, increase terrain difficulty
 
         # Create boolean masks based on episode sums for the selected env_ids.
         low_mask = self.episode_sums["lin_vel_xy"][env_ids] < threshold_low
@@ -553,9 +553,9 @@ class ReachingTargetTask(RLTask):
         """
         Return a velocity command (x vel) for a single environment based on the current curriculum task.
         """
-        threshold_high = 10.0
+        threshold_high = 7.0
 
-        if self.terrain_levels[env_id] == 1:
+        if self.terrain_levels[env_id] == 0:
             # Task 1: normal distribution around 0.5, with sigma in [0.01..0.1]
             # Example: linearly scale sigma with episode_buf or a global counter
             fraction = self.episode_sums["lin_vel_xy"][env_id] / threshold_high 
@@ -563,7 +563,7 @@ class ReachingTargetTask(RLTask):
             x_vel = torch.normal(mean=0.5, std=sigma, size=(1,), device=self.device).item()
             return max(x_vel, 0.0)  # keep it non-negative if you want
 
-        elif self.terrain_levels[env_id] == 2:
+        elif self.terrain_levels[env_id] == 1:
             # Task 2: sinusoidal with mean=1, frequency + amplitude changes
             # Suppose we let the frequency grow from 0.01..0.1 and amplitude from 0.1..1
             fraction = self.episode_sums["lin_vel_xy"][env_id] / threshold_high 
@@ -575,7 +575,7 @@ class ReachingTargetTask(RLTask):
             x_vel = 0.5 + amp * math.sin(freq * t)
             return max(x_vel, 0.0)
 
-        elif self.terrain_levels[env_id] == 3:
+        elif self.terrain_levels[env_id] == 2:
             # Task 3: range 0..10. Start with 0..5, then up to 10
             # We'll do a simple sub-task switch
             fraction = self.episode_sums["lin_vel_xy"][env_id] / threshold_high 
@@ -787,6 +787,8 @@ class ReachingTargetTask(RLTask):
             "rew_fallen_over": rew_fallen_over.mean().item(),
             "rew_slip_longitudinal": rew_slip_longitudinal.mean().item(),
         }
+
+        print("", self.episode_sums["lin_vel_xy"])
       
         return self.rew_buf
 
