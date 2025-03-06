@@ -629,7 +629,8 @@ class ReachingTargetTask(RLTask):
         self.gamma_assist = torch.clamp(1.0 - (self.episode_count.float() / self.max_global_episodes), min=0.0)
 
         # Compute execution action: blend agent action and criteria action
-        execution_action = (1 - self.gamma_assist) * self.actions + self.gamma_assist * criteria_action
+        gamma = self.gamma_assist.view(-1, 1)
+        execution_action = (1 - gamma) * self.actions + gamma * criteria_action
 
         # Compute guiding reward: negative Euclidean distance between agent and criteria actions
         self.guiding_reward = -torch.norm(self.actions - criteria_action, dim=1)
