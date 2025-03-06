@@ -224,6 +224,21 @@ class ReachingTargetTask(RLTask):
             "r3: Torque penalty (sum of squared torques)": torch_zeros(),
             "Sparse reward": torch_zeros(),
             "guiding reward": torch_zeros(),
+            "lin_vel_xy": torch_zeros(),
+            "lin_vel_z": torch_zeros(),
+            "ang_vel_z": torch_zeros(),
+            "ang_vel_xy": torch_zeros(),
+            "orient": torch_zeros(),
+            "torques": torch_zeros(),
+            "joint_acc": torch_zeros(),
+            "base_height": torch_zeros(),
+            "air_time": torch_zeros(),
+            "collision": torch_zeros(),
+            "stumble": torch_zeros(),
+            "action_rate": torch_zeros(),
+            "hip": torch_zeros(),
+            "fallen_over": torch_zeros(),
+            "slip_longitudinal": torch_zeros(),
         }
         
         # --- NEW: Initialize warm-start flag (disabled by default) ---
