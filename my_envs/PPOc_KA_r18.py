@@ -213,9 +213,10 @@ class ReachingTargetTask(RLTask):
         self.previous_linear_velocity = torch.zeros((self.num_envs, 3), device=self.device)
         self.previous_angular_velocity = torch.zeros((self.num_envs, 3), device=self.device)
 
-        self.last_torq_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
-        self.max_distance = torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
-        
+        self.v_forward_projected = 0.0
+        self.v_lateral_projected = 0.0
+        self.v_upward_projected = 0.0
+
         torch_zeros = lambda: torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
         self.episode_sums = {
             "r1: Tracking error reward (squared errors)": torch_zeros(),
@@ -424,7 +425,6 @@ class ReachingTargetTask(RLTask):
         )
 
         self.last_dof_vel = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
-        self.last_torq_error = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
 
 
         for i in range(self.num_envs):
@@ -437,6 +437,9 @@ class ReachingTargetTask(RLTask):
         self.base_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
         self.base_quat = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device)
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
+        self.v_forward_projected = 0.0
+        self.v_lateral_projected = 0.0
+        self.v_yaw_projected = 0.0
 
         indices = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.reset_idx(indices)
@@ -606,7 +609,7 @@ class ReachingTargetTask(RLTask):
         # Compute state errors for the low-fidelity controller:
         # Desired longitudinal speed and yaw rate from commands:
         self.desired_v = self.commands[:, 0]
-        self.desired_omega = self.commands[:, 3]
+        self.desired_omega = self.commands[:, 2]
         # Current velocities: assume base_velocities has linear (index 0) and angular yaw (index 5)
         current_v = self.v_forward_projected
         current_omega = self.base_velocities[:, 5]
