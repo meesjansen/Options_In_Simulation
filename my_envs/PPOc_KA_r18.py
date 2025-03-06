@@ -622,15 +622,15 @@ class ReachingTargetTask(RLTask):
         self.ac_left = self.Kp * ((self.vehicle_mass * (self.v_delta / self.dt)) - (self.vehicle_inertia * (self.omega_delta / self.dt)))
         self.ac_right = self.Kp * ((self.vehicle_mass * (self.v_delta / self.dt)) + (self.vehicle_inertia * (self.omega_delta / self.dt)))
         # Build criteria action vector: [T_fl, T_rl, T_fr, T_rr]
-        criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1)
+        criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
 
 
         # Compute gamma_assist (decaying assistance) based on global_episode
         self.gamma_assist = torch.clamp(1.0 - (self.episode_count.float() / self.max_global_episodes), min=0.0)
 
         # Compute execution action: blend agent action and criteria action
-        gamma = self.gamma_assist.view(-1, 1)
-        execution_action = (1 - gamma) * self.actions + gamma * criteria_action
+        gamma = self.gamma_assist.view(-1, 1).to(self.device)
+        execution_action = (torch.tensor(1.0, device=self.device) - gamma) * self.actions + gamma * criteria_action
 
         # Compute guiding reward: negative Euclidean distance between agent and criteria actions
         self.guiding_reward = -torch.norm(self.actions - criteria_action, dim=1)
