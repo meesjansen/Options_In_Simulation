@@ -99,7 +99,7 @@ TASK_CFG = {"test": False,
                                         },   # leave room to overshoot or corner 
 
                             },
-                     "sim": {"dt": 0.005,  
+                     "sim": {"dt": 0.002,  
                              "use_gpu_pipeline": True,
                              "gravity": [0.0, 0.0, -9.81],
                              "add_ground_plane": False,
