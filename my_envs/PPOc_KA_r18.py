@@ -213,9 +213,9 @@ class ReachingTargetTask(RLTask):
         self.previous_linear_velocity = torch.zeros((self.num_envs, 3), device=self.device)
         self.previous_angular_velocity = torch.zeros((self.num_envs, 3), device=self.device)
 
-        self.v_forward_projected = 0.0
-        self.v_lateral_projected = 0.0
-        self.v_upward_projected = 0.0
+        self.v_forward_projected = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
+        self.v_lateral_projected = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
+        self.v_upward_projected = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
 
         torch_zeros = lambda: torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
         self.episode_sums = {
@@ -437,9 +437,9 @@ class ReachingTargetTask(RLTask):
         self.base_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
         self.base_quat = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device)
         self.base_velocities = torch.zeros((self.num_envs, 6), dtype=torch.float, device=self.device)
-        self.v_forward_projected = 0.0
-        self.v_lateral_projected = 0.0
-        self.v_yaw_projected = 0.0
+        self.v_forward_projected = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
+        self.v_lateral_projected = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
+        self.v_upward_projected = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
 
         indices = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.reset_idx(indices)
