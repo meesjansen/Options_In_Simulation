@@ -812,7 +812,7 @@ class ReachingTargetTask(RLTask):
         
 
         # New observation: 4D vector per environment
-        self.obs_buf = torch.cat([self.v_delta, self.omega_delta, self.linear_acc, self.angular_acc], dim=1)
+        self.obs_buf = torch.cat([self.v_delta.unsqueeze(1), self.omega_delta.unsqueeze(1), self.linear_acc.unsqueeze(1), self.angular_acc.unsqueeze(1)], dim=1)
         print("self.v_delta[0]", self.v_delta[0])
         print("self.omega_delta[0]", self.omega_delta[0])
         print("self.linear_acc[0]", self.linear_acc[0])
