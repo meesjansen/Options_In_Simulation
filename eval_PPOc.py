@@ -46,7 +46,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.PPOc_rooms_r15 import ReachingTargetTask, TASK_CFG
+from my_envs.PPOc_warm_r16_skid import ReachingTargetTask, TASK_CFG
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
@@ -161,7 +161,7 @@ agent = PPO(models=models_ppo,
 
 
 # agent.load("./my_runs/PPOc_rooms_r15_vel/PPOc_rooms_r15_vel/checkpoints/agent_100000.pt")
-agent.load("./my_runs/PPOc_rooms_r15/PPOc_rooms_r15/checkpoints/agent_100000.pt")
+agent.load("./my_runs/PPOc_warm_r16_skid/PPOc_warm_r16_skid/checkpoints/agent_300000.pt")
 
 # Configure and instantiate the RL trainer
 cfg_trainer = {"timesteps": 50_000, "headless": True}
