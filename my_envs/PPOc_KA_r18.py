@@ -626,14 +626,14 @@ class ReachingTargetTask(RLTask):
 
 
         # Compute gamma_assist (decaying assistance) based on global_episode
-        self.gamma_assist = torch.clamp(1.0 - (self.episode_count.float() / self.max_global_episodes), min=0.0)
+        self.gamma_assist = torch.clamp(1.0 - (self.episode_count.float() / self.max_global_episodes), min=0.0).to(self.device)
 
         # Compute execution action: blend agent action and criteria action
         gamma = self.gamma_assist.view(-1, 1).to(self.device)
         execution_action = (torch.tensor(1.0, device=self.device) - gamma) * self.actions + gamma * criteria_action
 
         # Compute guiding reward: negative Euclidean distance between agent and criteria actions
-        self.guiding_reward = -torch.norm(self.actions - criteria_action, dim=1)
+        self.guiding_reward = -torch.norm(self.actions - criteria_action, dim=1).to(self.device)
 
         # Apply the blended execution action as torques (assumed direct mapping)
         self.torques = execution_action
@@ -783,7 +783,7 @@ class ReachingTargetTask(RLTask):
         observed_reward = rdense + sparse_reward
 
         # Final updating reward: blend observed reward with guiding reward
-        self.rew_buf = (1 - self.gamma_assist) * observed_reward + self.gamma_assist * self.guiding_reward
+        self.rew_buf = (1 - self.gamma_assist) * observed_reward.to(self.device) + self.gamma_assist * self.guiding_reward
         
         
         self.rew_buf += self.rew_scales["termination"] * self.reset_buf * ~self.timeout_buf
