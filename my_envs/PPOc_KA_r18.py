@@ -626,7 +626,7 @@ class ReachingTargetTask(RLTask):
 
 
         # Compute gamma_assist (decaying assistance) based on global_episode
-        self.gamma_assist = max(0.0, 1.0 - (self.episode_count / self.max_global_episodes))
+        self.gamma_assist = torch.clamp(1.0 - (self.episode_count.float() / self.max_global_episodes), min=0.0)
 
         # Compute execution action: blend agent action and criteria action
         execution_action = (1 - self.gamma_assist) * self.actions + self.gamma_assist * criteria_action
