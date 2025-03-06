@@ -56,7 +56,7 @@ TASK_CFG = {"test": False,
                                         "maxInitMapLevel": 0,
                                         "mapLength": 8.0,
                                         "mapWidth": 8.0,
-                                        "numLevels": 4,
+                                        "numLevels": 6,
                                         "numTerrains": 2,
                                         # terrain types: [ smooth slope, rough slope, stairs up, stairs down, discrete]
                                         "terrainProportions": [0.35, 0.55, 0.7, 0.85, 1.0],
@@ -508,8 +508,8 @@ class ReachingTargetTask(RLTask):
 
         # Use self.episode_sums as the cumulative performance indicator for each environment.
         # Define thresholds (tune these values as needed)
-        threshold_low = 0.3   # indicates poor performance, make terrain easier (reduce difficulty)
-        threshold_high = 10.0  # indicates strong performance, increase terrain difficulty
+        threshold_low = 5.0   # indicates poor performance, make terrain easier (reduce difficulty)
+        threshold_high = 7.0  # indicates strong performance, increase terrain difficulty
 
         # Create boolean masks based on episode sums for the selected env_ids.
         low_mask = self.episode_sums["lin_vel_xy"][env_ids] < threshold_low
@@ -786,6 +786,9 @@ class ReachingTargetTask(RLTask):
             "rew_fallen_over": rew_fallen_over.mean().item(),
             "rew_slip_longitudinal": rew_slip_longitudinal.mean().item(),
         }
+
+        print("", self.episode_sums["lin_vel_xy"])
+
       
         return self.rew_buf
 
