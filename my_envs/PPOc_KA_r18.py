@@ -48,15 +48,15 @@ TASK_CFG = {"test": False,
                                                 },
                             "dofInitTorques": [0.0, 0.0, 0.0, 0.0],
                             "dofInitVelocities": [0.0, 0.0, 0.0, 0.0],
-                            "terrain": {"staticFriction": 1.0,  # [-]
-                                        "dynamicFriction": 1.0,  # [-]
+                            "terrain": {"staticFriction": 0.85,  # [-]
+                                        "dynamicFriction": 0.85,  # [-]
                                         "restitution": 0.0,  # [-]
                                         # rough terrain only:
                                         "curriculum": True,
                                         "maxInitMapLevel": 0,
-                                        "mapLength": 8.1,
-                                        "mapWidth": 8.1,
-                                        "numLevels": 4,
+                                        "mapLength": 16.0,
+                                        "mapWidth": 16.0,
+                                        "numLevels": 6,
                                         "numTerrains": 2,
                                         # terrain types: [ smooth slope, rough slope, stairs up, stairs down, discrete]
                                         "terrainProportions": [0.35, 0.55, 0.7, 0.85, 1.0],
@@ -66,7 +66,7 @@ TASK_CFG = {"test": False,
                             "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed      
                             "learn" : {"linearVelocityScale": 1.0,
                                        "angularVelocityScale": 1.0,
-                                        "gravityScale": 0.1,
+                                       "gravityScale": 0.1,
                                        "dofPositionScale": 1.0,
                                        "dofVelocityScale": 1.0,
                                        "heightMeasurementScale": 1.0,
@@ -85,14 +85,14 @@ TASK_CFG = {"test": False,
                                        "slipLongitudinalRewardScale": -5.0,
                                        "episodeLength_s": 15.0,
                                        "pushInterval_s": 20.0,},
-                            "randomCommandVelocityRanges": {"linear_x": 0.5, # [m/s]
-                                                            "linear_y": [-0.5, 0.5], # [m/s]
-                                                            "yaw": [-3.14, 3.14], # [rad/s]
-                                                            "yaw_constant": 0.5,},   # [rad/s]
+                                       "randomCommandVelocityRanges": {"linear_x": 0.5, # [m/s]
+                                                                       "linear_y": [-0.5, 0.5], # [m/s]
+                                                                       "yaw": [-3.14, 3.14], # [rad/s]
+                                                                       "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 0.01, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 10.0,
+                                        "actionScale": 100.0,
                                         "wheel_radius": 0.1175,
                                         "torq_constant": 7.2,
                                         "torq_FF_gain": 0.1,
@@ -192,7 +192,7 @@ class ReachingTargetTask(RLTask):
         self.vehicle_mass = 25.0      # [kg]
         self.vehicle_inertia = 1.05     # [kg·m^2]
         # Initialize a global episode counter for gamma scheduling
-        self.max_global_episodes = 3000
+        self.max_global_episodes = 3500
         # ---------------------------------------------------------------------------
         
 
@@ -202,7 +202,7 @@ class ReachingTargetTask(RLTask):
 
         self.height_points = self.init_height_points()  
         self.measured_heights = None
-        self.bounds = torch.tensor([-4.0, 4.0, -4.0, 4.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-8.0, 8.0, -8.0, 8.0], device=self.device, dtype=torch.float)
 
 
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
@@ -420,11 +420,7 @@ class ReachingTargetTask(RLTask):
         self.actions = torch.zeros(
             self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False
         )
-        self.last_actions = torch.zeros(
-            self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False
-        )
-
-        self.last_dof_vel = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device, requires_grad=False)
+        
 
 
         for i in range(self.num_envs):
@@ -488,8 +484,6 @@ class ReachingTargetTask(RLTask):
             1
         )  # set small commands to zero
 
-        self.last_actions[env_ids] = 0.0
-        self.last_dof_vel[env_ids] = 0.0
         self.progress_buf[env_ids] = 0
         self.episode_buf[env_ids] = 0 
 
@@ -497,8 +491,10 @@ class ReachingTargetTask(RLTask):
         self.extras["episode"] = {}
         for key in self.episode_sums.keys():
             self.extras["episode"]["rew_" + key] = (
-                torch.mean(self.episode_sums[key][env_ids])
+                torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
             )
+            print("lin_vel_xy update value", self.episode_sums["lin_vel_xy"])
+            print("rew_lin_vel_xy", self.extras["episode"]["rew_lin_vel_xy"])
             self.episode_sums[key][env_ids] = 0.0
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
 
@@ -630,10 +626,10 @@ class ReachingTargetTask(RLTask):
 
         # Compute execution action: blend agent action and criteria action
         gamma = self.gamma_assist.view(-1, 1).to(self.device)
-        execution_action = (torch.tensor(1.0, device=self.device) - gamma) * self.actions + gamma * criteria_action
+        execution_action = (torch.tensor(1.0, device=self.device) - gamma) * self.actions * self.action_scale + gamma * criteria_action
 
         # Compute guiding reward: negative Euclidean distance between agent and criteria actions
-        self.guiding_reward = -torch.norm(self.actions - criteria_action, dim=1).to(self.device)
+        self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device)
 
         # Apply the blended execution action as torques (assumed direct mapping)
         self.torques = execution_action
@@ -643,19 +639,21 @@ class ReachingTargetTask(RLTask):
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, -50.0, 50.0)
+                self.wheel_torqs = torch.clip(self.torques, -100.0, 100.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
                 SimulationContext.step(self.world, render=False)
 
-        print("actions: ", self.actions[0])
+        print("actions, still x100 for self.action_scale: ", self.actions[0])
         print("desired_v: ", self.desired_v[0])
         print("desired_omega: ", self.desired_omega[0])
         print("current_v: ", current_v[0])
         print("current_omega: ", current_omega[0])
-        print("torques left: ", self.ac_left[0])
-        print("torques right: ", self.ac_right[0])
+        print("expert torques left: ", self.ac_left[0])
+        print("expert torques right: ", self.ac_right[0])
+        print("gamma_assist: ", self.gamma_assist[0])
+        print("executed torques pre clip: ", self.torques[0])
           
     def post_physics_step(self):
         self.progress_buf[:] += 1
@@ -700,9 +698,7 @@ class ReachingTargetTask(RLTask):
                 self.reset_idx(env_ids)
 
             self.get_observations()
-            
-            self.last_actions[:] = self.actions[:]
-            self.last_dof_vel[:] = self.dof_vel[:]
+
 
             # sample velocity commands (x, y, yaw, heading)
             # Here we only do x velocity changes from sample_velocity_command
@@ -794,6 +790,7 @@ class ReachingTargetTask(RLTask):
         self.episode_sums["Sparse reward"] += sparse_reward
         self.episode_sums["guiding reward"] += self.guiding_reward
         
+        print("r1 value for level update threshold", self.episode_sums["r1: Tracking error reward (squared errors)"][0])
         print("terrain level:", self.terrain_levels[0])
         print("r1: Tracking error reward (squared errors):", r1[0])
         print("r2: Convergence reward (squared accelerations):", r2[0])

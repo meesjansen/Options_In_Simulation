@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 
 # Import the skrl components to build the RL system
-from skrl.models.torch import Model, GaussianMixin, DeterministicMixin
+from skrl.models.torch import Model, DeterministicMixin
+from skrl.resources.noises.torch import OrnsteinUhlenbeckNoise
 from skrl.memories.torch import RandomMemory
 from skrl.resources.schedulers.torch import KLAdaptiveRL
 from skrl.resources.preprocessors.torch import RunningStandardScaler
@@ -11,48 +12,47 @@ from skrl.envs.torch import wrap_env
 from skrl.utils import set_seed
 
 from my_models.categorical import CategoricalMixin
-from my_agents.ppo import PPO
-from my_trainers.sequential import SequentialTrainer
+from my_agents.ddpg import DDPG
+from my_trainers.sequential_KA import SequentialTrainer
 
 # set the seed for reproducibility
 seed = set_seed(42)
 
 # Define the models (stochastic and deterministic) for the agent using helper mixin.
-# - Policy: takes as input the environment's observation/state and returns action probabilities
+# - Policy: takes as input the environment's observation/state and returns action
 # - Value: takes the state as input and provides a state value to guide the policy
-class Policy(GaussianMixin, Model):
-    def __init__(self, observation_space, action_space, device, clip_actions=False,
-                 clip_log_std=True, min_log_std=-20, max_log_std=2, reduction="sum"):
-        Model.__init__(self, observation_space, action_space, device)
-        GaussianMixin.__init__(self, clip_actions, clip_log_std, min_log_std, max_log_std, reduction)
-
-        self.net = nn.Sequential(nn.Linear(self.num_observations, 512),
-                                 nn.ELU(),
-                                 nn.Linear(512, 256),
-                                 nn.ELU(),
-                                 nn.Linear(256, 128),
-                                 nn.ELU(),
-                                 nn.Linear(128, self.num_actions))
-        self.log_std_parameter = nn.Parameter(torch.zeros(self.num_actions))
-
-    def compute(self, inputs, role):
-        return self.net(inputs["states"]), self.log_std_parameter, {}
-
-class Value(DeterministicMixin, Model):
+class DeterministicActor(DeterministicMixin, Model):
     def __init__(self, observation_space, action_space, device, clip_actions=False):
         Model.__init__(self, observation_space, action_space, device)
         DeterministicMixin.__init__(self, clip_actions)
 
         self.net = nn.Sequential(nn.Linear(self.num_observations, 512),
                                  nn.ELU(),
-                                 nn.Linear(512, 256),
+                                 nn.Linear(512, 512),
                                  nn.ELU(),
-                                 nn.Linear(256, 128),
+                                 nn.Linear(512, 128),
+                                 nn.ELU(),
+                                 nn.Linear(128, self.num_actions),
+                                 nn.Tanh())
+
+    def compute(self, inputs, role):
+        return self.net(inputs["states"]), {}
+    
+class Critic(DeterministicMixin, Model):
+    def __init__(self, observation_space, action_space, device, clip_actions=False):
+        Model.__init__(self, observation_space, action_space, device)
+        DeterministicMixin.__init__(self, clip_actions)
+
+        self.net = nn.Sequential(nn.Linear(self.num_observations + self.num_actions, 512),
+                                 nn.ELU(),
+                                 nn.Linear(512, 512),
+                                 nn.ELU(),
+                                 nn.Linear(512, 128),
                                  nn.ELU(),
                                  nn.Linear(128, 1))
 
     def compute(self, inputs, role):
-        return self.net(inputs["states"]), {}
+        return self.net(torch.cat([inputs["states"], inputs["taken_actions"]], dim=1)), {}
 
 # Instantiate and configure the task
 headless = True  # set headless to False for rendering
@@ -118,86 +118,88 @@ env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
 # Instantiate a memory as experience replay
-memory = RandomMemory(memory_size=1024, num_envs=env.num_envs, device=device, replacement=False)
+memory = RandomMemory(memory_size=1_000_000, num_envs=env.num_envs, device=device, replacement=False)
 
-# Instantiate the agent's models.
-models_ppo = {}
-models_ppo["policy"] = Policy(env.observation_space, env.action_space, device)
-models_ppo["value"] = Value(env.observation_space, env.action_space, device)
+# instantiate the agent's models (function approximators).
+# DDPG requires 4 models, visit its documentation for more details
+# https://skrl.readthedocs.io/en/latest/api/agents/ddpg.html#models
+models = {}
+models["policy"] = DeterministicActor(env.observation_space, env.action_space, device)
+models["target_policy"] = DeterministicActor(env.observation_space, env.action_space, device)
+models["critic"] = Critic(env.observation_space, env.action_space, device)
+models["target_critic"] = Critic(env.observation_space, env.action_space, device)
+
 
 # Configure PPO agent hyperparameters.
-PPO_DEFAULT_CONFIG = {
-    "rollouts": 16,
-    "learning_epochs": 8,
-    "mini_batches": 2,
-    "discount_factor": 0.99,
-    "lambda": 0.95,
-    "learning_rate": 1e-3,
-    "learning_rate_scheduler": None,
-    "learning_rate_scheduler_kwargs": {},
-    "state_preprocessor": None,
-    "state_preprocessor_kwargs": {},
-    "value_preprocessor": None,
-    "value_preprocessor_kwargs": {},
-    "random_timesteps": 0,
-    "learning_starts": 0,
-    "grad_norm_clip": 0.5,
-    "ratio_clip": 0.2,
-    "value_clip": 0.2,
-    "clip_predicted_values": False,
-    "entropy_loss_scale": 0.0,
-    "value_loss_scale": 1.0,
-    "kl_threshold": 0,
-    "rewards_shaper": None,
-    "time_limit_bootstrap": False,
+DDPG_DEFAULT_CONFIG = {
+    "gradient_steps": 1,            # gradient steps
+    "batch_size": 4096,               # training batch size
+
+    "discount_factor": 0.99,        # discount factor (gamma)
+    "polyak": 0.005,                # soft update hyperparameter (tau)
+
+    "actor_learning_rate": 3e-4,    # actor learning rate
+    "critic_learning_rate": 1e-3,   # critic learning rate
+    "learning_rate_scheduler": None,        # learning rate scheduler class (see torch.optim.lr_scheduler)
+    "learning_rate_scheduler_kwargs": {},   # learning rate scheduler's kwargs (e.g. {"step_size": 1e-3})
+
+    "state_preprocessor": RunningStandardScaler,             # state preprocessor class (see skrl.resources.preprocessors)
+    "state_preprocessor_kwargs": {"size": env.observation_space, "device": device},        # state preprocessor's kwargs (e.g. {"size": env.observation_space})
+
+    "random_timesteps": 80,          # random exploration steps
+    "learning_starts": 80,           # learning starts after this many steps
+
+    "grad_norm_clip": 0,            # clipping coefficient for the norm of the gradients
+
+    "exploration": {
+        "noise": OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device),              # exploration noise
+        "initial_scale": 1.0,       # initial scale for the noise
+        "final_scale": 1e-3,        # final scale for the noise
+        "timesteps": None,          # timesteps for the noise decay
+    },
+
+    "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
+
+    "mixed_precision": False,       # enable automatic mixed precision for higher performance
+
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA_r18",
-        "experiment_name": "KA_r18",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18",
+        "experiment_name": "KA-DDPG_r18",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "warm_cold",
+        "wandb_kwargs": {"project": "KA",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA_r18",
-                         "tags": ["PPOc", "KA", "r18", "o163", "torq"],
+                         "name": "KA-DDPG_r18",
+                         "tags": ["DDPG", "KA", "r18", "o4", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
 }
 
-cfg_ppo = PPO_DEFAULT_CONFIG.copy()
-cfg_ppo["rollouts"] = 1024
-cfg_ppo["learning_epochs"] = 5
-cfg_ppo["mini_batches"] = 6
-cfg_ppo["discount_factor"] = 0.99
-cfg_ppo["lambda"] = 0.95
-cfg_ppo["learning_rate"] = 3e-4
-cfg_ppo["learning_rate_scheduler"] = KLAdaptiveRL
-cfg_ppo["learning_rate_scheduler_kwargs"] = {"kl_threshold": 0.008}
-cfg_ppo["random_timesteps"] = 0
-cfg_ppo["learning_starts"] = 0 
-cfg_ppo["grad_norm_clip"] = 1.0
-cfg_ppo["ratio_clip"] = 0.2
-cfg_ppo["value_clip"] = 0.2
-cfg_ppo["clip_predicted_values"] = True
-cfg_ppo["entropy_loss_scale"] = 0.001
-cfg_ppo["value_loss_scale"] = 1.0
-cfg_ppo["kl_threshold"] = 0
-cfg_ppo["rewards_shaper"] = None
-cfg_ppo["state_preprocessor"] = RunningStandardScaler
-cfg_ppo["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
-cfg_ppo["value_preprocessor"] = RunningStandardScaler
-cfg_ppo["value_preprocessor_kwargs"] = {"size": 1, "device": device}
-cfg_ppo["experiment"]["write_interval"] = 100
-cfg_ppo["experiment"]["checkpoint_interval"] = 20_000
+cfg = DDPG_DEFAULT_CONFIG.copy()
+cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device)
+cfg["gradient_steps"] = 1
+cfg["batch_size"] = 4096
+cfg["discount_factor"] = 0.99
+cfg["polyak"] = 0.005
+cfg["actor_learning_rate"] = 5e-4
+cfg["critic_learning_rate"] = 5e-4
+cfg["random_timesteps"] = 80
+cfg["learning_starts"] = 80
+cfg["state_preprocessor"] = RunningStandardScaler
+cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
+# logging to TensorBoard and write checkpoints (in timesteps)
+cfg["experiment"]["write_interval"] = 800
+cfg["experiment"]["checkpoint_interval"] = 8000
 
 
-agent = PPO(models=models_ppo,
-            memory=memory,
-            cfg=cfg_ppo,
-            observation_space=env.observation_space,
-            action_space=env.action_space,
-            device=device)
+agent = DDPG(models=models,
+             memory=memory,
+             cfg=cfg,
+             observation_space=env.observation_space,
+             action_space=env.action_space,
+             device=device)
 
 
 

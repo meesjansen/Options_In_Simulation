@@ -56,7 +56,7 @@ TASK_CFG = {"test": False,
                                         "maxInitMapLevel": 0,
                                         "mapLength": 8.0,
                                         "mapWidth": 8.0,
-                                        "numLevels": 4,
+                                        "numLevels": 6,
                                         "numTerrains": 2,
                                         # terrain types: [ smooth slope, rough slope, stairs up, stairs down, discrete]
                                         "terrainProportions": [0.35, 0.55, 0.7, 0.85, 1.0],
@@ -498,6 +498,9 @@ class ReachingTargetTask(RLTask):
             self.extras["episode"]["rew_" + key] = (
                 torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
             )
+            print("lin_vel_xy", self.episode_sums["lin_vel_xy"])
+            print("rew_lin_vel_xy", self.extras["episode"]["rew_lin_vel_xy"])
+
             self.episode_sums[key][env_ids] = 0.0
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
 
@@ -788,7 +791,6 @@ class ReachingTargetTask(RLTask):
             "rew_slip_longitudinal": rew_slip_longitudinal.mean().item(),
         }
 
-        print("", self.episode_sums["lin_vel_xy"])
       
         return self.rew_buf
 
