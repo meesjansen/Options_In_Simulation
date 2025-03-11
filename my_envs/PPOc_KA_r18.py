@@ -674,11 +674,11 @@ class ReachingTargetTask(RLTask):
             if len(env_ids) > 0:
                 self.reset_idx(env_ids)
             
-            print("pre observatiopns", self.commands[i,0])
-            print("pre observatiopns", self.commands[i,2])
+            print("pre observatiopns", self.commands[0,0])
+            print("pre observatiopns", self.commands[0,2])
             self.get_observations()
-            print("post observatiopns", self.commands[i,0])
-            print("post observatiopns", self.commands[i,2])
+            print("post observatiopns", self.commands[0,0])
+            print("post observatiopns", self.commands[0,2])
 
             # sample velocity commands (x, y, yaw, heading)
             # Here we only do x velocity changes from sample_velocity_command
@@ -688,8 +688,8 @@ class ReachingTargetTask(RLTask):
                 self.commands[i,0] = x_cmd
                 self.commands[i,2] = omega_cmd
 
-            print("end post",self.commands[i,0])
-            print("end post",self.commands[i,2])
+            print("end post",self.commands[0,0])
+            print("end post",self.commands[0,2])
 
         return self.obs_buf, self.rew_buf, self.reset_buf, self.extras
 
