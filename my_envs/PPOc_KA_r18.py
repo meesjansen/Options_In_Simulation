@@ -54,8 +54,8 @@ TASK_CFG = {"test": False,
                                         # rough terrain only:
                                         "curriculum": True,
                                         "maxInitMapLevel": 0,
-                                        "mapLength": 16.0,
-                                        "mapWidth": 16.0,
+                                        "mapLength": 9.0,
+                                        "mapWidth": 9.0,
                                         "numLevels": 6,
                                         "numTerrains": 2,
                                         # terrain types: [ smooth slope, rough slope, stairs up, stairs down, discrete]
