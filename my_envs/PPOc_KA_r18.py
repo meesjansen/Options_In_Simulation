@@ -54,8 +54,8 @@ TASK_CFG = {"test": False,
                                         # rough terrain only:
                                         "curriculum": True,
                                         "maxInitMapLevel": 0,
-                                        "mapLength": 9.0,
-                                        "mapWidth": 9.0,
+                                        "mapLength": 10.0,
+                                        "mapWidth": 10.0,
                                         "numLevels": 6,
                                         "numTerrains": 2,
                                         # terrain types: [ smooth slope, rough slope, stairs up, stairs down, discrete]
@@ -202,7 +202,7 @@ class ReachingTargetTask(RLTask):
 
         self.height_points = self.init_height_points()  
         self.measured_heights = None
-        self.bounds = torch.tensor([-8.0, 8.0, -8.0, 8.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-5.0, 5.0, -5.0, 5.0], device=self.device, dtype=torch.float)
 
 
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
@@ -493,7 +493,7 @@ class ReachingTargetTask(RLTask):
                 torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
             )
             print("lin_vel_xy update value", self.episode_sums["r1: Tracking error reward (squared errors)"])
-            print("rew_lin_vel_xy", self.extras["episode"]["r1: Tracking error reward (squared errors)"])
+            print("rew_lin_vel_xy", self.extras["episode"]["rew_r1: Tracking error reward (squared errors)"])
             self.episode_sums[key][env_ids] = 0.0
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
 
