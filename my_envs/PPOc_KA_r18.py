@@ -226,8 +226,7 @@ class ReachingTargetTask(RLTask):
             "guiding reward": torch_zeros(),
               }
         
-        # --- NEW: Initialize warm-start flag (disabled by default) ---
-        self.warm_start = False
+
         self.phase_name = ""
 
         
@@ -528,28 +527,7 @@ class ReachingTargetTask(RLTask):
         self.env_origins[env_ids] = self.terrain_origins[self.terrain_levels[env_ids], self.terrain_types[env_ids]]
             
     def sample_velocity_command(self, env_id: int):
-        """
-        Return a velocity command (x vel) for a single environment based on the current warm start phase.
-        For multi-env, you'll call this for each env.
-        """
-        if self.warm_start and self.phase_name == "straight":
-            return 0.5
         
-        if self.warm_start and self.phase_name == "rotate_left":
-            return 0.0
-        
-        if self.warm_start and self.phase_name == "rotate_right":
-            return 0.0
-        
-        if self.warm_start and self.phase_name == "circle_left":
-            return 0.5
-
-        if self.warm_start and self.phase_name == "circle_right":
-            return 0.5
-        
-        """
-        Return a velocity command (x vel) for a single environment based on the current curriculum task.
-        """
         threshold_high = 10.0
 
         if self.terrain_levels[env_id] == 0:
@@ -558,7 +536,7 @@ class ReachingTargetTask(RLTask):
             fraction = self.episode_sums["r1: Tracking error reward (squared errors)"][env_id] / threshold_high 
             sigma = 0.01 + 0.09 * fraction
             x_vel = torch.normal(mean=0.5, std=sigma, size=(1,), device=self.device).item()
-            return max(x_vel, 0.0)  # keep it non-negative if you want
+            return max(x_vel, 0.0), 0.0  # keep it non-negative if you want
 
         elif self.terrain_levels[env_id] == 1:
             # Task 2: sinusoidal with mean=1, frequency + amplitude changes
@@ -570,7 +548,7 @@ class ReachingTargetTask(RLTask):
                 amp = 0.1 + 0.4  * fraction
             t = float(self.common_step_counter) * self.dt
             x_vel = 0.5 + amp * math.sin(freq * t)
-            return max(x_vel, 0.0)
+            return max(x_vel, 0.0), 0.0
 
         elif self.terrain_levels[env_id] == 2:
             # Task 3: range 0..10. Start with 0..5, then up to 10
@@ -580,12 +558,12 @@ class ReachingTargetTask(RLTask):
             scale = 0.5 # m/s
             Noise = 0.5 * fraction
             x_vel = torch.normal(mean=0.0, std=Noise, size=(1,), device=self.device).item() + scale * t/self.max_episode_length_s
-            return max(x_vel, 0.0)
+            return max(x_vel, 0.0), 0.0
 
         else:
             # Task 4 (or any default): final terrain steps/slopes, normal(0.5,0.1)
             x_vel = torch.normal(mean=0.5, std=0.1, size=(1,), device=self.device).item()
-            return max(x_vel, 0.0)
+            return max(x_vel, 0.0), 0.0
         
     def refresh_dof_state_tensors(self):
         self.dof_pos = self._robots.get_joint_positions(clone=False)
@@ -633,7 +611,6 @@ class ReachingTargetTask(RLTask):
 
         # Apply the blended execution action as torques (assumed direct mapping)
         self.torques = execution_action
-
 
 
         for _ in range(self.decimation):
@@ -696,22 +673,23 @@ class ReachingTargetTask(RLTask):
             env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
             if len(env_ids) > 0:
                 self.reset_idx(env_ids)
-
+            
+            print("pre observatiopns", self.commands[i,0])
+            print("pre observatiopns", self.commands[i,2])
             self.get_observations()
-
+            print("post observatiopns", self.commands[i,0])
+            print("post observatiopns", self.commands[i,2])
 
             # sample velocity commands (x, y, yaw, heading)
             # Here we only do x velocity changes from sample_velocity_command
             for i in range(self._num_envs):
-                x_cmd = self.sample_velocity_command(i)
+                x_cmd = self.sample_velocity_command(i)[0]
+                omega_cmd = self.sample_velocity_command(i)[1]
                 self.commands[i,0] = x_cmd
+                self.commands[i,2] = omega_cmd
 
-        # During warm-start, override rewards to zero and include expert actions ---
-        if self.warm_start:
-            self.rew_buf = torch.zeros_like(self.rew_buf)
-            # Add expert actions to extras so that the policy network can “observe” them for supervised loss.
-            self.extras["expert_actions"] = self.actions
-
+            print("end post",self.commands[i,0])
+            print("end post",self.commands[i,2])
 
         return self.obs_buf, self.rew_buf, self.reset_buf, self.extras
 
