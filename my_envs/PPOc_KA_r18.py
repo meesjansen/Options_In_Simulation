@@ -492,8 +492,8 @@ class ReachingTargetTask(RLTask):
             self.extras["episode"]["rew_" + key] = (
                 torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
             )
-            print("lin_vel_xy update value", self.episode_sums["lin_vel_xy"])
-            print("rew_lin_vel_xy", self.extras["episode"]["rew_lin_vel_xy"])
+            print("lin_vel_xy update value", self.episode_sums["r1: Tracking error reward (squared errors)"])
+            print("rew_lin_vel_xy", self.extras["episode"]["r1: Tracking error reward (squared errors)"])
             self.episode_sums[key][env_ids] = 0.0
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
 
