@@ -70,14 +70,14 @@ arg_parser.add_argument("--angularVelocityXYRewardScale", type=float, default=-0
 arg_parser.add_argument("--actionRateRewardScale", type=float, default=-0.05)
 arg_parser.add_argument("--fallenOverRewardScale", type=float, default=-200.0)
 arg_parser.add_argument("--slipLongitudinalRewardScale", type=float, default=-5.0)
-arg_parser.add_argument("--stiffness", type=float, default=0.05)
+arg_parser.add_argument("--stiffness", type=float, default=0.01)
 arg_parser.add_argument("--damping", type=float, default=0.005)
 arg_parser.add_argument("--torq_constant", type=float, default=7.2)
 arg_parser.add_argument("--torq_FF_gain", type=float, default=0.1)
-arg_parser.add_argument("--static_friction", type=float, default=1.0)
-arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
+arg_parser.add_argument("--static_friction", type=float, default=0.85)
+arg_parser.add_argument("--dynamic_friction", type=float, default=0.85)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
-arg_parser.add_argument("--linear_x", type=float, default=1.0)
+arg_parser.add_argument("--linear_x", type=float, default=0.5)
 
 parsed_config = arg_parser.parse_args().__dict__
 

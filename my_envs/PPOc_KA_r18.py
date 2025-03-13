@@ -492,8 +492,8 @@ class ReachingTargetTask(RLTask):
             self.extras["episode"]["rew_" + key] = (
                 torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
             )
-            print("lin_vel_xy update value", self.episode_sums["r1: Tracking error reward (squared errors)"])
-            print("rew_lin_vel_xy", self.extras["episode"]["rew_r1: Tracking error reward (squared errors)"])
+            print("reset_idx; episode_sum r1: ", self.episode_sums["r1: Tracking error reward (squared errors)"])
+            print("reset_idx; r1 / max episode length: ", self.extras["episode"]["rew_r1: Tracking error reward (squared errors)"])
             self.episode_sums[key][env_ids] = 0.0
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
 
@@ -536,7 +536,7 @@ class ReachingTargetTask(RLTask):
             fraction = self.episode_sums["r1: Tracking error reward (squared errors)"][env_id] / threshold_high 
             sigma = 0.01 + 0.09 * fraction
             x_vel = torch.normal(mean=0.5, std=sigma, size=(1,), device=self.device).item()
-            return max(x_vel, 0.0), 0.0  # keep it non-negative if you want
+            return 0.0, max(x_vel, 0.0)  # max(x_vel, 0.0), 0.0
 
         elif self.terrain_levels[env_id] == 1:
             # Task 2: sinusoidal with mean=1, frequency + amplitude changes
@@ -616,21 +616,21 @@ class ReachingTargetTask(RLTask):
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, -100.0, 100.0)
+                self.wheel_torqs = torch.clip(self.torques, -250.0, 250.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
                 SimulationContext.step(self.world, render=False)
 
-        print("actions, still x100 for self.action_scale: ", self.actions[0])
-        print("desired_v: ", self.desired_v[0])
-        print("desired_omega: ", self.desired_omega[0])
-        print("current_v: ", current_v[0])
-        print("current_omega: ", current_omega[0])
-        print("expert torques left: ", self.ac_left[0])
-        print("expert torques right: ", self.ac_right[0])
-        print("gamma_assist: ", self.gamma_assist[0])
-        print("executed torques pre clip: ", self.torques[0])
+        print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
+        print("pre_physics; desired_v: ", self.desired_v[0])
+        print("pre_physics; desired_omega: ", self.desired_omega[0])
+        print("pre_physics; current_v: ", current_v[0])
+        print("pre_physics; current_omega: ", current_omega[0])
+        print("pre_physics; expert torques left: ", self.ac_left[0])
+        print("pre_physics; expert torques right: ", self.ac_right[0])
+        print("pre_physics; gamma_assist: ", self.gamma_assist[0])
+        print("pre_physics; executed torques pre clip: ", self.torques[0])
           
     def post_physics_step(self):
         self.progress_buf[:] += 1
@@ -674,7 +674,7 @@ class ReachingTargetTask(RLTask):
             if len(env_ids) > 0:
                 self.reset_idx(env_ids)
             
-            print("pre observatiopns", self.commands[0,0])
+            print("post_physics observatiopns", self.commands[0,0])
             print("pre observatiopns", self.commands[0,2])
             self.get_observations()
             print("post observatiopns", self.commands[0,0])
@@ -744,7 +744,7 @@ class ReachingTargetTask(RLTask):
         # r3: Torque penalty (sum of squared torques)
         r3 = torch.sum(self.torques ** 2, dim=1)
         # Weight factors (tunable)
-        w1, w2, w3 = 1.0, 1.0, -0.001
+        w1, w2, w3 = -1.0, -1.0, -0.001
         rdense = w1 * r1 + w2 * r2 + w3 * r3
 
         # Sparse reward: bonus if tracking errors are very low
@@ -768,7 +768,7 @@ class ReachingTargetTask(RLTask):
         self.episode_sums["Sparse reward"] += sparse_reward
         self.episode_sums["guiding reward"] += self.guiding_reward
         
-        print("r1 value for level update threshold", self.episode_sums["r1: Tracking error reward (squared errors)"][0])
+        print("r1 episode_sums value for level update threshold", self.episode_sums["r1: Tracking error reward (squared errors)"][0])
         print("terrain level:", self.terrain_levels[0])
         print("r1: Tracking error reward (squared errors):", r1[0])
         print("r2: Convergence reward (squared accelerations):", r2[0])
