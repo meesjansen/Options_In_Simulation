@@ -191,8 +191,10 @@ class ReachingTargetTask(RLTask):
         # You can also move these to the config if desired.
         self.vehicle_mass = 25.0      # [kg]
         self.vehicle_inertia = 1.05     # [kg·m^2]
-        # Initialize a global episode counter for gamma scheduling
+        # Initialize a max global episode counter for gamma scheduling
+        # or a fixed number of episodes needed for the curriculum levels
         self.max_global_episodes = 3500
+        self.max_level_episodes = 500
         # ---------------------------------------------------------------------------
         
 
@@ -479,6 +481,7 @@ class ReachingTargetTask(RLTask):
         self.commands[env_ids, 3] = torch_rand_float(
             self.command_yaw_range[0], self.command_yaw_range[1], (len(env_ids), 1), device=self.device
         ).squeeze()
+
         self.commands[env_ids] *= (torch.norm(self.commands[env_ids, :2], dim=1) > 0.25).unsqueeze(
             1
         )  # set small commands to zero
@@ -492,7 +495,7 @@ class ReachingTargetTask(RLTask):
             self.extras["episode"]["rew_" + key] = (
                 torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
             )
-            print("reset_idx; episode_sum r1: ", self.episode_sums["r1: Tracking error reward (squared errors)"])
+            print("reset_idx; episode_sum r1!: ", self.episode_sums["r1: Tracking error reward (squared errors)"])
             print("reset_idx; r1 / max episode length: ", self.extras["episode"]["rew_r1: Tracking error reward (squared errors)"])
             self.episode_sums[key][env_ids] = 0.0
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
@@ -647,25 +650,6 @@ class ReachingTargetTask(RLTask):
             if self.common_step_counter % self.push_interval == 0:
                 self.push_robots()
 
-            # prepare quantities
-            self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 0:3])
-            self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 3:6])
-            self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
-            forward = quat_apply(self.base_quat, self.forward_vec)
-            heading = torch.atan2(forward[:, 1], forward[:, 0])
-           
-            forward_norm = forward / torch.norm(forward, dim=1, keepdim=True)
-            lateral_dir = torch.stack([-forward_norm[:, 1], forward_norm[:, 0], torch.zeros_like(forward_norm[:, 0])], dim=1)
-            up_local = torch.tensor([0.0, 0.0, 1.0], device=self.device).repeat((self.num_envs, 1))
-            up_dir = quat_apply(self.base_quat, up_local)
-
-            v_global = self.base_velocities[:, 0:3]  # shape: [num_env, 3]
-            self.v_forward_projected = torch.sum(v_global * forward_norm, dim=1)   # dot product, shape: [num_env]
-            self.v_lateral_projected = torch.sum(v_global * lateral_dir, dim=1)      # dot product, shape: [num_env]
-            self.v_upward_projected = torch.sum(v_global * up_dir, dim=1)
-
-            self.commands[:, 2] = torch.clip(self.yaw_constant * wrap_to_pi(self.commands[:, 3] - heading), -1.0, 1.0)
-
             self.is_done()
             self.get_states()
             self.calculate_metrics()
@@ -674,22 +658,39 @@ class ReachingTargetTask(RLTask):
             if len(env_ids) > 0:
                 self.reset_idx(env_ids)
             
-            print("post_physics observatiopns", self.commands[0,0])
-            print("pre observatiopns", self.commands[0,2])
+            print("post_physics self.commands[0,0]", self.commands[0,0])
+            print("post_physics self.commands[0,2]", self.commands[0,2])
             self.get_observations()
-            print("post observatiopns", self.commands[0,0])
-            print("post observatiopns", self.commands[0,2])
+            print("post observatiopns self.commands[0,0]", self.commands[0,0])
+            print("post observatiopns self.commands[0,2]", self.commands[0,2])
 
-            # sample velocity commands (x, y, yaw, heading)
-            # Here we only do x velocity changes from sample_velocity_command
-            for i in range(self._num_envs):
-                x_cmd = self.sample_velocity_command(i)[0]
-                omega_cmd = self.sample_velocity_command(i)[1]
-                self.commands[i,0] = x_cmd
-                self.commands[i,2] = omega_cmd
+        # prepare quantities
+        self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 0:3])
+        self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 3:6])
+        self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
+        forward = quat_apply(self.base_quat, self.forward_vec)
+        heading = torch.atan2(forward[:, 1], forward[:, 0])
+        
+        forward_norm = forward / torch.norm(forward, dim=1, keepdim=True)
+        lateral_dir = torch.stack([-forward_norm[:, 1], forward_norm[:, 0], torch.zeros_like(forward_norm[:, 0])], dim=1)
+        up_local = torch.tensor([0.0, 0.0, 1.0], device=self.device).repeat((self.num_envs, 1))
+        up_dir = quat_apply(self.base_quat, up_local)
 
-            print("end post",self.commands[0,0])
-            print("end post",self.commands[0,2])
+        v_global = self.base_velocities[:, 0:3]  # shape: [num_env, 3]
+        self.v_forward_projected = torch.sum(v_global * forward_norm, dim=1)   # dot product, shape: [num_env]
+        self.v_lateral_projected = torch.sum(v_global * lateral_dir, dim=1)      # dot product, shape: [num_env]
+        self.v_upward_projected = torch.sum(v_global * up_dir, dim=1)
+
+        # self.commands[:, 2] = torch.clip(self.yaw_constant * wrap_to_pi(self.commands[:, 3] - heading), -1.0, 1.0)
+
+        # sample velocity commands (x, y, yaw, heading)
+        # Here we only do x velocity changes from sample_velocity_command
+        for i in range(self._num_envs):
+            x_cmd = self.sample_velocity_command(i)[0]
+            omega_cmd = self.sample_velocity_command(i)[1]
+            self.commands[i,0] = x_cmd
+            self.commands[i,2] = omega_cmd
+
 
         return self.obs_buf, self.rew_buf, self.reset_buf, self.extras
 
@@ -744,7 +745,7 @@ class ReachingTargetTask(RLTask):
         # r3: Torque penalty (sum of squared torques)
         r3 = torch.sum(self.torques ** 2, dim=1)
         # Weight factors (tunable)
-        w1, w2, w3 = -1.0, -1.0, -0.001
+        w1, w2, w3 = -1.0, -0.1, -0.01
         rdense = w1 * r1 + w2 * r2 + w3 * r3
 
         # Sparse reward: bonus if tracking errors are very low
@@ -768,13 +769,13 @@ class ReachingTargetTask(RLTask):
         self.episode_sums["Sparse reward"] += sparse_reward
         self.episode_sums["guiding reward"] += self.guiding_reward
         
-        print("r1 episode_sums value for level update threshold", self.episode_sums["r1: Tracking error reward (squared errors)"][0])
-        print("terrain level:", self.terrain_levels[0])
-        print("r1: Tracking error reward (squared errors):", r1[0])
-        print("r2: Convergence reward (squared accelerations):", r2[0])
-        print("r3: Torque penalty (sum of squared torques):", r3[0])
-        print("Sparse reward:", sparse_reward[0])
-        print("guiding reward:", self.guiding_reward[0])
+        print("metrics; r1 episode_sums value for level update threshold", self.episode_sums["r1: Tracking error reward (squared errors)"][0])
+        print("metrics; terrain level:", self.terrain_levels[0])
+        print("metrics; r1: Tracking error reward (squared errors):", r1[0])
+        print("metrics: r2: Convergence reward (squared accelerations):", r2[0])
+        print("metrics: r3: Torque penalty (sum of squared torques):", r3[0])
+        print("metrics: Sparse reward:", sparse_reward[0])
+        print("metrics: guiding reward:", self.guiding_reward[0])
         
 
         self.reward_components = {
