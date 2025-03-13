@@ -189,7 +189,7 @@ class Trainer:
                 rew_fallen_over = self.env.task.reward_components["rew_fallen_over"]
                 rew_slip_longitudinal = self.env.task.reward_components["rew_slip_longitudinal"]
 
-                actions = self.env.task.wheel_torqs
+                actions = self.env.task.wheel_torqs / self.env.task.action_scale
                 print(f"recorded actions: {actions}")
                 
                 # render scene
