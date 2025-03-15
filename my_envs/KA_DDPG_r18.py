@@ -207,6 +207,7 @@ class TorqueDistributionTask(RLTask):
               }
         
         self.terrain_levels = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
+        self.env_origins = torch.zeros((self.num_envs, 3), device=self.device, requires_grad=False)
         self.phase_name = ""
 
         
