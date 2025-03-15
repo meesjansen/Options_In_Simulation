@@ -60,7 +60,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.KA_DDPG_r18 import ReachingTargetTask, TASK_CFG
+from my_envs.KA_DDPG_r18 import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
@@ -97,7 +97,6 @@ TASK_CFG["task"]["env"]["learn"]["slipLongitudinalRewardScale"] = parsed_config[
 TASK_CFG["task"]["env"]["control"]["stiffness"] = parsed_config["stiffness"]
 TASK_CFG["task"]["env"]["control"]["damping"] = parsed_config["damping"]
 TASK_CFG["task"]["env"]["control"]["torq_constant"] = parsed_config["torq_constant"]
-TASK_CFG["task"]["env"]["control"]["torq_FF_gain"] = parsed_config["torq_FF_gain"]
 
 # friction
 TASK_CFG["task"]["sim"]["default_physics_material"]["static_friction"] = parsed_config["static_friction"]
@@ -109,7 +108,7 @@ TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["linear_x"] = parsed_conf
 
 
 sim_config = SimConfig(TASK_CFG)
-task = ReachingTargetTask(name="ReachingTarget", sim_config=sim_config, env=env)
+task = TorqueDistributionTask(name="SkidTorqueDistribution", sim_config=sim_config, env=env)
 
 env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="torch", init_sim=True)
 
