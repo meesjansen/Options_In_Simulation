@@ -779,10 +779,10 @@ class TorqueDistributionTask(RLTask):
 
 
     def get_observations(self):
-        self.measured_heights = self.get_heights()
-        heights = (
-            torch.clip(self.base_pos[:, 2].unsqueeze(1) - self.measured_heights - 0.0622, -1, 1.0) * self.height_meas_scale
-        )
+        # self.measured_heights = self.get_heights()
+        # heights = (
+        #     torch.clip(self.base_pos[:, 2].unsqueeze(1) - self.measured_heights - 0.0622, -1, 1.0) * self.height_meas_scale
+        # )
         
 
         # New observation: 4D vector per environment
