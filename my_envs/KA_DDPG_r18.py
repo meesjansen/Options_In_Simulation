@@ -252,6 +252,7 @@ class TorqueDistributionTask(RLTask):
         self.randsampling = self._task_cfg["env"]["terrain"]["RandSampling"]
         self.boxsampling = self._task_cfg["env"]["terrain"]["BoxSampling"]
         self.gridsampling = self._task_cfg["env"]["terrain"]["GridSampling"]
+        self.threshold_high = 10.0
       
         # env config
         self._num_envs = self._task_cfg["env"]["numEnvs"]
@@ -376,8 +377,6 @@ class TorqueDistributionTask(RLTask):
             self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False
         )
         
-
-
         # for i in range(self.num_envs):
             # self.env_origins[i] = self.terrain_origins[self.terrain_levels[i], self.terrain_types[i]]
 
@@ -466,6 +465,9 @@ class TorqueDistributionTask(RLTask):
                 self.commands[i,0] = x_cmd
                 self.commands[i,2] = omega_cmd
 
+        self.fraction = self.episode_sums["r1: Tracking error reward (squared errors)"] / self.threshold_high 
+
+
 
     # def update_SI_level(self, env_ids):
     #     # Only update terrain if initialization and curriculum are active.
@@ -498,25 +500,23 @@ class TorqueDistributionTask(RLTask):
             
     def sample_velocity_command(self, env_id: int):
         
-        threshold_high = 10.0
-
         if self.curriculum:
             if self.terrain_levels[env_id] == 0:
                 # Task 1: normal distribution around 0.5, with sigma in [0.01..0.1]
                 # Example: linearly scale sigma with episode_buf or a global counter
-                fraction = self.episode_sums["r1: Tracking error reward (squared errors)"][env_id] / threshold_high 
-                sigma = 0.01 + 0.09 * fraction
+                fraction = self.episode_sums["r1: Tracking error reward (squared errors)"][env_id] / self.threshold_high 
+                sigma = 0.01 + 0.09 * self.fraction[env_id]
                 x_vel = torch.normal(mean=0.5, std=sigma, size=(1,), device=self.device).item()
                 return 0.0, max(x_vel, 0.0)  # max(x_vel, 0.0), 0.0
 
             elif self.terrain_levels[env_id] == 1:
                 # Task 2: sinusoidal with mean=1, frequency + amplitude changes
                 # Suppose we let the frequency grow from 0.01..0.1 and amplitude from 0.1..1
-                fraction = self.episode_sums["r1: Tracking error reward (squared errors)"][env_id] / threshold_high 
-                freq = 0.01 + 0.09 * fraction
+                fraction = self.episode_sums["r1: Tracking error reward (squared errors)"][env_id] / self.threshold_high 
+                freq = 0.01 + 0.09 * self.fraction[env_id]
                 amp  = 0.1  
-                if fraction > 0.5:
-                    amp = 0.1 + 0.4  * fraction
+                if self.fraction[env_id] > 0.5:
+                    amp = 0.1 + 0.4  * self.fraction[env_id]
                 t = float(self.episode_step_counter) * self.dt
                 x_vel = 0.5 + amp * math.sin(freq * t)
                 return max(x_vel, 0.0), 0.0
@@ -524,10 +524,10 @@ class TorqueDistributionTask(RLTask):
             elif self.terrain_levels[env_id] == 2:
                 # Task 3: range 0..10. Start with 0..5, then up to 10
                 # We'll do a simple sub-task switch
-                fraction = self.episode_sums["r1: Tracking error reward (squared errors)"][env_id] / threshold_high 
+                fraction = self.episode_sums["r1: Tracking error reward (squared errors)"][env_id] / self.threshold_high 
                 t = float(self.episode_step_counter) * self.dt
                 scale = 0.5 # m/s
-                Noise = 0.5 * fraction
+                Noise = 0.5 * self.fraction[env_id]
                 x_vel = torch.normal(mean=0.0, std=Noise, size=(1,), device=self.device).item() + scale * t/self.max_episode_length_s
                 return max(x_vel, 0.0), 0.0
 
