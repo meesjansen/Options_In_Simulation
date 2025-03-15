@@ -404,7 +404,7 @@ class TorqueDistributionTask(RLTask):
 
         # self.update_SI_level(env_ids)
         self.base_pos[env_ids] = self.base_init_state[0:3]
-        self.base_pos[env_ids, 0:3] += self.env_origins[env_ids]
+        # self.base_pos[env_ids, 0:3] += self.env_origins[env_ids]
         self.base_pos[env_ids, 0:2] += torch_rand_float(-0.5, 0.5, (len(env_ids), 2), device=self.device)
         # Apply random rotation around Z-axis
         random_angle = torch_rand_float(0, 2 * torch.pi, (len(env_ids), 1), device=self.device).squeeze(-1)           # squeeze out the extra dimension
