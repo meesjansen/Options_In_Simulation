@@ -108,7 +108,7 @@ TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["linear_x"] = parsed_conf
 
 
 sim_config = SimConfig(TASK_CFG)
-task = TorqueDistributionTask(name="SkidTorqueDistribution", sim_config=sim_config, env=env)
+task = TorqueDistributionTask(name="TorqueDistribution", sim_config=sim_config, env=env)
 
 env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="torch", init_sim=True)
 
