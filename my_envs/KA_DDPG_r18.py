@@ -53,6 +53,9 @@ TASK_CFG = {"test": False,
                                         "restitution": 0.0,  # [-]
                                         # rough terrain only:
                                         "curriculum": False,
+                                        "RandSampling": True,
+                                        "BoxSampling": False,
+                                        "GridSampling": False,
                                         "maxInitMapLevel": 0,
                                         "mapLength": 10.0,
                                         "mapWidth": 10.0,
@@ -66,8 +69,7 @@ TASK_CFG = {"test": False,
                             "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed      
                             "learn" : {"heightMeasurementScale": 1.0,
                                        "terminalReward": 0.0,
-                                       "episodeLength_s": 10.0,
-                                       "pushInterval_s": 20.0,},
+                                       "episodeLength_s": 10.0,},
                                        "randomCommandVelocityRanges": {"linear_x":[0.0, 1.5], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
                                                                        "yaw": [-3.14, 3.14], # [rad/s]
@@ -77,10 +79,7 @@ TASK_CFG = {"test": False,
                                         "damping": .005, # [N*m*s/rad]
                                         "actionScale": 100.0,
                                         "wheel_radius": 0.1175,
-                                        "torq_constant": 7.2,
-                                        "torq_FF_gain": 0.1,
                                         },   # leave room to overshoot or corner 
-
                             },
                      "sim": {"dt": 0.025,  
                              "use_gpu_pipeline": True,
@@ -147,7 +146,7 @@ class RobotView(ArticulationView):
             prepare_contact_sensors=prepare_contact_sensors,
         )
 
-class ReachingTargetTask(RLTask):
+class TorqueDistributionTask(RLTask):
     def __init__(self, name, sim_config, env, offset=None) -> None:
         self.height_samples = None
         self.custom_origins = False
@@ -207,7 +206,7 @@ class ReachingTargetTask(RLTask):
             "guiding reward": torch_zeros(),
               }
         
-
+        self.terrain_levels = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.phase_name = ""
 
         
@@ -249,6 +248,9 @@ class ReachingTargetTask(RLTask):
         self.Kp = self._task_cfg["env"]["control"]["stiffness"]
         self.Kd = self._task_cfg["env"]["control"]["damping"]
         self.curriculum = self._task_cfg["env"]["terrain"]["curriculum"]
+        self.randsampling = self._task_cfg["env"]["terrain"]["RandSampling"]
+        self.boxsampling = self._task_cfg["env"]["terrain"]["BoxSampling"]
+        self.gridsampling = self._task_cfg["env"]["terrain"]["GridSampling"]
       
         # env config
         self._num_envs = self._task_cfg["env"]["numEnvs"]
@@ -381,7 +383,6 @@ class ReachingTargetTask(RLTask):
         self.num_dof = self._robots.num_dof 
         self.dof_pos = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
         self.dof_vel = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
-        self.dof_acc = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
         self.dof_effort = torch.zeros((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
         self.base_pos = torch.zeros((self.num_envs, 3), dtype=torch.float, device=self.device)
         self.base_quat = torch.zeros((self.num_envs, 4), dtype=torch.float, device=self.device)
@@ -401,7 +402,7 @@ class ReachingTargetTask(RLTask):
 
         indices = env_ids.to(dtype=torch.int32)
 
-        self.update_terrain_level(env_ids)
+        # self.update_SI_level(env_ids)
         self.base_pos[env_ids] = self.base_init_state[0:3]
         self.base_pos[env_ids, 0:3] += self.env_origins[env_ids]
         self.base_pos[env_ids, 0:2] += torch_rand_float(-0.5, 0.5, (len(env_ids), 2), device=self.device)
@@ -456,73 +457,101 @@ class ReachingTargetTask(RLTask):
             self.episode_sums[key][env_ids] = 0.0
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
 
-    def update_terrain_level(self, env_ids):
-        # Only update terrain if initialization and curriculum are active.
-        if not self.init_done or not self.curriculum:
-            return
+        if not self.curriculum:
+            for i in range(self._num_envs):
+                cmds = self.sample_velocity_command(i)
+                x_cmd = cmds[0]
+                omega_cmd = cmds[1]
+                self.commands[i,0] = x_cmd
+                self.commands[i,2] = omega_cmd
 
-        # Use self.episode_sums as the cumulative performance indicator for each environment.
-        # Define thresholds (tune these values as needed)
-        threshold_low = 0.3   # indicates poor performance, make terrain easier (reduce difficulty)
-        threshold_high = 5.0  # indicates strong performance, increase terrain difficulty
 
-        # Create boolean masks based on episode sums for the selected env_ids.
-        low_mask = self.episode_sums["r1: Tracking error reward (squared errors)"][env_ids] < threshold_low
-        high_mask = self.episode_sums["r1: Tracking error reward (squared errors)"][env_ids] > threshold_high
+    # def update_SI_level(self, env_ids):
+    #     # Only update terrain if initialization and curriculum are active.
+    #     if not self.init_done or not self.curriculum:
+    #         return
+
+    #     # Use self.episode_sums as the cumulative performance indicator for each environment.
+    #     # Define thresholds (tune these values as needed)
+    #     threshold_low = 0.3   # indicates poor performance, make terrain easier (reduce difficulty)
+    #     threshold_high = 5.0  # indicates strong performance, increase terrain difficulty
+
+    #     # Create boolean masks based on episode sums for the selected env_ids.
+    #     low_mask = self.episode_sums["r1: Tracking error reward (squared errors)"][env_ids] < threshold_low
+    #     high_mask = self.episode_sums["r1: Tracking error reward (squared errors)"][env_ids] > threshold_high
         
-        # For environments with low performance, decrease the terrain difficulty.
-        if low_mask.any():
-            self.terrain_levels[env_ids][low_mask] = torch.clamp(
-                self.terrain_levels[env_ids][low_mask] - 1, min=0
-            )
+    #     # For environments with low performance, decrease the terrain difficulty.
+    #     if low_mask.any():
+    #         self.terrain_levels[env_ids][low_mask] = torch.clamp(
+    #             self.terrain_levels[env_ids][low_mask] - 1, min=0
+    #         )
         
-        # For environments with high performance, increase the terrain difficulty.
-        if high_mask.any():
-            self.terrain_levels[env_ids][high_mask] = torch.clamp(
-                self.terrain_levels[env_ids][high_mask] + 1, max=5
-            )
+    #     # For environments with high performance, increase the terrain difficulty.
+    #     if high_mask.any():
+    #         self.terrain_levels[env_ids][high_mask] = torch.clamp(
+    #             self.terrain_levels[env_ids][high_mask] + 1, max=5
+    #         )
         
-        # Finally, update the environment origins according to the new terrain level and terrain type.
-        self.env_origins[env_ids] = self.terrain_origins[self.terrain_levels[env_ids], self.terrain_types[env_ids]]
+    #     # Finally, update the environment origins according to the new terrain level and terrain type.
+    #     self.env_origins[env_ids] = self.terrain_origins[self.terrain_levels[env_ids], self.terrain_types[env_ids]]
             
     def sample_velocity_command(self, env_id: int):
         
         threshold_high = 10.0
 
-        if self.terrain_levels[env_id] == 0:
-            # Task 1: normal distribution around 0.5, with sigma in [0.01..0.1]
-            # Example: linearly scale sigma with episode_buf or a global counter
-            fraction = self.episode_sums["r1: Tracking error reward (squared errors)"][env_id] / threshold_high 
-            sigma = 0.01 + 0.09 * fraction
-            x_vel = torch.normal(mean=0.5, std=sigma, size=(1,), device=self.device).item()
-            return 0.0, max(x_vel, 0.0)  # max(x_vel, 0.0), 0.0
+        if self.curriculum:
+            if self.terrain_levels[env_id] == 0:
+                # Task 1: normal distribution around 0.5, with sigma in [0.01..0.1]
+                # Example: linearly scale sigma with episode_buf or a global counter
+                fraction = self.episode_sums["r1: Tracking error reward (squared errors)"][env_id] / threshold_high 
+                sigma = 0.01 + 0.09 * fraction
+                x_vel = torch.normal(mean=0.5, std=sigma, size=(1,), device=self.device).item()
+                return 0.0, max(x_vel, 0.0)  # max(x_vel, 0.0), 0.0
 
-        elif self.terrain_levels[env_id] == 1:
-            # Task 2: sinusoidal with mean=1, frequency + amplitude changes
-            # Suppose we let the frequency grow from 0.01..0.1 and amplitude from 0.1..1
-            fraction = self.episode_sums["r1: Tracking error reward (squared errors)"][env_id] / threshold_high 
-            freq = 0.01 + 0.09 * fraction
-            amp  = 0.1  
-            if fraction > 0.5:
-                amp = 0.1 + 0.4  * fraction
-            t = float(self.episode_step_counter) * self.dt
-            x_vel = 0.5 + amp * math.sin(freq * t)
-            return max(x_vel, 0.0), 0.0
+            elif self.terrain_levels[env_id] == 1:
+                # Task 2: sinusoidal with mean=1, frequency + amplitude changes
+                # Suppose we let the frequency grow from 0.01..0.1 and amplitude from 0.1..1
+                fraction = self.episode_sums["r1: Tracking error reward (squared errors)"][env_id] / threshold_high 
+                freq = 0.01 + 0.09 * fraction
+                amp  = 0.1  
+                if fraction > 0.5:
+                    amp = 0.1 + 0.4  * fraction
+                t = float(self.episode_step_counter) * self.dt
+                x_vel = 0.5 + amp * math.sin(freq * t)
+                return max(x_vel, 0.0), 0.0
 
-        elif self.terrain_levels[env_id] == 2:
-            # Task 3: range 0..10. Start with 0..5, then up to 10
-            # We'll do a simple sub-task switch
-            fraction = self.episode_sums["r1: Tracking error reward (squared errors)"][env_id] / threshold_high 
-            t = float(self.episode_step_counter) * self.dt
-            scale = 0.5 # m/s
-            Noise = 0.5 * fraction
-            x_vel = torch.normal(mean=0.0, std=Noise, size=(1,), device=self.device).item() + scale * t/self.max_episode_length_s
-            return max(x_vel, 0.0), 0.0
+            elif self.terrain_levels[env_id] == 2:
+                # Task 3: range 0..10. Start with 0..5, then up to 10
+                # We'll do a simple sub-task switch
+                fraction = self.episode_sums["r1: Tracking error reward (squared errors)"][env_id] / threshold_high 
+                t = float(self.episode_step_counter) * self.dt
+                scale = 0.5 # m/s
+                Noise = 0.5 * fraction
+                x_vel = torch.normal(mean=0.0, std=Noise, size=(1,), device=self.device).item() + scale * t/self.max_episode_length_s
+                return max(x_vel, 0.0), 0.0
 
-        else:
-            # Task 4 (or any default): final terrain steps/slopes, normal(0.5,0.1)
-            x_vel = torch.normal(mean=0.5, std=0.1, size=(1,), device=self.device).item()
-            return max(x_vel, 0.0), 0.0
+            else:
+                # Task 4 (or any default): final terrain steps/slopes, normal(0.5,0.1)
+                x_vel = torch.normal(mean=0.5, std=0.1, size=(1,), device=self.device).item()
+                return max(x_vel, 0.0), 0.0
+            
+        elif self.randsampling:
+            # Random command generation
+            x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], 1, device=self.device).squeeze()
+            omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], 1, device=self.device).squeeze()
+            x_vel = 0.0
+            omega = 1.0
+            return max(x_vel, 0.0), omega
+        
+        elif self.boxsampling:
+            # Box sampling
+            
+            return max(x_vel, 0.0), omega
+        
+        elif self.gridsampling:
+            # Grid sampling
+            
+            return max(x_vel, 0.0), omega
         
     def refresh_dof_state_tensors(self):
         self.dof_pos = self._robots.get_joint_positions(clone=False)
@@ -641,12 +670,13 @@ class ReachingTargetTask(RLTask):
 
         # sample velocity commands (x, y, yaw, heading)
         # Here we only do x velocity changes from sample_velocity_command
-        for i in range(self._num_envs):
-            x_cmd = self.sample_velocity_command(i)[0]
-            omega_cmd = self.sample_velocity_command(i)[1]
-            self.commands[i,0] = x_cmd
-            self.commands[i,2] = omega_cmd
-
+        if self.curriculum:
+            for i in range(self._num_envs):
+                cmds = self.sample_velocity_command(i)
+                x_cmd = cmds[0]
+                omega_cmd = cmds[1]
+                self.commands[i,0] = x_cmd
+                self.commands[i,2] = omega_cmd
 
         return self.obs_buf, self.rew_buf, self.reset_buf, self.extras
 
