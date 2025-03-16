@@ -291,16 +291,18 @@ class TorqueDistributionTask(RLTask):
     #     )
 
     def set_up_scene(self, scene) -> None:
-        self._stage = get_current_stage()
+        # self._stage = get_current_stage()
         # self.get_terrain()
         self.get_robot()
 
-        super().set_up_scene(scene, copy_from_source=True)
+        super().set_up_scene(scene)
 
         # robot view
         self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot", name="robot_view")
         scene.add(self._robots)
         scene.add(self._robots._base)
+
+        return
 
  
     def initialize_views(self, scene):
