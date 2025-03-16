@@ -75,13 +75,13 @@ TASK_CFG = {"test": False,
                                                                        "yaw": [-3.14, 3.14], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
-                                        "stiffness": 0.05, # [N*m/rad] For torque setpoint control
+                                        "stiffness": 0.005, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
                                         "actionScale": 100.0,
                                         "wheel_radius": 0.1175,
                                         },   # leave room to overshoot or corner 
                             },
-                     "sim": {"dt": 0.025,  
+                     "sim": {"dt": 0.0016667, # 600 Hz  
                              "use_gpu_pipeline": True,
                              "gravity": [0.0, 0.0, -9.81],
                              "add_ground_plane": False,
@@ -92,7 +92,7 @@ TASK_CFG = {"test": False,
                                                          "dynamic_friction": 0.85,
                                                          "restitution": 0.0},
                              "physx": {"worker_thread_count": 4,
-                                      "solver_type": 0,
+                                      "solver_type": 1,
                                       "use_gpu": True,
                                       "solver_position_iteration_count": 4,
                                       "solver_velocity_iteration_count": 4,
@@ -582,11 +582,14 @@ class TorqueDistributionTask(RLTask):
         # Compute criteria actions for each wheel:
         # Left wheels get: Kp * ( (m*v_delta/dt) - (J*omega_delta/dt) )
         # Right wheels get: Kp * ( (m*v_delta/dt) + (J*omega_delta/dt) )
-        self.ac_left = self.Kp * ((self.vehicle_mass * (self.v_delta / self.dt)) - (self.vehicle_inertia * (self.omega_delta / self.dt)))
-        self.ac_right = self.Kp * ((self.vehicle_mass * (self.v_delta / self.dt)) + (self.vehicle_inertia * (self.omega_delta / self.dt)))
+
+        # self.ac_left = self.Kp * ((self.vehicle_mass * (self.v_delta / self.dt)) - (self.vehicle_inertia * (self.omega_delta / self.dt)))
+        self.ac_left = self.Kp * (- (self.vehicle_inertia * (self.omega_delta / self.dt)))
+        # self.ac_right = self.Kp * ((self.vehicle_mass * (self.v_delta / self.dt)) + (self.vehicle_inertia * (self.omega_delta / self.dt)))
+        self.ac_right = self.Kp * (self.vehicle_inertia * (self.omega_delta / self.dt))
+
         # Build criteria action vector: [T_fl, T_rl, T_fr, T_rr]
         criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
-
 
         # Compute gamma_assist (decaying assistance) based on global_episode
         self.gamma_assist = torch.clamp(1.0 - (self.episode_count.float() / self.max_global_episodes), min=0.0).to(self.device)
