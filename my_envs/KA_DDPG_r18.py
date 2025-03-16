@@ -295,7 +295,7 @@ class TorqueDistributionTask(RLTask):
         # self.get_terrain()
         self.get_robot()
 
-        super().set_up_scene(scene, collision_filter_global_paths=["/World/terrain"], copy_from_source=True)
+        super().set_up_scene(scene, copy_from_source=True)
 
         # robot view
         self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot", name="robot_view")
