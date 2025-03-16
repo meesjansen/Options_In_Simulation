@@ -57,7 +57,7 @@ class Critic(DeterministicMixin, Model):
 # Instantiate and configure the task
 headless = True  # set headless to False for rendering
 
-env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
+env = get_env_instance(headless=headless, enable_livestream=True, enable_viewport=True)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
 from my_envs.KA_DDPG_r18 import TorqueDistributionTask, TASK_CFG
@@ -75,7 +75,7 @@ parsed_config = arg_parser.parse_args().__dict__
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 32
+TASK_CFG["task"]["env"]["numEnvs"] = 1
 
 # control
 TASK_CFG["task"]["env"]["control"]["stiffness"] = parsed_config["stiffness"]
@@ -162,7 +162,7 @@ DDPG_DEFAULT_CONFIG = {
 cfg = DDPG_DEFAULT_CONFIG.copy()
 cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device)
 cfg["gradient_steps"] = 1
-cfg["batch_size"] = 512
+cfg["batch_size"] = 4096
 cfg["discount_factor"] = 0.999
 cfg["polyak"] = 0.005
 cfg["actor_learning_rate"] = 3e-4
