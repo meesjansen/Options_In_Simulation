@@ -75,7 +75,7 @@ TASK_CFG = {"test": False,
                                                                        "yaw": [-3.14, 3.14], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
-                                        "stiffness": 0.005, # [N*m/rad] For torque setpoint control
+                                        "stiffness": 0.0005, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
                                         "actionScale": 100.0,
                                         "wheel_radius": 0.1175,
@@ -602,7 +602,8 @@ class TorqueDistributionTask(RLTask):
         self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device)
 
         # Apply the blended execution action as torques (assumed direct mapping)
-        self.torques = execution_action
+        # self.torques = execution_action
+        self.torques = criteria_action
 
 
         for _ in range(self.decimation):
