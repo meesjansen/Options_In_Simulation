@@ -75,7 +75,7 @@ TASK_CFG = {"test": False,
                                                                        "yaw": [-3.14, 3.14], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
-                                        "stiffness": 0.0005, # [N*m/rad] For torque setpoint control
+                                        "stiffness": 0.001, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
                                         "actionScale": 100.0,
                                         "wheel_radius": 0.1175,
@@ -84,7 +84,7 @@ TASK_CFG = {"test": False,
                      "sim": {"dt": 0.0016667, # 600 Hz  
                              "use_gpu_pipeline": True,
                              "gravity": [0.0, 0.0, -9.81],
-                             "add_ground_plane": False,
+                             "add_ground_plane": True,
                              "use_flatcache": True,
                              "enable_scene_query_support": False,
                              "enable_cameras": False,
