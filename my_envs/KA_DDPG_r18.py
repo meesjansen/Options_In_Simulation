@@ -291,7 +291,7 @@ class TorqueDistributionTask(RLTask):
     #     )
 
     def set_up_scene(self, scene) -> None:
-        # self._stage = get_current_stage()
+        self._stage = get_current_stage()
         # self.get_terrain()
         self.get_robot()
 
