@@ -75,7 +75,7 @@ TASK_CFG = {"test": False,
                                                                        "yaw": [-3.14, 3.14], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
-                                        "stiffness": 0.001, # [N*m/rad] For torque setpoint control
+                                        "stiffness": 0.005, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
                                         "actionScale": 100.0,
                                         "wheel_radius": 0.1175,
