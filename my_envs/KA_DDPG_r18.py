@@ -543,7 +543,7 @@ class TorqueDistributionTask(RLTask):
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
             x_vel = 0.0
-            omega = 1.0
+            omega = 0.5
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
@@ -585,9 +585,9 @@ class TorqueDistributionTask(RLTask):
         # Left wheels get: Kp * ( (m*v_delta/dt) - (J*omega_delta/dt) )
         # Right wheels get: Kp * ( (m*v_delta/dt) + (J*omega_delta/dt) )
 
-        # self.ac_left = self.Kp * ((self.vehicle_mass * (self.v_delta / self.dt)) - (self.vehicle_inertia * (self.omega_delta / self.dt)))
+        # self.ac_left = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) # - (self.vehicle_inertia * (self.omega_delta / self.dt)))
         self.ac_left = self.Kp * (- (self.vehicle_inertia * (self.omega_delta / self.dt)))
-        # self.ac_right = self.Kp * ((self.vehicle_mass * (self.v_delta / self.dt)) + (self.vehicle_inertia * (self.omega_delta / self.dt)))
+        # self.ac_right = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) # + (self.vehicle_inertia * (self.omega_delta / self.dt)))
         self.ac_right = self.Kp * (self.vehicle_inertia * (self.omega_delta / self.dt))
         print((self.vehicle_inertia * (self.omega_delta / self.dt)))
         print(self.Kp)
