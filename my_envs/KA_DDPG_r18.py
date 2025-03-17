@@ -201,6 +201,7 @@ class TorqueDistributionTask(RLTask):
             "r1: Tracking error reward (squared errors)": torch_zeros(),
             "r2: Convergence reward (squared accelerations)": torch_zeros(),
             "r3: Torque penalty (sum of squared torques)": torch_zeros(),
+            "Dense reward": torch_zeros(),
             "Sparse reward": torch_zeros(),
             "guiding reward": torch_zeros(),
               }
@@ -453,9 +454,8 @@ class TorqueDistributionTask(RLTask):
             self.extras["episode"]["rew_" + key] = (
                 torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
             )
-            print("reset_idx; episode_sum r1!: ", self.episode_sums["r1: Tracking error reward (squared errors)"])
-            print("reset_idx; r1 / max episode length: ", self.extras["episode"]["rew_r1: Tracking error reward (squared errors)"])
             self.episode_sums[key][env_ids] = 0.0
+        self.extras["episode"]["gamma assist"] = torch.mean(self.gamma_assist.float())
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
 
         if not self.curriculum:
@@ -580,16 +580,15 @@ class TorqueDistributionTask(RLTask):
         self.v_delta = self.desired_v - current_v
         self.omega_delta = self.desired_omega - current_omega
 
+
         # Compute criteria actions for each wheel:
         # Left wheels get: Kp * ( (m*v_delta/dt) - (J*omega_delta/dt) )
         # Right wheels get: Kp * ( (m*v_delta/dt) + (J*omega_delta/dt) )
-
         self.ac_left = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) # - (self.vehicle_inertia * (self.omega_delta / self.dt)))
         # self.ac_left = self.Kp * (- (self.vehicle_inertia * (self.omega_delta / self.dt)))
         self.ac_right = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) # + (self.vehicle_inertia * (self.omega_delta / self.dt)))
         # self.ac_right = self.Kp * (self.vehicle_inertia * (self.omega_delta / self.dt))
-        print((self.vehicle_inertia * (self.omega_delta / self.dt)))
-        print(self.Kp)
+
 
         # Build criteria action vector: [T_fl, T_rl, T_fr, T_rr]
         criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
@@ -619,14 +618,14 @@ class TorqueDistributionTask(RLTask):
                 SimulationContext.step(self.world, render=False)
 
         print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
-        print("pre_physics; desired_v: ", self.desired_v[0])
-        print("pre_physics; desired_omega: ", self.desired_omega[0])
         print("pre_physics; current_v: ", current_v[0])
         print("pre_physics; current_omega: ", current_omega[0])
         print("pre_physics; expert torques left: ", self.ac_left[0])
         print("pre_physics; expert torques right: ", self.ac_right[0])
         print("pre_physics; gamma_assist: ", self.gamma_assist[0])
         print("pre_physics; executed torques pre clip: ", self.torques[0])
+        print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
+
           
     def post_physics_step(self):
         self.progress_buf[:] += 1
@@ -649,13 +648,9 @@ class TorqueDistributionTask(RLTask):
             env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
             if len(env_ids) > 0:
                 self.reset_idx(env_ids)
-            
-            print("post_physics self.commands[0,0]", self.commands[0,0])
-            print("post_physics self.commands[0,2]", self.commands[0,2])
-            self.get_observations()
-            print("post observatiopns self.commands[0,0]", self.commands[0,0])
-            print("post observatiopns self.commands[0,2]", self.commands[0,2])
 
+            self.get_observations()
+          
         # prepare quantities
         self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 0:3])
         self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.base_velocities[:, 3:6])
@@ -757,17 +752,17 @@ class TorqueDistributionTask(RLTask):
         
         self.rew_buf += self.rew_scales["termination"] * self.reset_buf * ~self.timeout_buf
 
-        self.episode_sums["r1: Tracking error reward (squared errors)"] += r1
-        self.episode_sums["r2: Convergence reward (squared accelerations)"] += r2
-        self.episode_sums["r3: Torque penalty (sum of squared torques)"] += r3
+        self.episode_sums["r1: Tracking error reward (squared errors)"] += w1 * r1
+        self.episode_sums["r2: Convergence reward (squared accelerations)"] += w2 * r2
+        self.episode_sums["r3: Torque penalty (sum of squared torques)"] += w3 * r3
+        self.episode_sums["Dense reward"] += rdense
         self.episode_sums["Sparse reward"] += sparse_reward
         self.episode_sums["guiding reward"] += self.guiding_reward
         
-        print("metrics; r1 episode_sums value for level update threshold", self.episode_sums["r1: Tracking error reward (squared errors)"][0])
-        print("metrics; terrain level:", self.terrain_levels[0])
-        print("metrics; r1: Tracking error reward (squared errors):", r1[0])
-        print("metrics: r2: Convergence reward (squared accelerations):", r2[0])
-        print("metrics: r3: Torque penalty (sum of squared torques):", r3[0])
+        print("metrics; r1: Tracking error reward (squared errors):", w1 * r1[0])
+        print("metrics: r2: Convergence reward (squared accelerations):", w2 * r2[0])
+        print("metrics: r3: Torque penalty (sum of squared torques):", w3 * r3[0])
+        print("metrics: Dense reward:", rdense[0])
         print("metrics: Sparse reward:", sparse_reward[0])
         print("metrics: guiding reward:", self.guiding_reward[0])
 
