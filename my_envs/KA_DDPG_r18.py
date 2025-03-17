@@ -68,14 +68,14 @@ TASK_CFG = {"test": False,
                             "learn" : {"heightMeasurementScale": 1.0,
                                        "terminalReward": 0.0,
                                        "episodeLength_s": 15.0,},
-                                       "randomCommandVelocityRanges": {"linear_x":[0.0, 1.0], # [m/s]
+                                       "randomCommandVelocityRanges": {"linear_x":[0.0, 4.0], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
-                                                                       "yaw": [-2.0, 2.0], # [rad/s]
+                                                                       "yaw": [0.0, 4.0], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 100.0,
+                                        "actionScale": 250.0,
                                         "wheel_radius": 0.1175,
                                         },   # leave room to overshoot or corner 
                             },
@@ -183,7 +183,7 @@ class TorqueDistributionTask(RLTask):
 
         RLTask.__init__(self, name, env)
 
-        self.bounds = torch.tensor([-20.0, 20.0, -20.0, 20.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-50.0, 50.0, -50.0, 50.0], device=self.device, dtype=torch.float)
 
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
         self.episode_count = torch.zeros(self.num_envs, dtype=torch.long)
@@ -545,7 +545,7 @@ class TorqueDistributionTask(RLTask):
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
             x_vel = 4.0
-            omega = 0.0
+            omega = 0.5
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
@@ -621,13 +621,14 @@ class TorqueDistributionTask(RLTask):
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, -100.0, 100.0)
+                self.wheel_torqs = torch.clip(self.torques, -250.0, 250.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
                 SimulationContext.step(self.world, render=False)
 
         print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
+        print("pre_physics; desired_v: ", self.desired_v[0])
         print("pre_physics; current_v: ", current_v[0])
         print("pre_physics; desired_omega: ", self.desired_omega[0])
         print("pre_physics; current_omega: ", current_omega[0])
