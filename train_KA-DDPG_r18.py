@@ -75,7 +75,7 @@ parsed_config = arg_parser.parse_args().__dict__
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 512
+TASK_CFG["task"]["env"]["numEnvs"] = 128
 
 # control
 TASK_CFG["task"]["env"]["control"]["stiffness"] = parsed_config["stiffness"]
