@@ -183,7 +183,7 @@ class TorqueDistributionTask(RLTask):
 
         RLTask.__init__(self, name, env)
 
-        self.bounds = torch.tensor([-1000.0, 1000.0, -1000.0, 1000.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-20.0, 20.0, -20.0, 20.0], device=self.device, dtype=torch.float)
 
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
         self.episode_count = torch.zeros(self.num_envs, dtype=torch.long)
@@ -544,8 +544,8 @@ class TorqueDistributionTask(RLTask):
             # Random command generation
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
-            x_vel = 4.0
-            omega = 0.5
+            x_vel = 0.5
+            omega = 1.0
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
