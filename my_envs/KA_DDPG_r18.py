@@ -612,7 +612,7 @@ class TorqueDistributionTask(RLTask):
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, -250.0, 250.0)
+                self.wheel_torqs = torch.clip(self.torques, -100.0, 100.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
