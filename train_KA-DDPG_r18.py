@@ -64,7 +64,7 @@ from my_envs.KA_DDPG_r18 import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
-arg_parser.add_argument("--stiffness", type=float, default=0.1)
+arg_parser.add_argument("--stiffness", type=float, default=0.05)
 arg_parser.add_argument("--damping", type=float, default=0.005)
 arg_parser.add_argument("--static_friction", type=float, default=0.85)
 arg_parser.add_argument("--dynamic_friction", type=float, default=0.85)
