@@ -175,7 +175,7 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05     # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 350
+        self.max_global_episodes = 200
         # ---------------------------------------------------------------------------
         
 
