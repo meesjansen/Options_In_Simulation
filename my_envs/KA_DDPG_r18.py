@@ -70,7 +70,7 @@ TASK_CFG = {"test": False,
                                        "episodeLength_s": 15.0,},
                                        "randomCommandVelocityRanges": {"linear_x":[0.0, 1.0], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
-                                                                       "yaw": [-1.0, 1.0], # [rad/s]
+                                                                       "yaw": [-2.0, 2.0], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
@@ -544,8 +544,8 @@ class TorqueDistributionTask(RLTask):
             # Random command generation
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
-            x_vel = 0.0
-            omega = 3.0
+            x_vel = 4.0
+            omega = 0.0
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
