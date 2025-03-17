@@ -400,11 +400,11 @@ class TorqueDistributionTask(RLTask):
         indices = torch.arange(self._num_envs, dtype=torch.int64, device=self.device)
         self.reset_idx(indices)
         self.init_done = True
-
-
-    def reset_idx(self, env_ids):
+        
         self.episode_count += 1
 
+    def reset_idx(self, env_ids):
+        
         indices = env_ids.to(dtype=torch.int32)
 
         # self.update_SI_level(env_ids)
