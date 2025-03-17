@@ -544,7 +544,7 @@ class TorqueDistributionTask(RLTask):
             # Random command generation
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
-            x_vel = 0.0
+            x_vel = 1.0
             omega = 1.0
             return max(x_vel, 0.0), omega
         
@@ -584,7 +584,7 @@ class TorqueDistributionTask(RLTask):
         self.omega_delta = self.desired_omega - current_omega
 
 
-        self.Kp_omega = 0.1
+        self.Kp_omega = 0.05
         # Compute criteria actions for each wheel:
         # Left wheels get: Kp * ( (m*v_delta/dt) - (J*omega_delta/dt) )
         # Right wheels get: Kp * ( (m*v_delta/dt) + (J*omega_delta/dt) )
