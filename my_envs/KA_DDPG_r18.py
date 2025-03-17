@@ -68,9 +68,9 @@ TASK_CFG = {"test": False,
                             "learn" : {"heightMeasurementScale": 1.0,
                                        "terminalReward": 0.0,
                                        "episodeLength_s": 15.0,},
-                                       "randomCommandVelocityRanges": {"linear_x":[0.0, 1.5], # [m/s]
+                                       "randomCommandVelocityRanges": {"linear_x":[0.0, 1.0], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
-                                                                       "yaw": [-3.14, 3.14], # [rad/s]
+                                                                       "yaw": [-1.0, 1.0], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
@@ -175,7 +175,7 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05     # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 200
+        self.max_global_episodes = 200.0
         # ---------------------------------------------------------------------------
         
 
@@ -544,8 +544,8 @@ class TorqueDistributionTask(RLTask):
             # Random command generation
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
-            x_vel = 1.0
-            omega = 1.0
+            x_vel = 0.0
+            omega = 3.0
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
