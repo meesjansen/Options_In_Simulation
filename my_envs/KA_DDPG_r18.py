@@ -33,7 +33,7 @@ TASK_CFG = {"test": False,
             "enable_livestream": True,
             "warp": False,
             "seed": 42,
-            "task": {"name": "ReachingFood",
+            "task": {"name": "TorqueDistributionTask",
                      "physics_engine": "physx",
                      "env": {"numEnvs": 64, 
                              "envSpacing": 3.0,
@@ -61,8 +61,6 @@ TASK_CFG = {"test": False,
                                         "mapWidth": 10.0,
                                         "numLevels": 6,
                                         "numTerrains": 2,
-                                        # terrain types: [ smooth slope, rough slope, stairs up, stairs down, discrete]
-                                        "terrainProportions": [0.35, 0.55, 0.7, 0.85, 1.0],
                                         # tri mesh only:
                                         "slopeTreshold": 0.5,
                                         },
@@ -75,7 +73,7 @@ TASK_CFG = {"test": False,
                                                                        "yaw": [-3.14, 3.14], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
-                                        "stiffness": 500.0, # [N*m/rad] For torque setpoint control
+                                        "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
                                         "actionScale": 100.0,
                                         "wheel_radius": 0.1175,
@@ -85,6 +83,7 @@ TASK_CFG = {"test": False,
                              "use_gpu_pipeline": True,
                              "gravity": [0.0, 0.0, -9.81],
                              "add_ground_plane": True,
+                             "add_distant_light": True,
                              "use_flatcache": True,
                              "enable_scene_query_support": False,
                              "enable_cameras": False,
@@ -92,7 +91,7 @@ TASK_CFG = {"test": False,
                                                          "dynamic_friction": 0.85,
                                                          "restitution": 0.0},
                              "physx": {"worker_thread_count": 4,
-                                      "solver_type": 1,
+                                      "solver_type": 0, # 0: PGS, 1: TGS
                                       "use_gpu": True,
                                       "solver_position_iteration_count": 4,
                                       "solver_velocity_iteration_count": 4,
