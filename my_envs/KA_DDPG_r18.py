@@ -186,6 +186,7 @@ class TorqueDistributionTask(RLTask):
         self.bounds = torch.tensor([-20.0, 20.0, -20.0, 20.0], device=self.device, dtype=torch.float)
 
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
+        self.episode_count = torch.zeros(self.num_envs, dtype=torch.long)
         self.gamma_assist = torch.ones(self.num_envs, dtype=torch.float)
 
         self.linear_acc = torch.zeros((self.num_envs, 1), device=self.device)
@@ -402,6 +403,8 @@ class TorqueDistributionTask(RLTask):
 
 
     def reset_idx(self, env_ids):
+        self.episode_count += 1
+
         indices = env_ids.to(dtype=torch.int32)
 
         # self.update_SI_level(env_ids)
@@ -595,14 +598,14 @@ class TorqueDistributionTask(RLTask):
         criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
 
         # Compute gamma_assist (decaying assistance) based on global_episode
-        self.gamma_assist = torch.clamp(1.0 - (self.episode_buf.float() / self.max_global_episodes), min=0.0).to(self.device)
+        self.gamma_assist = torch.clamp(1.0 - (self.episode_count.float() / self.max_global_episodes), min=0.0).to(self.device)
 
         # Compute execution action: blend agent action and criteria action
         gamma = self.gamma_assist.view(-1, 1).to(self.device)
         execution_action = (torch.tensor(1.0, device=self.device) - gamma) * self.actions * self.action_scale + gamma * criteria_action
 
         print("pre_physics; gamma_assist: ", self.gamma_assist[0])
-        print("pre_physics; self.episode_buf.float(): ", self.episode_buf.float()[0])
+        print("pre_physics; self.episode_count.float(): ", self.episode_count.float()[0])
         print("pre_physics; gamma: ", gamma[0])
 
 
