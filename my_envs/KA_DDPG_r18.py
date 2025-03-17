@@ -67,7 +67,7 @@ TASK_CFG = {"test": False,
                             "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed      
                             "learn" : {"heightMeasurementScale": 1.0,
                                        "terminalReward": 0.0,
-                                       "episodeLength_s": 10.0,},
+                                       "episodeLength_s": 15.0,},
                                        "randomCommandVelocityRanges": {"linear_x":[0.0, 1.5], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
                                                                        "yaw": [-3.14, 3.14], # [rad/s]
@@ -167,6 +167,7 @@ class TorqueDistributionTask(RLTask):
             shape=(self._num_actions,),
             dtype=np.float32
         )
+
         # ---------------------------------------------------------------------------
         # Add parameters for the low-fidelity controller (criteria action)
         # You can also move these to the config if desired.
@@ -542,8 +543,8 @@ class TorqueDistributionTask(RLTask):
             # Random command generation
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
-            x_vel = 1.0
-            omega = 0.0
+            x_vel = 0.0
+            omega = 0.1
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
@@ -585,10 +586,10 @@ class TorqueDistributionTask(RLTask):
         # Compute criteria actions for each wheel:
         # Left wheels get: Kp * ( (m*v_delta/dt) - (J*omega_delta/dt) )
         # Right wheels get: Kp * ( (m*v_delta/dt) + (J*omega_delta/dt) )
-        self.ac_left = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) # - (self.vehicle_inertia * (self.omega_delta / self.dt)))
-        # self.ac_left = self.Kp * (- (self.vehicle_inertia * (self.omega_delta / self.dt)))
-        self.ac_right = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) # + (self.vehicle_inertia * (self.omega_delta / self.dt)))
-        # self.ac_right = self.Kp * (self.vehicle_inertia * (self.omega_delta / self.dt))
+        # self.ac_left = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) # - (self.vehicle_inertia * (self.omega_delta / self.dt)))
+        self.ac_left = self.Kp * (- (self.vehicle_inertia * (self.omega_delta / self.dt)))
+        # self.ac_right = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) # + (self.vehicle_inertia * (self.omega_delta / self.dt)))
+        self.ac_right = self.Kp * (self.vehicle_inertia * (self.omega_delta / self.dt))
 
 
         # Build criteria action vector: [T_fl, T_rl, T_fr, T_rr]
@@ -600,6 +601,12 @@ class TorqueDistributionTask(RLTask):
         # Compute execution action: blend agent action and criteria action
         gamma = self.gamma_assist.view(-1, 1).to(self.device)
         execution_action = (torch.tensor(1.0, device=self.device) - gamma) * self.actions * self.action_scale + gamma * criteria_action
+
+        print("pre_physics; gamma_assist: ", self.gamma_assist[0])
+        print("pre_physics; self.episode_count.float(): ", self.episode_count.float()[0])
+        print("pre_physics; gamma: ", gamma[0])
+
+
 
         # Compute guiding reward: negative Euclidean distance between agent and criteria actions
         self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device)
@@ -623,7 +630,6 @@ class TorqueDistributionTask(RLTask):
         print("pre_physics; current_omega: ", current_omega[0])
         print("pre_physics; expert torques left: ", self.ac_left[0])
         print("pre_physics; expert torques right: ", self.ac_right[0])
-        print("pre_physics; gamma_assist: ", self.gamma_assist[0])
         print("pre_physics; executed torques pre clip: ", self.torques[0])
         print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
 
@@ -733,9 +739,9 @@ class TorqueDistributionTask(RLTask):
         # r2: Convergence reward (squared accelerations)
         r2 = self.linear_acc ** 2 + self.angular_acc ** 2
         # r3: Torque penalty (sum of squared torques)
-        r3 = torch.sum(self.torques ** 2, dim=1)
+        r3 = torch.sum(self.wheel_torqs ** 2, dim=1)
         # Weight factors (tunable)
-        w1, w2, w3 = -1.0, -0.1, -0.01
+        w1, w2, w3 = -20.0, -0.01, -0.002
         rdense = w1 * r1 + w2 * r2 + w3 * r3
 
         # Sparse reward: bonus if tracking errors are very low
@@ -765,7 +771,9 @@ class TorqueDistributionTask(RLTask):
         print("metrics: r3: Torque penalty (sum of squared torques):", w3 * r3[0])
         print("metrics: Dense reward:", rdense[0])
         print("metrics: Sparse reward:", sparse_reward[0])
+        print("metrics: observed reward:", observed_reward[0])
         print("metrics: guiding reward:", self.guiding_reward[0])
+        print("metrics: final reward:", self.rew_buf[0])
 
         # Update when logging other components to wandb
         self.reward_components = {
