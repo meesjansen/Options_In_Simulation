@@ -709,8 +709,7 @@ class TorqueDistributionTask(RLTask):
             torch.ones_like(self.timeout_buf),
             torch.zeros_like(self.timeout_buf),
         ) 
-
-
+        
         # Calculate the projected gravity in the robot's local frame
         projected_gravity = quat_apply(self.base_quat, self.gravity_vec)
 
@@ -725,6 +724,10 @@ class TorqueDistributionTask(RLTask):
                         ((self.base_pos[:, 1] - self.env_origins[:, 1]) < self.bounds[2]) | ((self.base_pos[:, 1] - self.env_origins[:, 1]) > self.bounds[3])
         self.reset_buf = torch.where(self.out_of_bounds, torch.ones_like(self.reset_buf), self.reset_buf)
 
+        num_timeout = torch.count_nonzero(self.timeout_buf).item()
+        num_has_fallen = torch.count_nonzero(self.has_fallen).item()
+        num_out_of_bounds = torch.count_nonzero(self.out_of_bounds).item()
+        print(f"Nonzero timeout_buf: {num_timeout}, has_fallen: {num_has_fallen}, out_of_bounds: {num_out_of_bounds}")
 
     def calculate_metrics(self) -> None:
         
