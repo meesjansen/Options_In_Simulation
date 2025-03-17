@@ -21,7 +21,7 @@ from omni.isaac.core.prims import GeometryPrim, GeometryPrimView
 from pxr import PhysxSchema, UsdPhysics
 
 
-from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10 
+from my_robots.origin_v18 import AvularOrigin_v10 as Robot_v10 
 
 from my_utils.origin_terrain_generator import *
 from my_utils.terrain_utils import *
@@ -544,7 +544,7 @@ class TorqueDistributionTask(RLTask):
             # Random command generation
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
-            x_vel = 0.5
+            x_vel = 0.0
             omega = 1.0
             return max(x_vel, 0.0), omega
         
