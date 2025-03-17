@@ -190,7 +190,6 @@ class Trainer:
                 rew_slip_longitudinal = self.env.task.reward_components["rew_slip_longitudinal"]
 
                 actions = self.env.task.wheel_torqs / self.env.task.action_scale
-                print(f"recorded actions: {actions}")
                 
                 # render scene
                 if not self.headless:

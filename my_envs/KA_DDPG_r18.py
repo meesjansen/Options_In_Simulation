@@ -583,13 +583,14 @@ class TorqueDistributionTask(RLTask):
         self.omega_delta = self.desired_omega - current_omega
 
 
+        self.Kp_omega = 1.0
         # Compute criteria actions for each wheel:
         # Left wheels get: Kp * ( (m*v_delta/dt) - (J*omega_delta/dt) )
         # Right wheels get: Kp * ( (m*v_delta/dt) + (J*omega_delta/dt) )
         # self.ac_left = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) # - (self.vehicle_inertia * (self.omega_delta / self.dt)))
-        self.ac_left = self.Kp * (- (self.vehicle_inertia * (self.omega_delta / self.dt)))
+        self.ac_left = self.Kp_omega * (- (self.vehicle_inertia * (self.omega_delta / self.dt)))
         # self.ac_right = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) # + (self.vehicle_inertia * (self.omega_delta / self.dt)))
-        self.ac_right = self.Kp * (self.vehicle_inertia * (self.omega_delta / self.dt))
+        self.ac_right = self.Kp_omega * (self.vehicle_inertia * (self.omega_delta / self.dt))
 
 
         # Build criteria action vector: [T_fl, T_rl, T_fr, T_rr]
@@ -627,6 +628,7 @@ class TorqueDistributionTask(RLTask):
 
         print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
         print("pre_physics; current_v: ", current_v[0])
+        print("pre_physics; desired_omega: ", self.desired_omega[0])
         print("pre_physics; current_omega: ", current_omega[0])
         print("pre_physics; expert torques left: ", self.ac_left[0])
         print("pre_physics; expert torques right: ", self.ac_right[0])
