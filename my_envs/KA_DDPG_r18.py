@@ -737,7 +737,7 @@ class TorqueDistributionTask(RLTask):
         num_timeout = torch.count_nonzero(self.timeout_buf).item()
         num_has_fallen = torch.count_nonzero(self.has_fallen).item()
         num_out_of_bounds = torch.count_nonzero(self.out_of_bounds).item()
-        # print(f"Nonzero timeout_buf: {num_timeout}, has_fallen: {num_has_fallen}, out_of_bounds: {num_out_of_bounds}")
+        print(f"Nonzero timeout_buf: {num_timeout}, has_fallen: {num_has_fallen}, out_of_bounds: {num_out_of_bounds}")
 
     def calculate_metrics(self) -> None:
         

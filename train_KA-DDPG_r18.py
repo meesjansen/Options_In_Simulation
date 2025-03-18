@@ -64,7 +64,7 @@ from my_envs.KA_DDPG_r18 import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
-arg_parser.add_argument("--stiffness", type=float, default=0.005)
+arg_parser.add_argument("--stiffness", type=float, default=0.001)
 arg_parser.add_argument("--damping", type=float, default=0.005)
 arg_parser.add_argument("--static_friction", type=float, default=1.0)
 arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
@@ -75,7 +75,7 @@ parsed_config = arg_parser.parse_args().__dict__
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 1
+TASK_CFG["task"]["env"]["numEnvs"] = 64
 
 # control
 TASK_CFG["task"]["env"]["control"]["stiffness"] = parsed_config["stiffness"]
