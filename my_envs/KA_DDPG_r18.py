@@ -75,7 +75,7 @@ TASK_CFG = {"test": False,
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 200.0,
+                                        "actionScale": 100.0,
                                         "wheel_radius": 0.1175,
                                         },   # leave room to overshoot or corner 
                             },
@@ -296,7 +296,7 @@ class TorqueDistributionTask(RLTask):
         self._stage = get_current_stage()
         # self.get_terrain()
         self.get_robot()
-        print_stage_prim_paths(self._stage)
+        # print_stage_prim_paths(self._stage)
         super().set_up_scene(scene)
 
         # robot view
@@ -544,8 +544,8 @@ class TorqueDistributionTask(RLTask):
             # Random command generation
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
-            x_vel = 0.0
-            omega = 1.0
+            # x_vel = 0.0
+            omega = 0.0
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
@@ -604,9 +604,9 @@ class TorqueDistributionTask(RLTask):
         gamma = self.gamma_assist.view(-1, 1).to(self.device)
         execution_action = (torch.tensor(1.0, device=self.device) - gamma) * self.actions * self.action_scale + gamma * criteria_action
 
-        print("pre_physics; gamma_assist: ", self.gamma_assist[0])
-        print("pre_physics; self.episode_count.float(): ", self.episode_count.float()[0])
-        print("pre_physics; gamma: ", gamma[0])
+        # print("pre_physics; gamma_assist: ", self.gamma_assist[0])
+        # print("pre_physics; self.episode_count.float(): ", self.episode_count.float()[0])
+        # print("pre_physics; gamma: ", gamma[0])
 
 
 
@@ -614,38 +614,38 @@ class TorqueDistributionTask(RLTask):
         self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device)
 
         # Apply the blended execution action as torques (assumed direct mapping)
-        # self.torques = execution_action
-        self.torques = criteria_action
+        self.torques = execution_action
+        # self.torques = criteria_action
+
 
         # Retrieve the ordered DOF names from your RobotView
-        dof_names = self._robots.dof_names
-
-        # Print the index and name for each DOF
-        for i, name in enumerate(dof_names):
-            print(f"DOF index: {self._robots.get_dof_index(name)}, name: {name}")
+        # dof_names = self._robots.dof_names
+        # # Print the index and name for each DOF
+        # for i, name in enumerate(dof_names):
+        #     print(f"DOF index: {self._robots.get_dof_index(name)}, name: {name}")
 
 
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, -1000.0, 1000.0)
+                self.wheel_torqs = torch.clip(self.torques, -100.0, 100.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
                 SimulationContext.step(self.world, render=False)
 
-        print("pre_physics; applied efforts: ", self._robots.get_applied_joint_efforts(clone=False))
-        print("pre_physics; actions, still x100 for self.action_scale: ", self._robots.get_joint_velocities(clone=False))
+        # print("pre_physics; applied efforts: ", self._robots.get_applied_joint_efforts(clone=False))
+        # print("pre_physics; actions, still x100 for self.action_scale: ", self._robots.get_joint_velocities(clone=False))
 
-        print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
+        # print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
         print("pre_physics; desired_v: ", self.desired_v[0])
         print("pre_physics; current_v: ", current_v[0])
         print("pre_physics; desired_omega: ", self.desired_omega[0])
         print("pre_physics; current_omega: ", current_omega[0])
-        print("pre_physics; expert torques left: ", self.ac_left[0])
-        print("pre_physics; expert torques right: ", self.ac_right[0])
-        print("pre_physics; executed torques pre clip: ", self.torques[0])
-        print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
+        # print("pre_physics; expert torques left: ", self.ac_left[0])
+        # print("pre_physics; expert torques right: ", self.ac_right[0])
+        # print("pre_physics; executed torques pre clip: ", self.torques[0])
+        # print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
 
           
     def post_physics_step(self):
@@ -737,7 +737,7 @@ class TorqueDistributionTask(RLTask):
         num_timeout = torch.count_nonzero(self.timeout_buf).item()
         num_has_fallen = torch.count_nonzero(self.has_fallen).item()
         num_out_of_bounds = torch.count_nonzero(self.out_of_bounds).item()
-        print(f"Nonzero timeout_buf: {num_timeout}, has_fallen: {num_has_fallen}, out_of_bounds: {num_out_of_bounds}")
+        # print(f"Nonzero timeout_buf: {num_timeout}, has_fallen: {num_has_fallen}, out_of_bounds: {num_out_of_bounds}")
 
     def calculate_metrics(self) -> None:
         
@@ -782,14 +782,14 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Sparse reward"] += sparse_reward
         self.episode_sums["guiding reward"] += self.guiding_reward
         
-        print("metrics; r1: Tracking error reward (squared errors):", w1 * r1[0])
-        print("metrics: r2: Convergence reward (squared accelerations):", w2 * r2[0])
-        print("metrics: r3: Torque penalty (sum of squared torques):", w3 * r3[0])
-        print("metrics: Dense reward:", rdense[0])
-        print("metrics: Sparse reward:", sparse_reward[0])
-        print("metrics: observed reward:", observed_reward[0])
-        print("metrics: guiding reward:", self.guiding_reward[0])
-        print("metrics: final reward:", self.rew_buf[0])
+        # print("metrics; r1: Tracking error reward (squared errors):", w1 * r1[0])
+        # print("metrics: r2: Convergence reward (squared accelerations):", w2 * r2[0])
+        # print("metrics: r3: Torque penalty (sum of squared torques):", w3 * r3[0])
+        # print("metrics: Dense reward:", rdense[0])
+        # print("metrics: Sparse reward:", sparse_reward[0])
+        # print("metrics: observed reward:", observed_reward[0])
+        # print("metrics: guiding reward:", self.guiding_reward[0])
+        # print("metrics: final reward:", self.rew_buf[0])
 
         # Update when logging other components to wandb
         self.reward_components = {
@@ -814,10 +814,10 @@ class TorqueDistributionTask(RLTask):
 
         # New observation: 4D vector per environment
         self.obs_buf = torch.cat([self.v_delta.unsqueeze(1), self.omega_delta.unsqueeze(1), self.linear_acc.unsqueeze(1), self.angular_acc.unsqueeze(1)], dim=1)
-        print("self.v_delta[0]", self.v_delta[0])
-        print("self.omega_delta[0]", self.omega_delta[0])
-        print("self.linear_acc[0]", self.linear_acc[0])
-        print("self.angular_acc[0]", self.angular_acc[0])
+        # print("self.v_delta[0]", self.v_delta[0])
+        # print("self.omega_delta[0]", self.omega_delta[0])
+        # print("self.linear_acc[0]", self.linear_acc[0])
+        # print("self.angular_acc[0]", self.angular_acc[0])
 
                           
         return {self._robots.name: {"obs_buf": self.obs_buf}}
