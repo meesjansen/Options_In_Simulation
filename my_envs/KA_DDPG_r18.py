@@ -462,7 +462,7 @@ class TorqueDistributionTask(RLTask):
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
 
         if not self.curriculum:
-            for i in range(self._num_envs):
+            for i in env_ids:
                 cmds = self.sample_velocity_command(i)
                 x_cmd = cmds[0]
                 omega_cmd = cmds[1]
