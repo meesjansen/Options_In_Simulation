@@ -75,7 +75,7 @@ TASK_CFG = {"test": False,
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 250.0,
+                                        "actionScale": 200.0,
                                         "wheel_radius": 0.1175,
                                         },   # leave room to overshoot or corner 
                             },
@@ -138,7 +138,7 @@ class RobotView(ArticulationView):
         super().__init__(prim_paths_expr=prim_paths_expr, name=name, reset_xform_properties=False)
 
         self._base = RigidPrimView(
-            prim_paths_expr="/World/envs/.*/robot/main_body",
+            prim_paths_expr="/World/envs/.*/robot/base_link",
             name="base_view",
             reset_xform_properties=False,
             track_contact_forces=track_contact_forces,
@@ -595,7 +595,7 @@ class TorqueDistributionTask(RLTask):
 
 
         # Build criteria action vector: [T_fl, T_rl, T_fr, T_rr]
-        criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
+        criteria_action = torch.stack([self.ac_left, self.ac_right, self.ac_left, self.ac_right], dim=1).to(self.device)
 
         # Compute gamma_assist (decaying assistance) based on global_episode
         self.gamma_assist = torch.clamp(1.0 - (self.episode_count.float() / self.max_global_episodes), min=0.0).to(self.device)
@@ -621,7 +621,7 @@ class TorqueDistributionTask(RLTask):
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, -250.0, 250.0)
+                self.wheel_torqs = torch.clip(self.torques, -200.0, 200.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
