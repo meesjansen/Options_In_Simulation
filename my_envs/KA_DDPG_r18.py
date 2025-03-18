@@ -634,7 +634,8 @@ class TorqueDistributionTask(RLTask):
 
                 SimulationContext.step(self.world, render=False)
 
-        print("pre_physics; gamma_assist: ", self._robots.get_applied_joint_efforts())
+        print("pre_physics; applied efforts: ", self._robots.get_applied_joint_efforts(clone=False))
+        print("pre_physics; actions, still x100 for self.action_scale: ", self._robots.get_joint_velocities(clone=False))
 
         print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
         print("pre_physics; desired_v: ", self.desired_v[0])
