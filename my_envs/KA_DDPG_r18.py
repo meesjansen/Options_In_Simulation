@@ -622,7 +622,7 @@ class TorqueDistributionTask(RLTask):
 
         # Print the index and name for each DOF
         for i, name in enumerate(dof_names):
-            print(f"DOF index: {self._robots.get_dof_index("name")}, name: {name}")
+            print(f"DOF index: {self._robots.get_dof_index(name)}, name: {name}")
 
 
         for _ in range(self.decimation):
