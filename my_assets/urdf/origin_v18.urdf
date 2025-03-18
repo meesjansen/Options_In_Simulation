@@ -137,7 +137,7 @@
   </link>
 
 
-  <link name="camera_link">
+  <!-- <link name="camera_link">
     <inertial>
       <mass value="0.035"/>
       <inertia ixx="0.001" ixy="0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
@@ -148,7 +148,7 @@
         <box size="0.008 0.13 0.022"/>
       </geometry>
     </collision>
-  </link>
+  </link> -->
 
   <joint type="continuous" name="left_front_wheel_joint">
     <origin xyz="0.205 0.3 0.056" rpy="-1.5707 0 0"/>
@@ -194,11 +194,11 @@
     <parent link="ouster_base"/>
   </joint>
 
-  <joint type="fixed" name="realsense_joint">
+  <!-- <joint type="fixed" name="realsense_joint">
     <origin xyz="0.32 0.03 0.1" rpy="0 0 0"/>
     <child link="camera_link"/>
     <parent link="main_body"/>
-  </joint>
+  </joint> -->
 
 
 </robot>

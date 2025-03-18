@@ -21,7 +21,7 @@ from omni.isaac.core.prims import GeometryPrim, GeometryPrimView
 from pxr import PhysxSchema, UsdPhysics
 
 
-from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10 
+from my_robots.origin_v18 import AvularOrigin_v10 as Robot_v10 
 
 from my_utils.origin_terrain_generator import *
 from my_utils.terrain_utils import *
@@ -35,7 +35,7 @@ TASK_CFG = {"test": False,
             "seed": 42,
             "task": {"name": "TorqueDistributionTask",
                      "physics_engine": "physx",
-                     "env": {"numEnvs": 64, 
+                     "env": {"numEnvs": 16, 
                              "envSpacing": 3.0,
                              "episodeLength": 500,
                              "enableDebugVis": False,
@@ -68,9 +68,9 @@ TASK_CFG = {"test": False,
                             "learn" : {"heightMeasurementScale": 1.0,
                                        "terminalReward": 0.0,
                                        "episodeLength_s": 15.0,},
-                                       "randomCommandVelocityRanges": {"linear_x":[0.0, 4.0], # [m/s]
+                                       "randomCommandVelocityRanges": {"linear_x":[0.0, 1.0], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
-                                                                       "yaw": [0.0, 4.0], # [rad/s]
+                                                                       "yaw": [0.0, 1.0], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
@@ -79,7 +79,7 @@ TASK_CFG = {"test": False,
                                         "wheel_radius": 0.1175,
                                         },   # leave room to overshoot or corner 
                             },
-                     "sim": {"dt": 0.0016667, # 600 Hz  
+                     "sim": {"dt": 0.0016667, # 600 Hz + PGS for skid steer dynamics
                              "use_gpu_pipeline": True,
                              "gravity": [0.0, 0.0, -9.81],
                              "add_ground_plane": True,
@@ -87,8 +87,8 @@ TASK_CFG = {"test": False,
                              "use_flatcache": True,
                              "enable_scene_query_support": False,
                              "enable_cameras": False,
-                             "default_physics_material": {"static_friction": 0.85,
-                                                         "dynamic_friction": 0.85,
+                             "default_physics_material": {"static_friction": 1.0,
+                                                         "dynamic_friction": 1.0,
                                                          "restitution": 0.0},
                              "physx": {"worker_thread_count": 4,
                                       "solver_type": 0, # 0: PGS, 1: TGS
@@ -171,7 +171,7 @@ class TorqueDistributionTask(RLTask):
         # ---------------------------------------------------------------------------
         # Add parameters for the low-fidelity controller (criteria action)
         # You can also move these to the config if desired.
-        self.vehicle_mass = 25.0      # [kg]
+        self.vehicle_mass = 26.135      # [kg]
         self.vehicle_inertia = 1.05     # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
@@ -183,7 +183,7 @@ class TorqueDistributionTask(RLTask):
 
         RLTask.__init__(self, name, env)
 
-        self.bounds = torch.tensor([-20.0, 20.0, -20.0, 20.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-100.0, 100.0, -100.0, 100.0], device=self.device, dtype=torch.float)
 
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
         self.episode_count = torch.zeros(self.num_envs, dtype=torch.long)
@@ -544,8 +544,8 @@ class TorqueDistributionTask(RLTask):
             # Random command generation
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
-            x_vel = 0.5
-            omega = 0.5
+            x_vel = 0.0
+            omega = 2.0
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
@@ -621,7 +621,7 @@ class TorqueDistributionTask(RLTask):
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, -100.0, 100.0)
+                self.wheel_torqs = torch.clip(self.torques, -250.0, 250.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
