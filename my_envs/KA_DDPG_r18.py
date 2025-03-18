@@ -595,7 +595,7 @@ class TorqueDistributionTask(RLTask):
 
 
         # Build criteria action vector: [T_fl, T_rl, T_fr, T_rr]
-        criteria_action = torch.stack([self.ac_left, self.ac_right, self.ac_left, self.ac_right], dim=1).to(self.device)
+        criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
 
         # Compute gamma_assist (decaying assistance) based on global_episode
         self.gamma_assist = torch.clamp(1.0 - (self.episode_count.float() / self.max_global_episodes), min=0.0).to(self.device)
