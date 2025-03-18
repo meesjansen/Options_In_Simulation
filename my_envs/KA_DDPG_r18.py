@@ -617,6 +617,13 @@ class TorqueDistributionTask(RLTask):
         # self.torques = execution_action
         self.torques = criteria_action
 
+        # Retrieve the ordered DOF names from your RobotView
+        dof_names = self._robots.dof_names
+
+        # Print the index and name for each DOF
+        for i, name in enumerate(dof_names):
+            print(f"DOF index: {self._robots.get_dof_index("name")}, name: {name}")
+
 
         for _ in range(self.decimation):
             if self.world.is_playing():
