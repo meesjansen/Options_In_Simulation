@@ -183,7 +183,7 @@ class TorqueDistributionTask(RLTask):
 
         RLTask.__init__(self, name, env)
 
-        self.bounds = torch.tensor([-100.0, 100.0, -100.0, 100.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-15.0, 15.0, -15.0, 15.0], device=self.device, dtype=torch.float)
 
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
         self.episode_count = torch.zeros(self.num_envs, dtype=torch.long)
@@ -719,6 +719,8 @@ class TorqueDistributionTask(RLTask):
             torch.ones_like(self.timeout_buf),
             torch.zeros_like(self.timeout_buf),
         ) 
+        print("episode buf: ", self.episode_buf[0])
+        print("max episode length: ", self.max_episode_length)
         
         # Calculate the projected gravity in the robot's local frame
         projected_gravity = quat_apply(self.base_quat, self.gravity_vec)
