@@ -588,10 +588,10 @@ class TorqueDistributionTask(RLTask):
         # Compute criteria actions for each wheel:
         # Left wheels get: Kp * ( (m*v_delta/dt) - (J*omega_delta/dt) )
         # Right wheels get: Kp * ( (m*v_delta/dt) + (J*omega_delta/dt) )
-        self.ac_left = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) - self.Kp_omega * (self.vehicle_inertia * (self.omega_delta / self.dt))
-        # self.ac_left = self.Kp_omega * (- (self.vehicle_inertia * (self.omega_delta / self.dt)))
-        self.ac_right = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) + self.Kp_omega * (self.vehicle_inertia * (self.omega_delta / self.dt))
-        # self.ac_right = self.Kp_omega * (self.vehicle_inertia * (self.omega_delta / self.dt))
+        # self.ac_left = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) - self.Kp_omega * (self.vehicle_inertia * (self.omega_delta / self.dt))
+        self.ac_left = self.Kp_omega * (- (self.vehicle_inertia * (self.omega_delta / self.dt)))
+        # self.ac_right = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) + self.Kp_omega * (self.vehicle_inertia * (self.omega_delta / self.dt))
+        self.ac_right = self.Kp_omega * (self.vehicle_inertia * (self.omega_delta / self.dt))
 
 
         # Build criteria action vector: [T_fl, T_rl, T_fr, T_rr]
