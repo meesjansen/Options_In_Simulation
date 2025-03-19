@@ -138,7 +138,7 @@ class RobotView(ArticulationView):
         super().__init__(prim_paths_expr=prim_paths_expr, name=name, reset_xform_properties=False)
 
         self._base = RigidPrimView(
-            prim_paths_expr="/World/envs/.*/robot/base_link",
+            prim_paths_expr="/World/envs/.*/robot/husky_usd/base_link",
             name="base_view",
             reset_xform_properties=False,
             track_contact_forces=track_contact_forces,
@@ -300,7 +300,7 @@ class TorqueDistributionTask(RLTask):
         super().set_up_scene(scene)
 
         # robot view
-        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot", name="robot_view")
+        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot/husky_usd", name="robot_view")
         scene.add(self._robots)
         scene.add(self._robots._base)
 
@@ -317,7 +317,7 @@ class TorqueDistributionTask(RLTask):
         if scene.object_exists("base_view"):
             scene.remove_object("base_view", registry_only=True)
         self._robots = RobotView(
-            prim_paths_expr="/World/envs/.*/robot", name="robot_view", track_contact_forces=False
+            prim_paths_expr="/World/envs/.*/robot/husky_usd", name="robot_view", track_contact_forces=False
         )
         scene.add(self._robots)
         scene.add(self._robots._base)
