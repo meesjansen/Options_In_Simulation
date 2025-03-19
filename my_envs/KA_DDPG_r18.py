@@ -171,8 +171,8 @@ class TorqueDistributionTask(RLTask):
         # ---------------------------------------------------------------------------
         # Add parameters for the low-fidelity controller (criteria action)
         # You can also move these to the config if desired.
-        self.vehicle_mass = 26.135      # [kg]
-        self.vehicle_inertia = 1.05     # [kg·m^2]
+        self.vehicle_mass = 33.455      # [kg]
+        self.vehicle_inertia = 2.0296     # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
         self.max_global_episodes = 200.0
@@ -619,10 +619,10 @@ class TorqueDistributionTask(RLTask):
 
 
         # Retrieve the ordered DOF names from your RobotView
-        # dof_names = self._robots.dof_names
-        # # Print the index and name for each DOF
-        # for i, name in enumerate(dof_names):
-        #     print(f"DOF index: {self._robots.get_dof_index(name)}, name: {name}")
+        dof_names = self._robots.dof_names
+        # Print the index and name for each DOF
+        for i, name in enumerate(dof_names):
+            print(f"DOF index: {self._robots.get_dof_index(name)}, name: {name}")
 
 
         for _ in range(self.decimation):
@@ -634,8 +634,8 @@ class TorqueDistributionTask(RLTask):
 
                 SimulationContext.step(self.world, render=False)
 
-        # print("pre_physics; applied efforts: ", self._robots.get_applied_joint_efforts(clone=False))
-        # print("pre_physics; actions, still x100 for self.action_scale: ", self._robots.get_joint_velocities(clone=False))
+        print("pre_physics; applied efforts: ", self._robots.get_applied_joint_efforts(clone=False))
+        print("pre_physics; dof vel: ", self._robots.get_joint_velocities(clone=False))
 
         # print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
         print("pre_physics; desired_v: ", self.desired_v[0])
