@@ -296,7 +296,7 @@ class TorqueDistributionTask(RLTask):
         self._stage = get_current_stage()
         # self.get_terrain()
         self.get_robot()
-        # print_stage_prim_paths(self._stage)
+        print_stage_prim_paths(self._stage)
         super().set_up_scene(scene)
 
         # robot view
