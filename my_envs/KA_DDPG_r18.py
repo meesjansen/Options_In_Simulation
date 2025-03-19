@@ -21,7 +21,7 @@ from omni.isaac.core.prims import GeometryPrim, GeometryPrimView
 from pxr import PhysxSchema, UsdPhysics
 
 
-from my_robots.origin_v10 import AvularOrigin_v10 as Robot_v10 
+from my_robots.origin_v18 import AvularOrigin_v10 as Robot_v10 
 
 from my_utils.origin_terrain_generator import *
 from my_utils.terrain_utils import *
@@ -638,10 +638,10 @@ class TorqueDistributionTask(RLTask):
         # print("pre_physics; actions, still x100 for self.action_scale: ", self._robots.get_joint_velocities(clone=False))
 
         # print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
-        # print("pre_physics; desired_v: ", self.desired_v[0])
-        # print("pre_physics; current_v: ", current_v[0])
-        # print("pre_physics; desired_omega: ", self.desired_omega[0])
-        # print("pre_physics; current_omega: ", current_omega[0])
+        print("pre_physics; desired_v: ", self.desired_v[0])
+        print("pre_physics; current_v: ", current_v[0])
+        print("pre_physics; desired_omega: ", self.desired_omega[0])
+        print("pre_physics; current_omega: ", current_omega[0])
         # print("pre_physics; expert torques left: ", self.ac_left[0])
         # print("pre_physics; expert torques right: ", self.ac_right[0])
         # print("pre_physics; executed torques pre clip: ", self.torques[0])
@@ -719,8 +719,8 @@ class TorqueDistributionTask(RLTask):
             torch.ones_like(self.timeout_buf),
             torch.zeros_like(self.timeout_buf),
         ) 
-        print("episode buf: ", self.episode_buf[0])
-        print("max episode length: ", self.max_episode_length)
+        # print("episode buf: ", self.episode_buf[0])
+        # print("max episode length: ", self.max_episode_length)
         
         # Calculate the projected gravity in the robot's local frame
         projected_gravity = quat_apply(self.base_quat, self.gravity_vec)
