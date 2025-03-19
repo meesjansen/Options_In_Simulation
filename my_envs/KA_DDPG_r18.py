@@ -68,9 +68,9 @@ TASK_CFG = {"test": False,
                             "learn" : {"heightMeasurementScale": 1.0,
                                        "terminalReward": 0.0,
                                        "episodeLength_s": 15.0,},
-                                       "randomCommandVelocityRanges": {"linear_x":[0.0, 1.0], # [m/s]
+                                       "randomCommandVelocityRanges": {"linear_x":[0.5, 1.2], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
-                                                                       "yaw": [0.0, 1.0], # [rad/s]
+                                                                       "yaw": [0.5, 1.0], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
@@ -544,8 +544,8 @@ class TorqueDistributionTask(RLTask):
             # Random command generation
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
-            x_vel = 1.0
-            omega = 0.5 #max 1.0
+            # x_vel = 1.0 # max 1.0
+            # omega = 0.5 # max 1.0
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
@@ -634,18 +634,18 @@ class TorqueDistributionTask(RLTask):
 
                 SimulationContext.step(self.world, render=False)
 
-        print("pre_physics; applied efforts: ", self._robots.get_applied_joint_efforts(clone=False))
-        print("pre_physics; dof vel: ", self._robots.get_joint_velocities(clone=False))
+        # print("pre_physics; applied efforts: ", self._robots.get_applied_joint_efforts(clone=False))
+        # print("pre_physics; dof vel: ", self._robots.get_joint_velocities(clone=False))
 
         # print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
-        print("pre_physics; desired_v: ", self.desired_v[0])
-        print("pre_physics; current_v: ", current_v[0])
-        print("pre_physics; desired_omega: ", self.desired_omega[0])
-        print("pre_physics; current_omega: ", current_omega[0])
-        print("pre_physics; expert torques left: ", self.ac_left[0])
-        print("pre_physics; expert torques right: ", self.ac_right[0])
+        # print("pre_physics; desired_v: ", self.desired_v[0])
+        # print("pre_physics; current_v: ", current_v[0])
+        # print("pre_physics; desired_omega: ", self.desired_omega[0])
+        # print("pre_physics; current_omega: ", current_omega[0])
+        # print("pre_physics; expert torques left: ", self.ac_left[0])
+        # print("pre_physics; expert torques right: ", self.ac_right[0])
         # print("pre_physics; executed torques pre clip: ", self.torques[0])
-        print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
+        # print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
         # print("base velocitites in z: ", self.base_velocities[0, 2])
 
           
