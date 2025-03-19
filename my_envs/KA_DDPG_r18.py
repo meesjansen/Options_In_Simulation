@@ -138,7 +138,7 @@ class RobotView(ArticulationView):
         super().__init__(prim_paths_expr=prim_paths_expr, name=name, reset_xform_properties=False)
 
         self._base = RigidPrimView(
-            prim_paths_expr="/World/envs/.*/robot/husky_usd/base_link",
+            prim_paths_expr="/World/envs/.*/robot/main_body",
             name="base_view",
             reset_xform_properties=False,
             track_contact_forces=track_contact_forces,
@@ -171,8 +171,8 @@ class TorqueDistributionTask(RLTask):
         # ---------------------------------------------------------------------------
         # Add parameters for the low-fidelity controller (criteria action)
         # You can also move these to the config if desired.
-        self.vehicle_mass = 33.455      # [kg]
-        self.vehicle_inertia = 2.0296     # [kg·m^2]
+        self.vehicle_mass = 21.0      # [kg]
+        self.vehicle_inertia = 1.01    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
         self.max_global_episodes = 200.0
@@ -296,11 +296,11 @@ class TorqueDistributionTask(RLTask):
         self._stage = get_current_stage()
         # self.get_terrain()
         self.get_robot()
-        print_stage_prim_paths(self._stage)
+        # print_stage_prim_paths(self._stage)
         super().set_up_scene(scene)
 
         # robot view
-        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot/husky_usd", name="robot_view")
+        self._robots = RobotView(prim_paths_expr="/World/envs/.*/robot", name="robot_view")
         scene.add(self._robots)
         scene.add(self._robots._base)
 
@@ -317,7 +317,7 @@ class TorqueDistributionTask(RLTask):
         if scene.object_exists("base_view"):
             scene.remove_object("base_view", registry_only=True)
         self._robots = RobotView(
-            prim_paths_expr="/World/envs/.*/robot/husky_usd", name="robot_view", track_contact_forces=False
+            prim_paths_expr="/World/envs/.*/robot", name="robot_view", track_contact_forces=False
         )
         scene.add(self._robots)
         scene.add(self._robots._base)
@@ -588,14 +588,14 @@ class TorqueDistributionTask(RLTask):
         # Compute criteria actions for each wheel:
         # Left wheels get: Kp * ( (m*v_delta/dt) - (J*omega_delta/dt) )
         # Right wheels get: Kp * ( (m*v_delta/dt) + (J*omega_delta/dt) )
-        # self.ac_left = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) - self.Kp_omega * (self.vehicle_inertia * (self.omega_delta / self.dt))
-        self.ac_left = self.Kp_omega * (- (self.vehicle_inertia * (self.omega_delta / self.dt)))
-        # self.ac_right = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) + self.Kp_omega * (self.vehicle_inertia * (self.omega_delta / self.dt))
-        self.ac_right = self.Kp_omega * (self.vehicle_inertia * (self.omega_delta / self.dt))
+        self.ac_left = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) - self.Kp_omega * (self.vehicle_inertia * (self.omega_delta / self.dt))
+        # self.ac_left = self.Kp_omega * (- (self.vehicle_inertia * (self.omega_delta / self.dt)))
+        self.ac_right = self.Kp * (self.vehicle_mass * (self.v_delta / self.dt)) + self.Kp_omega * (self.vehicle_inertia * (self.omega_delta / self.dt))
+        # self.ac_right = self.Kp_omega * (self.vehicle_inertia * (self.omega_delta / self.dt))
 
 
         # Build criteria action vector: [T_fl, T_rl, T_fr, T_rr]
-        criteria_action = torch.stack([self.ac_left, self.ac_right, self.ac_left, self.ac_right], dim=1).to(self.device)
+        criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
 
         # Compute gamma_assist (decaying assistance) based on global_episode
         self.gamma_assist = torch.clamp(1.0 - (self.episode_count.float() / self.max_global_episodes), min=0.0).to(self.device)
@@ -618,11 +618,11 @@ class TorqueDistributionTask(RLTask):
         # self.torques = criteria_action
 
 
-        # Retrieve the ordered DOF names from your RobotView
-        dof_names = self._robots.dof_names
-        # Print the index and name for each DOF
-        for i, name in enumerate(dof_names):
-            print(f"DOF index: {self._robots.get_dof_index(name)}, name: {name}")
+        # # Retrieve the ordered DOF names from your RobotView
+        # dof_names = self._robots.dof_names
+        # # Print the index and name for each DOF
+        # for i, name in enumerate(dof_names):
+        #     print(f"DOF index: {self._robots.get_dof_index(name)}, name: {name}")
 
 
         for _ in range(self.decimation):
