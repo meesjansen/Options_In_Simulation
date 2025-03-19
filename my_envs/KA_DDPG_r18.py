@@ -544,8 +544,8 @@ class TorqueDistributionTask(RLTask):
             # Random command generation
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
-            x_vel = 0.0
-            omega = 0.5
+            # x_vel = 0.0
+            omega = 0.0
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
@@ -638,15 +638,15 @@ class TorqueDistributionTask(RLTask):
         # print("pre_physics; actions, still x100 for self.action_scale: ", self._robots.get_joint_velocities(clone=False))
 
         # print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
-        print("pre_physics; desired_v: ", self.desired_v[0])
-        print("pre_physics; current_v: ", current_v[0])
-        print("pre_physics; desired_omega: ", self.desired_omega[0])
-        print("pre_physics; current_omega: ", current_omega[0])
-        print("pre_physics; expert torques left: ", self.ac_left[0])
-        print("pre_physics; expert torques right: ", self.ac_right[0])
+        # print("pre_physics; desired_v: ", self.desired_v[0])
+        # print("pre_physics; current_v: ", current_v[0])
+        # print("pre_physics; desired_omega: ", self.desired_omega[0])
+        # print("pre_physics; current_omega: ", current_omega[0])
+        # print("pre_physics; expert torques left: ", self.ac_left[0])
+        # print("pre_physics; expert torques right: ", self.ac_right[0])
         # print("pre_physics; executed torques pre clip: ", self.torques[0])
-        print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
-        print("base velocitites in z: ", self.base_velocities[0, 2])
+        # print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
+        # print("base velocitites in z: ", self.base_velocities[0, 2])
 
           
     def post_physics_step(self):
