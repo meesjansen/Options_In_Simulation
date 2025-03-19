@@ -171,8 +171,8 @@ class TorqueDistributionTask(RLTask):
         # ---------------------------------------------------------------------------
         # Add parameters for the low-fidelity controller (criteria action)
         # You can also move these to the config if desired.
-        self.vehicle_mass = 21.0      # [kg]
-        self.vehicle_inertia = 1.01    # [kg·m^2]
+        self.vehicle_mass = 26.1      # [kg]
+        self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
         self.max_global_episodes = 200.0
@@ -544,8 +544,8 @@ class TorqueDistributionTask(RLTask):
             # Random command generation
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
-            x_vel = 0.0
-            omega = 1.0
+            x_vel = 0.8
+            omega = 0.4
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
