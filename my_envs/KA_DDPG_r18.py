@@ -584,7 +584,7 @@ class TorqueDistributionTask(RLTask):
         self.omega_delta = self.desired_omega - current_omega
 
 
-        self.Kp_omega = 0.005
+        self.Kp_omega = 0.05
         # Compute criteria actions for each wheel:
         # Left wheels get: Kp * ( (m*v_delta/dt) - (J*omega_delta/dt) )
         # Right wheels get: Kp * ( (m*v_delta/dt) + (J*omega_delta/dt) )
@@ -645,7 +645,8 @@ class TorqueDistributionTask(RLTask):
         # print("pre_physics; expert torques left: ", self.ac_left[0])
         # print("pre_physics; expert torques right: ", self.ac_right[0])
         # print("pre_physics; executed torques pre clip: ", self.torques[0])
-        # print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
+        print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
+        print("base velocitites in z: ", self.base_velocities[0, 2])
 
           
     def post_physics_step(self):
