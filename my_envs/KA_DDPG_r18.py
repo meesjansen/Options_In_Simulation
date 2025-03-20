@@ -175,7 +175,7 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 120.0
+        self.max_global_episodes = 200.0
         # ---------------------------------------------------------------------------
         
 
@@ -613,7 +613,7 @@ class TorqueDistributionTask(RLTask):
 
         # Compute guiding reward: negative Euclidean distance between agent and criteria actions
         self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device)
-        self.guiding_reward = self.guiding_reward / 10.0
+        self.guiding_reward = self.guiding_reward * 0.1
 
 
         # Apply the blended execution action as torques (assumed direct mapping)
