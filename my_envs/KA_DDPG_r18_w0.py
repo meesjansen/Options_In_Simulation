@@ -75,7 +75,7 @@ TASK_CFG = {"test": False,
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 100.0,
+                                        "actionScale": 50.0,
                                         "wheel_radius": 0.1175,
                                         },   # leave room to overshoot or corner 
                             },
@@ -629,7 +629,7 @@ class TorqueDistributionTask(RLTask):
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, -100.0, 100.0)
+                self.wheel_torqs = torch.clip(self.torques, -50.0, 50.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
@@ -766,8 +766,8 @@ class TorqueDistributionTask(RLTask):
 
         # Sparse reward: bonus if tracking errors are very low
         sparse_reward = torch.where(
-            (torch.abs(self.v_delta) < 0.01 * torch.abs(self.desired_v)) &
-            (torch.abs(self.omega_delta) < 0.01 * torch.abs(self.desired_omega)),
+            (torch.abs(self.v_delta) < 0.05 * torch.abs(self.desired_v)), # &
+            # (torch.abs(self.omega_delta) < 0.05 * torch.abs(self.desired_omega)),
             torch.full_like(self.v_delta, 3000.0),
             torch.zeros_like(self.v_delta)
         )
