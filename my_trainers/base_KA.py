@@ -181,14 +181,14 @@ class Trainer:
                 # step the environments
                 next_states, rewards, terminated, truncated, infos = self.env.step(actions)
 
-                desired_v = self.env.task.observed_components["desired_v[0]"]
-                current_v = self.env.task.observed_components["current_v[0]"]
-                desired_omega = self.env.task.observed_components["desired_omega[0]"]
-                current_omega = self.env.task.observed_components["current_omega[0]"]
-                v_delta = self.env.task.observed_components["v_delta[0]"]
-                omega_delta = self.env.task.observed_components["omega_delta[0]"]
-                linear_acc = self.env.task.observed_components["linear_acc[0]"]
-                angular_acc = self.env.task.observed_components["angular_acc[0]"]
+                desired_v = self.env.task.observed_components["env0_desired_v"]
+                current_v = self.env.task.observed_components["env0_current_v"]
+                desired_omega = self.env.task.observed_components["env0_desired_omega"]
+                current_omega = self.env.task.observed_components["env0_current_omega"]
+                v_delta = self.env.task.observed_components["env0_v_delta[0]"]
+                omega_delta = self.env.task.observed_components["env0_omega_delta"]
+                linear_acc = self.env.task.observed_components["env0_linear_acc"]
+                angular_acc = self.env.task.observed_components["env0_angular_acc"]
 
 
                 actions = self.env.task.wheel_torqs / self.env.task.action_scale
