@@ -185,7 +185,7 @@ class Trainer:
                 current_v = self.env.task.observed_components["env0_current_v"]
                 desired_omega = self.env.task.observed_components["env0_desired_omega"]
                 current_omega = self.env.task.observed_components["env0_current_omega"]
-                v_delta = self.env.task.observed_components["env0_v_delta[0]"]
+                v_delta = self.env.task.observed_components["env0_v_delta"]
                 omega_delta = self.env.task.observed_components["env0_omega_delta"]
                 linear_acc = self.env.task.observed_components["env0_linear_acc"]
                 angular_acc = self.env.task.observed_components["env0_angular_acc"]
