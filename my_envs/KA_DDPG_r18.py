@@ -607,7 +607,7 @@ class TorqueDistributionTask(RLTask):
 
         # print("pre_physics; gamma_assist: ", self.gamma_assist[0])
         # print("pre_physics; self.episode_count.float(): ", self.episode_count.float()[0])
-        print("pre_physics; gamma: ", gamma[0])
+        # print("pre_physics; gamma: ", gamma[0])
 
 
 
