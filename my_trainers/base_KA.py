@@ -181,18 +181,6 @@ class Trainer:
                 # step the environments
                 next_states, rewards, terminated, truncated, infos = self.env.step(actions)
 
-                # Update when logging other components to wandb
-                self.observed_components = {
-                    "desired_v[0]", self.desired_v[0],
-                    "current_v[0]", self.current_v[0],
-                    "desired_omega[0]", self.desired_omega[0],
-                    "current_omega[0]", self.current_omega[0],
-                    "v_delta[0]", self.v_delta[0],
-                    "omega_delta[0]", self.omega_delta[0],
-                    "linear_acc[0]", self.linear_acc[0],
-                    "angular_acc[0]", self.angular_acc[0],             
-                }
-
                 desired_v = self.env.task.observed_components["desired_v[0]"]
                 current_v = self.env.task.observed_components["current_v[0]"]
                 desired_omega = self.env.task.observed_components["desired_omega[0]"]
