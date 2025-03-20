@@ -186,7 +186,7 @@ class TorqueDistributionTask(RLTask):
         self.bounds = torch.tensor([-15.0, 15.0, -15.0, 15.0], device=self.device, dtype=torch.float)
 
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
-        self.episode_count = torch.zeros(self.num_envs, dtype=torch.long)
+        self.episode_count = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.gamma_assist = torch.ones(self.num_envs, dtype=torch.float)
 
         self.linear_acc = torch.zeros((self.num_envs, 1), device=self.device)
