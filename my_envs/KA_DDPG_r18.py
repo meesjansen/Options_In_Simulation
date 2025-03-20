@@ -824,7 +824,8 @@ class TorqueDistributionTask(RLTask):
                     "env0_v_delta": self.v_delta[0].item(),
                     "env0_omega_delta": self.omega_delta[0].item(),
                     "env0_linear_acc": self.linear_acc[0].item(),
-                    "env0_angular_acc": self.angular_acc[0].item(),             
+                    "env0_angular_acc": self.angular_acc[0].item(), 
+                    "env0_episode_count": self.episode_count[0].item(),            
                 }
                           
         return {self._robots.name: {"obs_buf": self.obs_buf}}

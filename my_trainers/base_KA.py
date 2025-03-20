@@ -189,6 +189,7 @@ class Trainer:
                 omega_delta = self.env.task.observed_components["env0_omega_delta"]
                 linear_acc = self.env.task.observed_components["env0_linear_acc"]
                 angular_acc = self.env.task.observed_components["env0_angular_acc"]
+                episode_count = self.env.task.observed_components["env0_episode_count"]
 
 
                 actions = self.env.task.wheel_torqs / self.env.task.action_scale
@@ -208,14 +209,15 @@ class Trainer:
                                               timestep=timestep,
                                               timesteps=self.timesteps)
                 
-                self.agents.track_data(f"Reward_comp / desired_v", desired_v)
-                self.agents.track_data(f"Reward_comp / current_v", current_v)
-                self.agents.track_data(f"Reward_comp / desired_omega", desired_omega)
-                self.agents.track_data(f"Reward_comp / current_omega", current_omega)
-                self.agents.track_data(f"Reward_comp / v_delta", v_delta)
-                self.agents.track_data(f"Reward_comp / omega_delta", omega_delta)
-                self.agents.track_data(f"Reward_comp / linear_acc", linear_acc)
-                self.agents.track_data(f"Reward_comp / angular_acc", angular_acc)
+                self.agents.track_data(f"Reward_comp_env0 / desired_v", desired_v)
+                self.agents.track_data(f"Reward_comp_env0 / current_v", current_v)
+                self.agents.track_data(f"Reward_comp_env0 / desired_omega", desired_omega)
+                self.agents.track_data(f"Reward_comp_env0 / current_omega", current_omega)
+                self.agents.track_data(f"Reward_comp_env0 / v_delta", v_delta)
+                self.agents.track_data(f"Reward_comp_env0 / omega_delta", omega_delta)
+                self.agents.track_data(f"Reward_comp_env0 / linear_acc", linear_acc)
+                self.agents.track_data(f"Reward_comp_env0 / angular_acc", angular_acc)
+                self.agents.track_data(f"Reward_comp_env0 / episode_count", episode_count)
 
 
 
