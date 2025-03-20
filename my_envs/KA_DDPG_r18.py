@@ -67,7 +67,7 @@ TASK_CFG = {"test": False,
                             "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed      
                             "learn" : {"heightMeasurementScale": 1.0,
                                        "terminalReward": 0.0,
-                                       "episodeLength_s": 15.0,},
+                                       "episodeLength_s": 15.0,}, # 2250 RL steps, 9000 sim steps
                                        "randomCommandVelocityRanges": {"linear_x":[0.5, 1.2], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
                                                                        "yaw": [0.5, 1.0], # [rad/s]
@@ -175,7 +175,7 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 200.0
+        self.max_global_episodes = 120.0
         # ---------------------------------------------------------------------------
         
 
@@ -401,7 +401,6 @@ class TorqueDistributionTask(RLTask):
         self.reset_idx(indices)
         self.init_done = True
         
-        self.episode_count += 1
 
     def reset_idx(self, env_ids):
         
@@ -450,6 +449,8 @@ class TorqueDistributionTask(RLTask):
 
         self.progress_buf[env_ids] = 0
         self.episode_buf[env_ids] = 0 
+        self.episode_count[env_ids] += 1
+
 
         # fill extras
         self.extras["episode"] = {}
@@ -578,10 +579,10 @@ class TorqueDistributionTask(RLTask):
         self.desired_v = self.commands[:, 0]
         self.desired_omega = self.commands[:, 2]
         # Current velocities: assume base_velocities has linear (index 0) and angular yaw (index 5)
-        current_v = self.v_forward_projected
-        current_omega = self.base_velocities[:, 5]
-        self.v_delta = self.desired_v - current_v
-        self.omega_delta = self.desired_omega - current_omega
+        self.current_v = self.v_forward_projected
+        self.current_omega = self.base_velocities[:, 5]
+        self.v_delta = self.desired_v - self.current_v
+        self.omega_delta = self.desired_omega - self.current_omega
 
 
         self.Kp_omega = 0.5
@@ -760,7 +761,7 @@ class TorqueDistributionTask(RLTask):
         # r3: Torque penalty (sum of squared torques)
         r3 = torch.sum(self.wheel_torqs ** 2, dim=1)
         # Weight factors (tunable)
-        w1, w2, w3 = -20.0, -0.01, -0.002
+        w1, w2, w3 = -40.0, -0.005, -0.006
         rdense = w1 * r1 + w2 * r2 + w3 * r3
 
         # Sparse reward: bonus if tracking errors are very low
@@ -794,17 +795,7 @@ class TorqueDistributionTask(RLTask):
         # print("metrics: guiding reward:", self.guiding_reward[0])
         # print("metrics: final reward:", self.rew_buf[0])
 
-        # Update when logging other components to wandb
-        self.reward_components = {
-                    "rew_lin_vel_xy": 0.0,
-                    "rew_ang_vel_z": 0.0,
-                    "rew_lin_vel_z": 0.0,
-                    "rew_ang_vel_xy": 0.0,
-                    "rew_action_rate": 0.0,
-                    "rew_fallen_over": 0.0,
-                    "rew_slip_longitudinal": 0.0,
-                }
-                
+                       
         return self.rew_buf
 
 
@@ -822,6 +813,17 @@ class TorqueDistributionTask(RLTask):
         # print("self.linear_acc[0]", self.linear_acc[0])
         # print("self.angular_acc[0]", self.angular_acc[0])
 
+        # Update when logging other components to wandb
+        self.observed_components = {
+                    "desired_v[0]", self.desired_v[0],
+                    "current_v[0]", self.current_v[0],
+                    "desired_omega[0]", self.desired_omega[0],
+                    "current_omega[0]", self.current_omega[0],
+                    "v_delta[0]", self.v_delta[0],
+                    "omega_delta[0]", self.omega_delta[0],
+                    "linear_acc[0]", self.linear_acc[0],
+                    "angular_acc[0]", self.angular_acc[0],             
+                }
                           
         return {self._robots.name: {"obs_buf": self.obs_buf}}
     
