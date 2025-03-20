@@ -815,14 +815,14 @@ class TorqueDistributionTask(RLTask):
 
         # Update when logging other components to wandb
         self.observed_components = {
-                    "desired_v[0]", self.desired_v[0],
-                    "current_v[0]", self.current_v[0],
-                    "desired_omega[0]", self.desired_omega[0],
-                    "current_omega[0]", self.current_omega[0],
-                    "v_delta[0]", self.v_delta[0],
-                    "omega_delta[0]", self.omega_delta[0],
-                    "linear_acc[0]", self.linear_acc[0],
-                    "angular_acc[0]", self.angular_acc[0],             
+                    "env0_desired_v", self.desired_v[0],
+                    "env0_current_v", self.current_v[0],
+                    "env0_desired_omega", self.desired_omega[0],
+                    "env0_current_omega", self.current_omega[0],
+                    "env0_v_delta", self.v_delta[0],
+                    "env0_omega_delta", self.omega_delta[0],
+                    "env0_linear_acc", self.linear_acc[0],
+                    "env0_angular_acc", self.angular_acc[0],             
                 }
                           
         return {self._robots.name: {"obs_buf": self.obs_buf}}
