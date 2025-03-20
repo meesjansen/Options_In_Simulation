@@ -67,7 +67,7 @@ TASK_CFG = {"test": False,
                             "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed      
                             "learn" : {"heightMeasurementScale": 1.0,
                                        "terminalReward": 0.0,
-                                       "episodeLength_s": 15.0,}, # 2250 RL steps, 9000 sim steps
+                                       "episodeLength_s": 7.0,}, # 2250 RL steps, 9000 sim steps
                                        "randomCommandVelocityRanges": {"linear_x":[0.5, 1.2], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
                                                                        "yaw": [0.5, 1.0], # [rad/s]
