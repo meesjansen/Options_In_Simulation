@@ -181,13 +181,27 @@ class Trainer:
                 # step the environments
                 next_states, rewards, terminated, truncated, infos = self.env.step(actions)
 
-                rew_lin_vel_xy = self.env.task.reward_components["rew_lin_vel_xy"]
-                rew_ang_vel_z = self.env.task.reward_components["rew_ang_vel_z"]
-                rew_lin_vel_z = self.env.task.reward_components["rew_lin_vel_z"]
-                rew_ang_vel_xy = self.env.task.reward_components["rew_ang_vel_xy"]
-                rew_action_rate = self.env.task.reward_components["rew_action_rate"]
-                rew_fallen_over = self.env.task.reward_components["rew_fallen_over"]
-                rew_slip_longitudinal = self.env.task.reward_components["rew_slip_longitudinal"]
+                # Update when logging other components to wandb
+                self.observed_components = {
+                    "desired_v[0]", self.desired_v[0],
+                    "current_v[0]", self.current_v[0],
+                    "desired_omega[0]", self.desired_omega[0],
+                    "current_omega[0]", self.current_omega[0],
+                    "v_delta[0]", self.v_delta[0],
+                    "omega_delta[0]", self.omega_delta[0],
+                    "linear_acc[0]", self.linear_acc[0],
+                    "angular_acc[0]", self.angular_acc[0],             
+                }
+
+                desired_v = self.env.task.observed_components["desired_v[0]"]
+                current_v = self.env.task.observed_components["current_v[0]"]
+                desired_omega = self.env.task.observed_components["desired_omega[0]"]
+                current_omega = self.env.task.observed_components["current_omega[0]"]
+                v_delta = self.env.task.observed_components["v_delta[0]"]
+                omega_delta = self.env.task.observed_components["omega_delta[0]"]
+                linear_acc = self.env.task.observed_components["linear_acc[0]"]
+                angular_acc = self.env.task.observed_components["angular_acc[0]"]
+
 
                 actions = self.env.task.wheel_torqs / self.env.task.action_scale
                 
@@ -206,13 +220,16 @@ class Trainer:
                                               timestep=timestep,
                                               timesteps=self.timesteps)
                 
-                self.agents.track_data(f"Reward_comp / rew_lin_vel_xy", rew_lin_vel_xy)
-                self.agents.track_data(f"Reward_comp / rew_ang_vel_z", rew_ang_vel_z)
-                self.agents.track_data(f"Reward_comp / rew_lin_vel_z", rew_lin_vel_z)
-                self.agents.track_data(f"Reward_comp / rew_ang_vel_xy", rew_ang_vel_xy)
-                self.agents.track_data(f"Reward_comp / rew_action_rate", rew_action_rate)
-                self.agents.track_data(f"Reward_comp / rew_fallen_over", rew_fallen_over)
-                self.agents.track_data(f"Reward_comp / rew_slip_longitudinal", rew_slip_longitudinal)
+                self.agents.track_data(f"Reward_comp / desired_v", desired_v)
+                self.agents.track_data(f"Reward_comp / current_v", current_v)
+                self.agents.track_data(f"Reward_comp / desired_omega", desired_omega)
+                self.agents.track_data(f"Reward_comp / current_omega", current_omega)
+                self.agents.track_data(f"Reward_comp / v_delta", v_delta)
+                self.agents.track_data(f"Reward_comp / omega_delta", omega_delta)
+                self.agents.track_data(f"Reward_comp / linear_acc", linear_acc)
+                self.agents.track_data(f"Reward_comp / angular_acc", angular_acc)
+
+
 
                 # log environment info
                 if self.environment_info in infos:
