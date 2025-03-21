@@ -176,6 +176,7 @@ class TorqueDistributionTask(RLTask):
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
         self.max_global_episodes = 200.0
+        self.max_sim_steps = 300000.0
         # ---------------------------------------------------------------------------
         
 
@@ -447,7 +448,6 @@ class TorqueDistributionTask(RLTask):
             1
         )  # set small commands to zero
 
-        self.progress_buf[env_ids] = 0
         self.episode_buf[env_ids] = 0 
         self.episode_count[env_ids] += 1
 
@@ -546,7 +546,7 @@ class TorqueDistributionTask(RLTask):
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
             # x_vel = 0.0 # max 1.0
-            omega = 0.0 # max 1.0
+            # omega = 0.0 # max 1.0
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
@@ -599,7 +599,7 @@ class TorqueDistributionTask(RLTask):
         criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
 
         # Compute gamma_assist (decaying assistance) based on global_episode
-        # self.gamma_assist = torch.clamp(1.0 - (self.episode_count.float() / self.max_global_episodes), min=0.0).to(self.device)
+        # self.gamma_assist = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
         self.gamma_assist = torch.ones_like(self.gamma_assist, device=self.device).view(-1, 1)
 
         # Compute execution action: blend agent action and criteria action
@@ -654,7 +654,6 @@ class TorqueDistributionTask(RLTask):
 
           
     def post_physics_step(self):
-        self.progress_buf[:] += 1
         self.episode_buf[:] += 1
         
        
@@ -776,7 +775,7 @@ class TorqueDistributionTask(RLTask):
         )
         observed_reward = rdense + sparse_reward
 
-        self.gamma_assist = torch.clamp(1.0 - (self.episode_count.float() / self.max_global_episodes), min=0.0).to(self.device)
+        self.gamma_assist = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
 
         # Final updating reward: blend observed reward with guiding reward
         self.rew_buf = (1 - self.gamma_assist) * observed_reward.to(self.device) + self.gamma_assist * self.guiding_reward
