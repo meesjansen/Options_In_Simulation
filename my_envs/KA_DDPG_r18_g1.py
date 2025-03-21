@@ -186,6 +186,7 @@ class TorqueDistributionTask(RLTask):
 
         self.bounds = torch.tensor([-15.0, 15.0, -15.0, 15.0], device=self.device, dtype=torch.float)
 
+        self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
         self.episode_count = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.gamma_assist = torch.ones(self.num_envs, dtype=torch.float)
@@ -619,7 +620,6 @@ class TorqueDistributionTask(RLTask):
 
         # Apply the blended execution action as torques (assumed direct mapping)
         self.torques = execution_action
-        # self.torques = criteria_action
 
 
         # # Retrieve the ordered DOF names from your RobotView
@@ -655,6 +655,7 @@ class TorqueDistributionTask(RLTask):
           
     def post_physics_step(self):
         self.episode_buf[:] += 1
+        self.sim_steps += 1
         
        
         if self.world.is_playing():

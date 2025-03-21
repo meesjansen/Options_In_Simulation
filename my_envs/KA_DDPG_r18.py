@@ -176,6 +176,7 @@ class TorqueDistributionTask(RLTask):
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
         self.max_global_episodes = 200.0
+        self.max_sim_steps = 300000.0
         # ---------------------------------------------------------------------------
         
 
@@ -185,6 +186,7 @@ class TorqueDistributionTask(RLTask):
 
         self.bounds = torch.tensor([-15.0, 15.0, -15.0, 15.0], device=self.device, dtype=torch.float)
 
+        self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
         self.episode_count = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.gamma_assist = torch.ones(self.num_envs, dtype=torch.float)
@@ -447,7 +449,6 @@ class TorqueDistributionTask(RLTask):
             1
         )  # set small commands to zero
 
-        self.progress_buf[env_ids] = 0
         self.episode_buf[env_ids] = 0 
         self.episode_count[env_ids] += 1
 
@@ -599,7 +600,7 @@ class TorqueDistributionTask(RLTask):
         criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
 
         # Compute gamma_assist (decaying assistance) based on global_episode
-        self.gamma_assist = torch.clamp(1.0 - (self.episode_count.float() / self.max_global_episodes), min=0.0).to(self.device)
+        self.gamma_assist = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
 
         # Compute execution action: blend agent action and criteria action
         gamma = self.gamma_assist.view(-1, 1).to(self.device)
@@ -653,8 +654,8 @@ class TorqueDistributionTask(RLTask):
 
           
     def post_physics_step(self):
-        self.progress_buf[:] += 1
         self.episode_buf[:] += 1
+        self.sim_steps += 1
         
        
         if self.world.is_playing():
