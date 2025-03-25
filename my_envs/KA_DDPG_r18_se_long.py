@@ -67,7 +67,7 @@ TASK_CFG = {"test": False,
                             "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed      
                             "learn" : {"heightMeasurementScale": 1.0,
                                        "terminalReward": 0.0,
-                                       "episodeLength_s": 7.0,}, # 1050 RL steps, 4200 sim steps
+                                       "episodeLength_s": 10.0,}, # [s]
                                        "randomCommandVelocityRanges": {"linear_x":[0.5, 1.2], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
                                                                        "yaw": [0.5, 1.0], # [rad/s]
@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 200.0
-        self.max_sim_steps = 300000.0
+        self.max_global_episodes = 5000.0
+        self.max_sim_steps = 1500000.0
         # ---------------------------------------------------------------------------
         
 
@@ -184,7 +184,7 @@ class TorqueDistributionTask(RLTask):
 
         RLTask.__init__(self, name, env)
 
-        self.bounds = torch.tensor([-15.0, 15.0, -15.0, 15.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-20.0, 20.0, -20.0, 20.0], device=self.device, dtype=torch.float)
 
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)

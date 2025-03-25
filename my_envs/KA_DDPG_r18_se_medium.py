@@ -67,7 +67,7 @@ TASK_CFG = {"test": False,
                             "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed      
                             "learn" : {"heightMeasurementScale": 1.0,
                                        "terminalReward": 0.0,
-                                       "episodeLength_s": 7.0,}, # 1050 RL steps, 4200 sim steps
+                                       "episodeLength_s": 10.0,}, # [s]
                                        "randomCommandVelocityRanges": {"linear_x":[0.5, 1.2], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
                                                                        "yaw": [0.5, 1.0], # [rad/s]
@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 200.0
-        self.max_sim_steps = 300000.0
+        self.max_global_episodes = 5000.0
+        self.max_sim_steps = 500000.0
         # ---------------------------------------------------------------------------
         
 
@@ -184,7 +184,7 @@ class TorqueDistributionTask(RLTask):
 
         RLTask.__init__(self, name, env)
 
-        self.bounds = torch.tensor([-15.0, 15.0, -15.0, 15.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-20.0, 20.0, -20.0, 20.0], device=self.device, dtype=torch.float)
 
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
@@ -546,8 +546,8 @@ class TorqueDistributionTask(RLTask):
             # Random command generation
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
-            # x_vel = 0.0 # max 1.0
-            omega = 0.0 # max 1.0
+            # x_vel = 1.0 # max 1.0
+            # omega = 0.5 # max 1.0
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
@@ -613,8 +613,9 @@ class TorqueDistributionTask(RLTask):
 
 
         # Compute guiding reward: negative Euclidean distance between agent and criteria actions
-        self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device) 
+        self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device)
         self.guiding_reward = self.guiding_reward * 0.1
+
 
         # Apply the blended execution action as torques (assumed direct mapping)
         self.torques = execution_action
@@ -655,7 +656,6 @@ class TorqueDistributionTask(RLTask):
     def post_physics_step(self):
         self.episode_buf[:] += 1
         self.sim_steps += 1
-
         
        
         if self.world.is_playing():
@@ -769,8 +769,8 @@ class TorqueDistributionTask(RLTask):
 
         # Sparse reward: bonus if tracking errors are very low
         sparse_reward = torch.where(
-            (torch.abs(self.v_delta) < 0.05 * torch.abs(self.desired_v)), # &
-            # (torch.abs(self.omega_delta) < 0.05 * torch.abs(self.desired_omega)),
+            (torch.abs(self.v_delta) < 0.05 * torch.abs(self.desired_v)) &
+            (torch.abs(self.omega_delta) < 0.05 * torch.abs(self.desired_omega)),
             torch.full_like(self.v_delta, 3000.0),
             torch.zeros_like(self.v_delta)
         )
@@ -825,9 +825,8 @@ class TorqueDistributionTask(RLTask):
                     "env0_v_delta": self.v_delta[0].item(),
                     "env0_omega_delta": self.omega_delta[0].item(),
                     "env0_linear_acc": self.linear_acc[0].item(),
-                    "env0_angular_acc": self.angular_acc[0].item(),   
+                    "env0_angular_acc": self.angular_acc[0].item(), 
                     "env0_episode_count": self.episode_count[0].item(),            
-          
                 }
                           
         return {self._robots.name: {"obs_buf": self.obs_buf}}

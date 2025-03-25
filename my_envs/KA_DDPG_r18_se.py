@@ -176,7 +176,7 @@ class TorqueDistributionTask(RLTask):
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
         self.max_global_episodes = 5000.0
-        self.max_sim_steps = 2000000.0
+        self.max_sim_steps = 1000000.0
         # ---------------------------------------------------------------------------
         
 
@@ -184,7 +184,7 @@ class TorqueDistributionTask(RLTask):
 
         RLTask.__init__(self, name, env)
 
-        self.bounds = torch.tensor([-15.0, 15.0, -15.0, 15.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-20.0, 20.0, -20.0, 20.0], device=self.device, dtype=torch.float)
 
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)

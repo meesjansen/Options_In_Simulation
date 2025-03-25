@@ -151,7 +151,7 @@ DDPG_DEFAULT_CONFIG = {
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "KA",
+        "wandb_kwargs": {"project": "KA_DDPG",
                          "entity": "meesjansen-Delft Technical University",
                          "name": "KA-DDPG_r18_se",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],
@@ -186,7 +186,7 @@ agent = DDPG(models=models,
 
 
 # Configure and instantiate the RL trainer.
-cfg_trainer = {"timesteps": 7500000, "headless": True}
+cfg_trainer = {"timesteps": 2000000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # Start PPO training.
