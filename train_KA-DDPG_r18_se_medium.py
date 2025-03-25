@@ -60,7 +60,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.KA_DDPG_r18_v0 import TorqueDistributionTask, TASK_CFG
+from my_envs.KA_DDPG_r18_se_medium import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
@@ -75,7 +75,7 @@ parsed_config = arg_parser.parse_args().__dict__
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
-TASK_CFG["task"]["env"]["numEnvs"] = 64
+TASK_CFG["task"]["env"]["numEnvs"] = 1
 
 # control
 TASK_CFG["task"]["env"]["control"]["stiffness"] = parsed_config["stiffness"]
@@ -145,15 +145,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_v0",
-        "experiment_name": "KA-DDPG_r18_v0",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_se_medium",
+        "experiment_name": "KA-DDPG_r18_se_medium",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "KA",
+        "wandb_kwargs": {"project": "KA_DDPG",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_r18_v0",
+                         "name": "KA-DDPG_r18_se_medium",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
@@ -162,7 +162,7 @@ DDPG_DEFAULT_CONFIG = {
 cfg = DDPG_DEFAULT_CONFIG.copy()
 cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device)
 cfg["gradient_steps"] = 1
-cfg["batch_size"] = 4096
+cfg["batch_size"] = 7680
 cfg["discount_factor"] = 0.999
 cfg["polyak"] = 0.005
 cfg["actor_learning_rate"] = 3e-4
@@ -186,7 +186,7 @@ agent = DDPG(models=models,
 
 
 # Configure and instantiate the RL trainer.
-cfg_trainer = {"timesteps": 500000, "headless": True}
+cfg_trainer = {"timesteps": 2000000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # Start PPO training.
