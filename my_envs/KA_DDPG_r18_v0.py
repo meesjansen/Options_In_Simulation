@@ -643,9 +643,9 @@ class TorqueDistributionTask(RLTask):
 
         # print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
         # print("pre_physics; desired_v: ", self.desired_v[0])
-        # print("pre_physics; current_v: ", current_v[0])
+        print("pre_physics; current_v: ", self.current_v[0])
         # print("pre_physics; desired_omega: ", self.desired_omega[0])
-        # print("pre_physics; current_omega: ", current_omega[0])
+        print("pre_physics; current_omega: ", self.current_omega[0])
         # print("pre_physics; expert torques left: ", self.ac_left[0])
         # print("pre_physics; expert torques right: ", self.ac_right[0])
         # print("pre_physics; executed torques pre clip: ", self.torques[0])
