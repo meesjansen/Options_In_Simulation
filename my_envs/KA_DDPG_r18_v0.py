@@ -619,7 +619,7 @@ class TorqueDistributionTask(RLTask):
         # Apply the blended execution action as torques (assumed direct mapping)
         # self.torques = execution_action
         # self.torques = criteria_action
-        self.torques[:] = torch.tensor([10.0, 10.0, 10.0, 10.0], device=self.device)
+        self.torques[:] = torch.tensor([-10.0, -10.0, 10.0, 10.0], device=self.device)
 
 
         # # Retrieve the ordered DOF names from your RobotView

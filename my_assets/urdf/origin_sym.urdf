@@ -121,7 +121,7 @@
     <parent link="main_body"/>
     <child link="right_front_wheel"/>
     <origin xyz="0.205 -0.25 0.056" rpy="1.5707 0 0"/>
-    <axis xyz="0 0 1"/>
+    <axis xyz="0 0 -1"/>
     <limit effort="100000.0" velocity="10"/>
   </joint>
 
@@ -137,7 +137,7 @@
     <parent link="main_body"/>
     <child link="right_rear_wheel"/>
     <origin xyz="-0.205 -0.25 0.056" rpy="1.5707 0 0"/>
-    <axis xyz="0 0 1"/>
+    <axis xyz="0 0 -1"/>
     <limit effort="100000.0" velocity="10"/>
   </joint>
 </robot>
