@@ -190,6 +190,10 @@ class Trainer:
                 linear_acc = self.env.task.observed_components["env0_linear_acc"]
                 angular_acc = self.env.task.observed_components["env0_angular_acc"]
                 episode_count = self.env.task.observed_components["env0_episode_count"]
+                torque_fl = self.env.task.observed_components["env0_torque_fl"]
+                torque_rl = self.env.task.observed_components["env0_torque_rl"]
+                torque_fr = self.env.task.observed_components["env0_torque_fr"]
+                torque_rr = self.env.task.observed_components["env0_torque_rr"]
 
 
                 actions = self.env.task.wheel_torqs / self.env.task.action_scale
@@ -218,6 +222,10 @@ class Trainer:
                 self.agents.track_data(f"Reward_comp_env0 / linear_acc", linear_acc)
                 self.agents.track_data(f"Reward_comp_env0 / angular_acc", angular_acc)
                 self.agents.track_data(f"Reward_comp_env0 / episode_count", episode_count)
+                self.agents.track_data(f"Reward_comp_env0 / torque_fl", torque_fl)
+                self.agents.track_data(f"Reward_comp_env0 / torque_rl", torque_rl)
+                self.agents.track_data(f"Reward_comp_env0 / torque_fr", torque_fr)
+                self.agents.track_data(f"Reward_comp_env0 / torque_rr", torque_rr)
 
 
 

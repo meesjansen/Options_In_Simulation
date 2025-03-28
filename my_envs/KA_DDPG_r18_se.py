@@ -67,7 +67,7 @@ TASK_CFG = {"test": False,
                             "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed      
                             "learn" : {"heightMeasurementScale": 1.0,
                                        "terminalReward": 0.0,
-                                       "episodeLength_s": 10.0,}, # [s]
+                                       "episodeLength_s": 5.0,}, # [s]
                                        "randomCommandVelocityRanges": {"linear_x":[0.5, 1.2], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
                                                                        "yaw": [0.5, 1.0], # [rad/s]
@@ -171,7 +171,7 @@ class TorqueDistributionTask(RLTask):
         # ---------------------------------------------------------------------------
         # Add parameters for the low-fidelity controller (criteria action)
         # You can also move these to the config if desired.
-        self.vehicle_mass = 26.1      # [kg]
+        self.vehicle_mass = 25.0      # [kg]
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
@@ -614,7 +614,7 @@ class TorqueDistributionTask(RLTask):
 
         # Compute guiding reward: negative Euclidean distance between agent and criteria actions
         self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device)
-        self.guiding_reward = self.guiding_reward * 0.1
+        self.guiding_reward = self.guiding_reward
 
 
         # Apply the blended execution action as torques (assumed direct mapping)
@@ -764,14 +764,14 @@ class TorqueDistributionTask(RLTask):
         # r3: Torque penalty (sum of squared torques)
         r3 = torch.sum(self.wheel_torqs ** 2, dim=1)
         # Weight factors (tunable)
-        w1, w2, w3 = -40.0, -0.005, -0.006
+        w1, w2, w3 = -100.0, -0.05, -0.06
         rdense = w1 * r1 + w2 * r2 + w3 * r3
 
         # Sparse reward: bonus if tracking errors are very low
         sparse_reward = torch.where(
             (torch.abs(self.v_delta) < 0.05 * torch.abs(self.desired_v)) &
             (torch.abs(self.omega_delta) < 0.05 * torch.abs(self.desired_omega)),
-            torch.full_like(self.v_delta, 3000.0),
+            torch.full_like(self.v_delta, 30.0),
             torch.zeros_like(self.v_delta)
         )
         observed_reward = rdense + sparse_reward
@@ -826,7 +826,11 @@ class TorqueDistributionTask(RLTask):
                     "env0_omega_delta": self.omega_delta[0].item(),
                     "env0_linear_acc": self.linear_acc[0].item(),
                     "env0_angular_acc": self.angular_acc[0].item(), 
-                    "env0_episode_count": self.episode_count[0].item(),            
+                    "env0_episode_count": self.episode_count[0].item(),
+                    "env0_torque_fl": self.torques[0, 0].item(),   
+                    "env0_torque_rl": self.torques[0, 1].item(),
+                    "env0_torque_fr": self.torques[0, 2].item(),
+                    "env0_torque_rr": self.torques[0, 3].item(),            
                 }
                           
         return {self._robots.name: {"obs_buf": self.obs_buf}}

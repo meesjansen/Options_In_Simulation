@@ -66,8 +66,8 @@ from argparse import ArgumentParser
 arg_parser = ArgumentParser()
 arg_parser.add_argument("--stiffness", type=float, default=0.003)
 arg_parser.add_argument("--damping", type=float, default=0.005)
-arg_parser.add_argument("--static_friction", type=float, default=1.0)
-arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
+arg_parser.add_argument("--static_friction", type=float, default=0.85)
+arg_parser.add_argument("--dynamic_friction", type=float, default=0.85)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
 arg_parser.add_argument("--linear_x", type=float, default=[0.5, 1.2])
 
@@ -151,7 +151,7 @@ DDPG_DEFAULT_CONFIG = {
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "Expert Knowledge",
+        "wandb_kwargs": {"project": "Expert Knowledge Callibration",
                          "entity": "meesjansen-Delft Technical University",
                          "name": "KA-DDPG_r18_se_long",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],
@@ -160,9 +160,9 @@ DDPG_DEFAULT_CONFIG = {
 }
 
 cfg = DDPG_DEFAULT_CONFIG.copy()
-cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device)
+cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.03, base_scale=0.2, device=device)
 cfg["gradient_steps"] = 1
-cfg["batch_size"] = 7680
+cfg["batch_size"] = 7680/2
 cfg["discount_factor"] = 0.999
 cfg["polyak"] = 0.005
 cfg["actor_learning_rate"] = 3e-4
