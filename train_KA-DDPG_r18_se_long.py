@@ -162,7 +162,7 @@ DDPG_DEFAULT_CONFIG = {
 cfg = DDPG_DEFAULT_CONFIG.copy()
 cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.03, base_scale=0.2, device=device)
 cfg["gradient_steps"] = 1
-cfg["batch_size"] = 7680/2
+cfg["batch_size"] = 3840
 cfg["discount_factor"] = 0.999
 cfg["polyak"] = 0.005
 cfg["actor_learning_rate"] = 3e-4
