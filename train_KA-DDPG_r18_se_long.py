@@ -160,7 +160,7 @@ DDPG_DEFAULT_CONFIG = {
 }
 
 cfg = DDPG_DEFAULT_CONFIG.copy()
-cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.03, base_scale=0.2, device=device)
+cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.05, base_scale=0.3, device=device)
 cfg["gradient_steps"] = 1
 cfg["batch_size"] = 3840
 cfg["discount_factor"] = 0.999
@@ -186,7 +186,7 @@ agent = DDPG(models=models,
 
 
 # Configure and instantiate the RL trainer.
-cfg_trainer = {"timesteps": 2000000, "headless": True}
+cfg_trainer = {"timesteps": 1500000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # Start PPO training.

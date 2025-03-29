@@ -544,10 +544,10 @@ class TorqueDistributionTask(RLTask):
             
         elif self.randsampling:
             # Random command generation
-            # x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
-            # omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
-            x_vel = 0.5 # max 1.5
-            omega = 0.5 # max 1.5
+            x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
+            omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
+            # x_vel = 0.5 # max 1.5
+            # omega = 0.5 # max 1.5
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
@@ -614,7 +614,7 @@ class TorqueDistributionTask(RLTask):
 
         # Compute guiding reward: negative Euclidean distance between agent and criteria actions
         self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device)
-        self.guiding_reward = self.guiding_reward
+        self.guiding_reward = 10.0 * self.guiding_reward
 
 
         # Apply the blended execution action as torques (assumed direct mapping)

@@ -614,7 +614,7 @@ class TorqueDistributionTask(RLTask):
 
         # Compute guiding reward: negative Euclidean distance between agent and criteria actions
         self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device)
-        self.guiding_reward = self.guiding_reward
+        self.guiding_reward = 10 * self.guiding_reward
 
 
         # Apply the blended execution action as torques (assumed direct mapping)
