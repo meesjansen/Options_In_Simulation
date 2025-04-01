@@ -64,12 +64,12 @@ from my_envs.KA_DDPG_r18_se_short import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
-arg_parser.add_argument("--stiffness", type=float, default=0.003)
+arg_parser.add_argument("--stiffness", type=float, default=0.004)
 arg_parser.add_argument("--damping", type=float, default=0.005)
 arg_parser.add_argument("--static_friction", type=float, default=1.0)
 arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
-arg_parser.add_argument("--linear_x", type=float, default=[0.5, 1.2])
+arg_parser.add_argument("--linear_x", type=float, default=[1.4, 1.5])
 
 parsed_config = arg_parser.parse_args().__dict__
 
@@ -151,7 +151,7 @@ DDPG_DEFAULT_CONFIG = {
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "Expert Knowledge",
+        "wandb_kwargs": {"project": "Expert Knowledge Variations",
                          "entity": "meesjansen-Delft Technical University",
                          "name": "KA-DDPG_r18_se_short",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],
@@ -160,9 +160,9 @@ DDPG_DEFAULT_CONFIG = {
 }
 
 cfg = DDPG_DEFAULT_CONFIG.copy()
-cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device)
+cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.05, base_scale=0.3, device=device)
 cfg["gradient_steps"] = 1
-cfg["batch_size"] = 7680
+cfg["batch_size"] = 3840
 cfg["discount_factor"] = 0.999
 cfg["polyak"] = 0.005
 cfg["actor_learning_rate"] = 3e-4
@@ -173,7 +173,7 @@ cfg["state_preprocessor"] = RunningStandardScaler
 cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
 # logging to TensorBoard and write checkpoints (in timesteps)
 cfg["experiment"]["write_interval"] = 800
-cfg["experiment"]["checkpoint_interval"] = 200000
+cfg["experiment"]["checkpoint_interval"] = 500000
 
 
 agent = DDPG(models=models,
@@ -186,7 +186,7 @@ agent = DDPG(models=models,
 
 
 # Configure and instantiate the RL trainer.
-cfg_trainer = {"timesteps": 2000000, "headless": True}
+cfg_trainer = {"timesteps": 1500000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # Start PPO training.
