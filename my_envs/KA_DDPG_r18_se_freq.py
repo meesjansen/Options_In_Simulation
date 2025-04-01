@@ -40,7 +40,7 @@ TASK_CFG = {"test": False,
                              "episodeLength": 500,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
-                             "controlFrequencyInv": 4,
+                             "controlFrequencyInv": 60,
                              "baseInitState": {"pos": [0.0, 0.0, 0.1], # x,y,z [m]
                                               "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
                                               "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
@@ -67,12 +67,12 @@ TASK_CFG = {"test": False,
                             "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed      
                             "learn" : {"heightMeasurementScale": 1.0,
                                        "terminalReward": 0.0,
-                                       "episodeLength_s": 5.0,}, # [s]
+                                       "episodeLength_s": 10.0,}, # [s]
                                        "randomCommandVelocityRanges": {"linear_x":[1.5, 1.5], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
                                                                        "yaw": [1.0, 1.1], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
-                            "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
+                            "control": {"decimation": 60, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
                                         "actionScale": 20.0,
@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 5000.0
-        self.max_sim_steps = 1500000.0 # 500 episodes of 5s at 600 Hz sim and 150Hz control/policy
+        self.max_global_episodes = 250.0
+        self.max_sim_steps = 1500000.0 # 250 episodes of 10s at 600Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
