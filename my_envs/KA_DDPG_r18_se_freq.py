@@ -586,7 +586,7 @@ class TorqueDistributionTask(RLTask):
         self.omega_delta = self.desired_omega - self.current_omega
 
 
-        self.Kp_omega = 0.2
+        self.Kp_omega = 20.0
         # Compute criteria actions for each wheel:
         # Left wheels get: Kp * ( (m*v_delta/dt) - (J*omega_delta/dt) )
         # Right wheels get: Kp * ( (m*v_delta/dt) + (J*omega_delta/dt) )
