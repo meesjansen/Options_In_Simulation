@@ -68,9 +68,9 @@ TASK_CFG = {"test": False,
                             "learn" : {"heightMeasurementScale": 1.0,
                                        "terminalReward": 0.0,
                                        "episodeLength_s": 5.0,}, # [s]
-                                       "randomCommandVelocityRanges": {"linear_x":[0.5, 2.5], # [m/s]
+                                       "randomCommandVelocityRanges": {"linear_x":[1.5, 1.5], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
-                                                                       "yaw": [0.5, 2.5], # [rad/s]
+                                                                       "yaw": [1.5, 1.5], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
@@ -764,14 +764,14 @@ class TorqueDistributionTask(RLTask):
         # r3: Torque penalty (sum of squared torques)
         r3 = torch.sum(self.wheel_torqs ** 2, dim=1)
         # Weight factors (tunable)
-        w1, w2, w3 = -300.0, -0.05, -0.06
+        w1, w2, w3 = -100.0, -0.005, -0.006
         rdense = w1 * r1 # + w2 * r2 + w3 * r3
 
         # Sparse reward: bonus if tracking errors are very low
         sparse_reward = torch.where(
-            (torch.abs(self.v_delta) < 0.05 * torch.abs(self.desired_v)) &
-            (torch.abs(self.omega_delta) < 0.05 * torch.abs(self.desired_omega)),
-            torch.full_like(self.v_delta, 30.0),
+            (torch.abs(self.v_delta) < 0.03 * torch.abs(self.desired_v)) &
+            (torch.abs(self.omega_delta) < 0.03 * torch.abs(self.desired_omega)),
+            torch.full_like(self.v_delta, 300.0),
             torch.zeros_like(self.v_delta)
         )
         observed_reward = rdense + sparse_reward
