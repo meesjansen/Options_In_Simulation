@@ -614,7 +614,7 @@ class TorqueDistributionTask(RLTask):
 
         # Compute guiding reward: negative Euclidean distance between agent and criteria actions
         self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device)
-        self.guiding_reward = 10 * self.guiding_reward
+        self.guiding_reward = self.guiding_reward
 
 
         # Apply the blended execution action as torques (assumed direct mapping)
@@ -771,7 +771,7 @@ class TorqueDistributionTask(RLTask):
         sparse_reward = torch.where(
             (torch.abs(self.v_delta) < 0.1 * torch.abs(self.desired_v)) &
             (torch.abs(self.omega_delta) < 0.05 * torch.abs(self.desired_omega)),
-            torch.full_like(self.v_delta, 300.0),
+            torch.full_like(self.v_delta, 30.0),
             torch.zeros_like(self.v_delta)
         )
         observed_reward = rdense + sparse_reward
@@ -789,13 +789,13 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Sparse reward"] += sparse_reward
         self.episode_sums["guiding reward"] += self.guiding_reward
         
-        # print("metrics; r1: Tracking error reward (squared errors):", w1 * r1[0])
-        # print("metrics: r2: Convergence reward (squared accelerations):", w2 * r2[0])
-        # print("metrics: r3: Torque penalty (sum of squared torques):", w3 * r3[0])
+        print("metrics; r1: Tracking error reward (squared errors):", w1 * r1[0])
+        print("metrics: r2: Convergence reward (squared accelerations):", w2 * r2[0])
+        print("metrics: r3: Torque penalty (sum of squared torques):", w3 * r3[0])
         # print("metrics: Dense reward:", rdense[0])
         # print("metrics: Sparse reward:", sparse_reward[0])
-        # print("metrics: observed reward:", observed_reward[0])
-        # print("metrics: guiding reward:", self.guiding_reward[0])
+        print("metrics: observed reward:", observed_reward[0])
+        print("metrics: guiding reward:", self.guiding_reward[0])
         # print("metrics: final reward:", self.rew_buf[0])
 
                        

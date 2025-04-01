@@ -60,7 +60,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.KA_DDPG_r18_se_medium_w0 import TorqueDistributionTask, TASK_CFG
+from my_envs.KA_DDPG_r18_se_short_r import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()

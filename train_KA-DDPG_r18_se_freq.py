@@ -145,15 +145,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_se_long",
-        "experiment_name": "KA-DDPG_r18_se_long",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_se_freq",
+        "experiment_name": "KA-DDPG_r18_se_freq",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "Expert Knowledge Callibration",
+        "wandb_kwargs": {"project": "Expert Knowledge Variations",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_r18_se_long",
+                         "name": "KA-DDPG_r18_se_freq",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
@@ -189,5 +189,4 @@ agent = DDPG(models=models,
 cfg_trainer = {"timesteps": 1500000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
-# Start PPO training.
 trainer.train()
