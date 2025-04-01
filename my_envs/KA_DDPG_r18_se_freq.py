@@ -642,10 +642,10 @@ class TorqueDistributionTask(RLTask):
         # print("pre_physics; dof vel: ", self._robots.get_joint_velocities(clone=False))
 
         # print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
-        print("pre_physics; desired_v: ", self.desired_v[0])
-        print("pre_physics; current_v: ", self.current_v[0])
-        print("pre_physics; desired_omega: ", self.desired_omega[0])
-        print("pre_physics; current_omega: ", self.current_omega[0])
+        # print("pre_physics; desired_v: ", self.desired_v[0])
+        # print("pre_physics; current_v: ", self.current_v[0])
+        # print("pre_physics; desired_omega: ", self.desired_omega[0])
+        # print("pre_physics; current_omega: ", self.current_omega[0])
         # print("pre_physics; expert torques left: ", self.ac_left[0])
         # print("pre_physics; expert torques right: ", self.ac_right[0])
         # print("pre_physics; executed torques pre clip: ", self.torques[0])
@@ -771,7 +771,7 @@ class TorqueDistributionTask(RLTask):
         sparse_reward = torch.where(
             (torch.abs(self.v_delta) < 0.1 * torch.abs(self.desired_v)) &
             (torch.abs(self.omega_delta) < 0.05 * torch.abs(self.desired_omega)),
-            torch.full_like(self.v_delta, 300.0),
+            torch.full_like(self.v_delta, 30.0),
             torch.zeros_like(self.v_delta)
         )
         observed_reward = rdense + sparse_reward
@@ -789,13 +789,13 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Sparse reward"] += sparse_reward
         self.episode_sums["guiding reward"] += self.guiding_reward
         
-        print("metrics; r1: Tracking error reward (squared errors):", w1 * r1[0])
-        print("metrics: r2: Convergence reward (squared accelerations):", w2 * r2[0])
-        print("metrics: r3: Torque penalty (sum of squared torques):", w3 * r3[0])
+        # print("metrics; r1: Tracking error reward (squared errors):", w1 * r1[0])
+        # print("metrics: r2: Convergence reward (squared accelerations):", w2 * r2[0])
+        # print("metrics: r3: Torque penalty (sum of squared torques):", w3 * r3[0])
         # print("metrics: Dense reward:", rdense[0])
         # print("metrics: Sparse reward:", sparse_reward[0])
-        print("metrics: observed reward:", observed_reward[0])
-        print("metrics: guiding reward:", self.guiding_reward[0])
+        # print("metrics: observed reward:", observed_reward[0])
+        # print("metrics: guiding reward:", self.guiding_reward[0])
         # print("metrics: final reward:", self.rew_buf[0])
 
                        
