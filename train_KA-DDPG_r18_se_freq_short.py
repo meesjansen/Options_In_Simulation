@@ -60,7 +60,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.KA_DDPG_r18_se_freq import TorqueDistributionTask, TASK_CFG
+from my_envs.KA_DDPG_r18_se_freq_short import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
@@ -145,15 +145,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_se_freq",
-        "experiment_name": "KA-DDPG_r18_se_freq",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_se_freq_short",
+        "experiment_name": "KA-DDPG_r18_se_freq_short",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "Expert Knowledge Variations",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_r18_se_freq",
+                         "name": "KA-DDPG_r18_se_freq_short",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }

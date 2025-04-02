@@ -60,7 +60,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.KA_DDPG_r18_se import TorqueDistributionTask, TASK_CFG
+from my_envs.KA_DDPG_r18_se_g1 import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
@@ -69,7 +69,7 @@ arg_parser.add_argument("--damping", type=float, default=0.005)
 arg_parser.add_argument("--static_friction", type=float, default=1.0)
 arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
-arg_parser.add_argument("--linear_x", type=float, default=[1.4, 1.5])
+arg_parser.add_argument("--linear_x", type=float, default=[1.5, 1.5])
 
 parsed_config = arg_parser.parse_args().__dict__
 
@@ -145,15 +145,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_se",
-        "experiment_name": "KA-DDPG_r18_se",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_se_g1",
+        "experiment_name": "KA-DDPG_r18_se_g1",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "Expert Knowledge Callibration",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_r18_se",
+                         "name": "KA-DDPG_r18_se_g1",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
