@@ -40,7 +40,7 @@ TASK_CFG = {"test": False,
                              "episodeLength": 500,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
-                             "controlFrequencyInv": 4,
+                             "controlFrequencyInv": 60,
                              "baseInitState": {"pos": [0.0, 0.0, 0.1], # x,y,z [m]
                                               "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
                                               "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
@@ -67,12 +67,12 @@ TASK_CFG = {"test": False,
                             "TerrainType": "double room", # rooms, stairs, sloped, mixed_v1, mixed_v2, mixed_v3, custom, custom_mixed      
                             "learn" : {"heightMeasurementScale": 1.0,
                                        "terminalReward": 0.0,
-                                       "episodeLength_s": 5.0,}, # [s]
+                                       "episodeLength_s": 10.0,}, # [s]
                                        "randomCommandVelocityRanges": {"linear_x":[1.5, 1.5], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
                                                                        "yaw": [1.0, 1.1], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
-                            "control": {"decimation": 4, # decimation: Number of control action updates @ sim DT per policy DT
+                            "control": {"decimation": 60, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
                                         "actionScale": 20.0,
@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 5000.0
-        self.max_sim_steps = 100000.0 # 333 episodes of 5s at 600 Hz sim and 150Hz control/policy
+        self.max_global_episodes = 250.0
+        self.max_sim_steps = 1500000.0 # 250 episodes of 10s at 600Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -546,8 +546,8 @@ class TorqueDistributionTask(RLTask):
             # Random command generation
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
-            # x_vel = 1.0 # max 1.0
-            # omega = 0.5 # max 1.0
+            # x_vel = 0.0 # max 1.0
+            omega = 0.0 # max 1.0
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
@@ -586,7 +586,7 @@ class TorqueDistributionTask(RLTask):
         self.omega_delta = self.desired_omega - self.current_omega
 
 
-        self.Kp_omega = 0.2
+        self.Kp_omega = 0.665
         # Compute criteria actions for each wheel:
         # Left wheels get: Kp * ( (m*v_delta/dt) - (J*omega_delta/dt) )
         # Right wheels get: Kp * ( (m*v_delta/dt) + (J*omega_delta/dt) )
@@ -615,7 +615,7 @@ class TorqueDistributionTask(RLTask):
 
         # Compute guiding reward: negative Euclidean distance between agent and criteria actions
         self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device)
-        self.guiding_reward = self.guiding_reward
+        self.guiding_reward = 2.0 * self.guiding_reward
 
 
         # Apply the blended execution action as torques (assumed direct mapping)
@@ -643,14 +643,14 @@ class TorqueDistributionTask(RLTask):
         # print("pre_physics; dof vel: ", self._robots.get_joint_velocities(clone=False))
 
         # print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
-        print("pre_physics; desired_v: ", self.desired_v[0])
-        print("pre_physics; current_v: ", self.current_v[0])
-        print("pre_physics; desired_omega: ", self.desired_omega[0])
-        print("pre_physics; current_omega: ", self.current_omega[0])
+        # print("pre_physics; desired_v: ", self.desired_v[0])
+        # print("pre_physics; current_v: ", self.current_v[0])
+        # print("pre_physics; desired_omega: ", self.desired_omega[0])
+        # print("pre_physics; current_omega: ", self.current_omega[0])
         # print("pre_physics; expert torques left: ", self.ac_left[0])
         # print("pre_physics; expert torques right: ", self.ac_right[0])
         # print("pre_physics; executed torques pre clip: ", self.torques[0])
-        print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
+        # print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
         # print("base velocitites in z: ", self.base_velocities[0, 2])
 
           
@@ -765,7 +765,7 @@ class TorqueDistributionTask(RLTask):
         # r3: Torque penalty (sum of squared torques)
         r3 = torch.sum(self.wheel_torqs ** 2, dim=1)
         # Weight factors (tunable)
-        w1, w2, w3 = -100.0, -0.005, -0.006
+        w1, w2, w3 = -700.0, -0.035, -0.042
         rdense = w1 * r1 + w2 * r2 + w3 * r3
 
         # Sparse reward: bonus if tracking errors are very low
@@ -790,13 +790,13 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Sparse reward"] += sparse_reward
         self.episode_sums["guiding reward"] += self.guiding_reward
         
-        print("metrics; r1: Tracking error reward (squared errors):", w1 * r1[0])
-        print("metrics: r2: Convergence reward (squared accelerations):", w2 * r2[0])
-        print("metrics: r3: Torque penalty (sum of squared torques):", w3 * r3[0])
+        # print("metrics; r1: Tracking error reward (squared errors):", w1 * r1[0])
+        # print("metrics: r2: Convergence reward (squared accelerations):", w2 * r2[0])
+        # print("metrics: r3: Torque penalty (sum of squared torques):", w3 * r3[0])
         # print("metrics: Dense reward:", rdense[0])
         # print("metrics: Sparse reward:", sparse_reward[0])
-        print("metrics: observed reward:", observed_reward[0])
-        print("metrics: guiding reward:", self.guiding_reward[0])
+        # print("metrics: observed reward:", observed_reward[0])
+        # print("metrics: guiding reward:", self.guiding_reward[0])
         # print("metrics: final reward:", self.rew_buf[0])
 
                        
