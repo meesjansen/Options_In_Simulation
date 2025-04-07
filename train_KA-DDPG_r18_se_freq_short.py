@@ -16,7 +16,7 @@ from my_agents.ddpg import DDPG
 from my_trainers.sequential_KA import SequentialTrainer
 
 # set the seed for reproducibility
-seed = set_seed(42)
+seed = set_seed(2)
 
 # Define the models (stochastic and deterministic) for the agent using helper mixin.
 # - Policy: takes as input the environment's observation/state and returns action
@@ -27,11 +27,11 @@ class DeterministicActor(DeterministicMixin, Model):
         DeterministicMixin.__init__(self, clip_actions)
 
         self.net = nn.Sequential(nn.Linear(self.num_observations, 512),
-                                 nn.ELU(),
+                                 nn.ReLU(),
                                  nn.Linear(512, 512),
-                                 nn.ELU(),
+                                 nn.ReLU(),
                                  nn.Linear(512, 128),
-                                 nn.ELU(),
+                                 nn.ReLU(),
                                  nn.Linear(128, self.num_actions),
                                  nn.Tanh())
 
@@ -44,11 +44,11 @@ class Critic(DeterministicMixin, Model):
         DeterministicMixin.__init__(self, clip_actions)
 
         self.net = nn.Sequential(nn.Linear(self.num_observations + self.num_actions, 512),
-                                 nn.ELU(),
+                                 nn.ReLU(),
                                  nn.Linear(512, 512),
-                                 nn.ELU(),
+                                 nn.ReLU(),
                                  nn.Linear(512, 128),
-                                 nn.ELU(),
+                                 nn.ReLU(),
                                  nn.Linear(128, 1))
 
     def compute(self, inputs, role):
@@ -64,10 +64,10 @@ from my_envs.KA_DDPG_r18_se_freq_short import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
-arg_parser.add_argument("--stiffness", type=float, default=0.045)
+arg_parser.add_argument("--stiffness", type=float, default=0.05)
 arg_parser.add_argument("--damping", type=float, default=0.005)
-arg_parser.add_argument("--static_friction", type=float, default=1.0)
-arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
+arg_parser.add_argument("--static_friction", type=float, default=0.85)
+arg_parser.add_argument("--dynamic_friction", type=float, default=0.85)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
 arg_parser.add_argument("--linear_x", type=float, default=[1.5, 1.5])
 
@@ -134,11 +134,11 @@ DDPG_DEFAULT_CONFIG = {
     "grad_norm_clip": 0,            # clipping coefficient for the norm of the gradients
 
     "exploration": {
-        "noise": OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device),              # exploration noise
-        "initial_scale": 1.0,       # initial scale for the noise
-        "final_scale": 1e-3,        # final scale for the noise
-        "timesteps": None,          # timesteps for the noise decay
-    },
+        "noise": OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=1.0, device=device),
+        "initial_scale": 0.1,       # 0.1 in normalized space corresponds to 10% of max (0.1×20 = 2 Nm)
+        "final_scale": 1e-3,        # gradually decay the noise
+        "timesteps": None,          # or specify the number of timesteps for decay
+        },
 
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
 
@@ -160,11 +160,11 @@ DDPG_DEFAULT_CONFIG = {
 }
 
 cfg = DDPG_DEFAULT_CONFIG.copy()
-cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.08, base_scale=0.3, device=device)
+cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=1.0, device=device)
 cfg["gradient_steps"] = 1
-cfg["batch_size"] = 3840
+cfg["batch_size"] = 512
 cfg["discount_factor"] = 0.999
-cfg["polyak"] = 0.005
+cfg["polyak"] = 0.01
 cfg["actor_learning_rate"] = 3e-4
 cfg["critic_learning_rate"] = 1e-3
 cfg["random_timesteps"] = 80
