@@ -628,7 +628,6 @@ class TorqueDistributionTask(RLTask):
         # for i, name in enumerate(dof_names):
         #     print(f"DOF index: {self._robots.get_dof_index(name)}, name: {name}")
 
-        print("pre_physics; actions, still x20 for self.action_scale: ", self.actions[0])
 
 
         for _ in range(self.decimation):
@@ -639,7 +638,6 @@ class TorqueDistributionTask(RLTask):
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
                 SimulationContext.step(self.world, render=False)
-                print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
 
         # print("pre_physics; applied efforts: ", self._robots.get_applied_joint_efforts(clone=False))
         # print("pre_physics; dof vel: ", self._robots.get_joint_velocities(clone=False))
