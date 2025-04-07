@@ -769,8 +769,8 @@ class TorqueDistributionTask(RLTask):
 
         # Sparse reward: bonus if tracking errors are very low
         sparse_reward = torch.where(
-            (torch.abs(self.v_delta) < 0.1) &
-            (torch.abs(self.omega_delta) < 0.05),
+            (torch.abs(self.v_delta) < 0.05) &
+            (torch.abs(self.omega_delta) < 0.05 ),
             torch.full_like(self.v_delta, 30.0),
             torch.zeros_like(self.v_delta)
         )
