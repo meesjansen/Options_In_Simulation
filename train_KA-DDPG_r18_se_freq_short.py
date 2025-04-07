@@ -151,7 +151,7 @@ DDPG_DEFAULT_CONFIG = {
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "Expert Knowledge Variations",
+        "wandb_kwargs": {"project": "Expert Knowledge 1-to-1",
                          "entity": "meesjansen-Delft Technical University",
                          "name": "KA-DDPG_r18_se_freq_short",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],

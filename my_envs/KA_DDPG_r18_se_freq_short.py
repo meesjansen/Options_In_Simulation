@@ -651,7 +651,7 @@ class TorqueDistributionTask(RLTask):
         # print("pre_physics; expert torques right: ", self.ac_right[0])
         # print("pre_physics; executed torques pre clip: ", self.torques[0])
         # print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
-        print("base velocitites in z: ", self.base_velocities[0, 2])
+        # print("base velocitites in z: ", self.base_velocities[0, 2])
 
           
     def post_physics_step(self):
@@ -790,14 +790,14 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Sparse reward"] += sparse_reward
         self.episode_sums["guiding reward"] += self.guiding_reward
         
-        print("metrics; r1: Tracking error reward (squared errors):", w1 * r1[0])
-        print("metrics: r2: Convergence reward (squared accelerations):", w2 * r2[0])
-        print("metrics: r3: Torque penalty (sum of squared torques):", w3 * r3[0])
+        # print("metrics; r1: Tracking error reward (squared errors):", w1 * r1[0])
+        # print("metrics: r2: Convergence reward (squared accelerations):", w2 * r2[0])
+        # print("metrics: r3: Torque penalty (sum of squared torques):", w3 * r3[0])
         # print("metrics: Dense reward:", rdense[0])
-        print("metrics: Sparse reward:", sparse_reward[0])
-        print("metrics: observed reward:", observed_reward[0])
-        print("metrics: guiding reward:", self.guiding_reward[0])
-        print("metrics: final reward:", self.rew_buf[0])
+        # print("metrics: Sparse reward:", sparse_reward[0])
+        # print("metrics: observed reward:", observed_reward[0])
+        # print("metrics: guiding reward:", self.guiding_reward[0])
+        # print("metrics: final reward:", self.rew_buf[0])
 
                        
         return self.rew_buf
