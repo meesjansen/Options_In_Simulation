@@ -141,15 +141,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_se_freq_short",
-        "experiment_name": "KA-DDPG_r18_se_freq_short",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_One-to-One",
+        "experiment_name": "KA-DDPG_r18_One-to-One",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "Expert Knowledge 1-to-1",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_r18_se_freq_short",
+                         "name": "KA-DDPG_r18_One-to-One",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
@@ -163,8 +163,8 @@ cfg["discount_factor"] = 0.999
 cfg["polyak"] = 0.01
 cfg["actor_learning_rate"] = 3e-4
 cfg["critic_learning_rate"] = 1e-3
-cfg["random_timesteps"] = 80
-cfg["learning_starts"] = 80
+cfg["random_timesteps"] = 0
+cfg["learning_starts"] = 0
 cfg["state_preprocessor"] = RunningStandardScaler
 cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
 # logging to TensorBoard and write checkpoints (in timesteps)

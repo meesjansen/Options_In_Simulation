@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 600.0
-        self.max_sim_steps = 600000.0 # 300 episodes of 10s at 100Hz sim and 10Hz control/policy step
+        self.max_global_episodes = 500.0
+        self.max_sim_steps = 500000.0 # 300 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -643,14 +643,14 @@ class TorqueDistributionTask(RLTask):
         # print("pre_physics; dof vel: ", self._robots.get_joint_velocities(clone=False))
 
         # print("pre_physics; actions, still x20 for self.action_scale: ", self.actions[0])
-        # print("pre_physics; desired_v: ", self.desired_v[0])
-        # print("pre_physics; current_v: ", self.current_v[0])
-        # print("pre_physics; desired_omega: ", self.desired_omega[0])
-        # print("pre_physics; current_omega: ", self.current_omega[0])
+        print("pre_physics; desired_v: ", self.desired_v[0])
+        print("pre_physics; current_v: ", self.current_v[0])
+        print("pre_physics; desired_omega: ", self.desired_omega[0])
+        print("pre_physics; current_omega: ", self.current_omega[0])
         # print("pre_physics; expert torques left: ", self.ac_left[0])
         # print("pre_physics; expert torques right: ", self.ac_right[0])
         # print("pre_physics; executed torques pre clip: ", self.torques[0])
-        # print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
+        print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
         # print("base velocitites in z: ", self.base_velocities[0, 2])
 
           
