@@ -70,7 +70,7 @@ TASK_CFG = {"test": False,
                                        "episodeLength_s": 10.0,}, # [s]
                                        "randomCommandVelocityRanges": {"linear_x":[1.5, 1.5], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
-                                                                       "yaw": [1.0, 1.1], # [rad/s]
+                                                                       "yaw": [0.5, 1.5], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 10, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 300.0
-        self.max_sim_steps = 300000.0 # 300 episodes of 10s at 100Hz sim and 10Hz control/policy step
+        self.max_global_episodes = 600.0
+        self.max_sim_steps = 600000.0 # 300 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -184,7 +184,7 @@ class TorqueDistributionTask(RLTask):
 
         RLTask.__init__(self, name, env)
 
-        self.bounds = torch.tensor([-20.0, 20.0, -20.0, 20.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-30.0, 30.0, -30.0, 30.0], device=self.device, dtype=torch.float)
 
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
@@ -547,7 +547,7 @@ class TorqueDistributionTask(RLTask):
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
             # x_vel = 0.0 # max 1.0
-            omega = 0.0 # max 1.0
+            # omega = 0.0 # max 1.0
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
@@ -770,8 +770,8 @@ class TorqueDistributionTask(RLTask):
 
         # Sparse reward: bonus if tracking errors are very low
         sparse_reward = torch.where(
-            (torch.abs(self.v_delta) < 0.05 ) &
-            (torch.abs(self.omega_delta) < 0.05),
+            (torch.abs(self.v_delta) < 0.01 ) &
+            (torch.abs(self.omega_delta) < 0.01),
             torch.full_like(self.v_delta, 30.0),
             torch.zeros_like(self.v_delta)
         )
