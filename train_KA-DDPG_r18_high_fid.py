@@ -145,15 +145,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_se_freq",
-        "experiment_name": "KA-DDPG_r18_se_freq",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_high_fid",
+        "experiment_name": "KA-DDPG_r18_high_fid",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "Expert Knowledge Variations",
+        "wandb_kwargs": {"project": "Expert Knowledge 1-to-1",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_r18_se_freq",
+                         "name": "KA-DDPG_r18_high_fid",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
