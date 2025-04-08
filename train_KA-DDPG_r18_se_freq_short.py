@@ -30,9 +30,7 @@ class DeterministicActor(DeterministicMixin, Model):
                                  nn.ReLU(),
                                  nn.Linear(512, 512),
                                  nn.ReLU(),
-                                 nn.Linear(512, 128),
-                                 nn.ReLU(),
-                                 nn.Linear(128, self.num_actions),
+                                 nn.Linear(512, self.num_actions),
                                  nn.Tanh())
 
     def compute(self, inputs, role):
@@ -47,9 +45,7 @@ class Critic(DeterministicMixin, Model):
                                  nn.ReLU(),
                                  nn.Linear(512, 512),
                                  nn.ReLU(),
-                                 nn.Linear(512, 128),
-                                 nn.ReLU(),
-                                 nn.Linear(128, 1))
+                                 nn.Linear(512, 1))
 
     def compute(self, inputs, role):
         return self.net(torch.cat([inputs["states"], inputs["taken_actions"]], dim=1)), {}
@@ -69,7 +65,7 @@ arg_parser.add_argument("--damping", type=float, default=0.005)
 arg_parser.add_argument("--static_friction", type=float, default=0.85)
 arg_parser.add_argument("--dynamic_friction", type=float, default=0.85)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
-arg_parser.add_argument("--linear_x", type=float, default=[1.5, 1.5])
+arg_parser.add_argument("--linear_x", type=float, default=[0.5, 2.0])
 
 parsed_config = arg_parser.parse_args().__dict__
 
