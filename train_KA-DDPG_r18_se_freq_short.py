@@ -163,8 +163,8 @@ cfg["discount_factor"] = 0.999
 cfg["polyak"] = 0.01
 cfg["actor_learning_rate"] = 3e-4
 cfg["critic_learning_rate"] = 1e-3
-cfg["random_timesteps"] = 0
-cfg["learning_starts"] = 0
+cfg["random_timesteps"] = 80
+cfg["learning_starts"] = 80
 cfg["state_preprocessor"] = RunningStandardScaler
 cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
 # logging to TensorBoard and write checkpoints (in timesteps)
