@@ -40,7 +40,7 @@ TASK_CFG = {"test": False,
                              "episodeLength": 500,
                              "enableDebugVis": False,
                              "clipObservations": 1000.0,
-                             "controlFrequencyInv": 60,
+                             "controlFrequencyInv": 10,
                              "baseInitState": {"pos": [0.0, 0.0, 0.1], # x,y,z [m]
                                               "rot": [1.0, 0.0, 0.0, 0.0], # w,x,y,z [quat]
                                               "vLinear": [0.0, 0.0, 0.0],  # x,y,z [m/s]
@@ -70,16 +70,16 @@ TASK_CFG = {"test": False,
                                        "episodeLength_s": 10.0,}, # [s]
                                        "randomCommandVelocityRanges": {"linear_x":[1.5, 1.5], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
-                                                                       "yaw": [1.0, 1.1], # [rad/s]
+                                                                       "yaw": [0.5, 1.5], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
-                            "control": {"decimation": 60, # decimation: Number of control action updates @ sim DT per policy DT
+                            "control": {"decimation": 10, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
                                         "actionScale": 20.0,
                                         "wheel_radius": 0.1175,
                                         },   # leave room to overshoot or corner 
                             },
-                     "sim": {"dt": 0.0016667, # 600 Hz + PGS for skid steer dynamics
+                     "sim": {"dt": 0.01, # 600 Hz + PGS for skid steer dynamics
                              "use_gpu_pipeline": True,
                              "gravity": [0.0, 0.0, -9.81],
                              "add_ground_plane": True,
@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 250.0
-        self.max_sim_steps = 1500000.0 # 250 episodes of 10s at 600Hz sim and 10Hz control/policy step
+        self.max_global_episodes = 500.0
+        self.max_sim_steps = 500000.0 # 300 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -184,7 +184,7 @@ class TorqueDistributionTask(RLTask):
 
         RLTask.__init__(self, name, env)
 
-        self.bounds = torch.tensor([-20.0, 20.0, -20.0, 20.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-30.0, 30.0, -30.0, 30.0], device=self.device, dtype=torch.float)
 
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
@@ -602,7 +602,7 @@ class TorqueDistributionTask(RLTask):
         # Compute gamma_assist (decaying assistance) based on global_episode
         self.gamma_assist = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
         self.gamma_assist = torch.ones_like(self.gamma_assist, device=self.device).view(-1, 1)
-
+        
         # Compute execution action: blend agent action and criteria action
         gamma = self.gamma_assist.view(-1, 1).to(self.device)
         execution_action = (torch.tensor(1.0, device=self.device) - gamma) * self.actions * self.action_scale + gamma * criteria_action
@@ -630,6 +630,7 @@ class TorqueDistributionTask(RLTask):
         #     print(f"DOF index: {self._robots.get_dof_index(name)}, name: {name}")
 
 
+
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
@@ -642,12 +643,12 @@ class TorqueDistributionTask(RLTask):
         # print("pre_physics; applied efforts: ", self._robots.get_applied_joint_efforts(clone=False))
         # print("pre_physics; dof vel: ", self._robots.get_joint_velocities(clone=False))
 
-        # print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
+        # print("pre_physics; actions, still x20 for self.action_scale: ", self.actions[0])
         # print("pre_physics; desired_v: ", self.desired_v[0])
         # print("pre_physics; current_v: ", self.current_v[0])
         # print("pre_physics; desired_omega: ", self.desired_omega[0])
         # print("pre_physics; current_omega: ", self.current_omega[0])
-        # print("pre_physics; expert torques left: ", self.ac_left[0])
+        # # print("pre_physics; expert torques left: ", self.ac_left[0])
         # print("pre_physics; expert torques right: ", self.ac_right[0])
         # print("pre_physics; executed torques pre clip: ", self.torques[0])
         # print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
@@ -770,9 +771,9 @@ class TorqueDistributionTask(RLTask):
 
         # Sparse reward: bonus if tracking errors are very low
         sparse_reward = torch.where(
-            (torch.abs(self.v_delta) < 0.1 * torch.abs(self.desired_v)) &
-            (torch.abs(self.omega_delta) < 0.05 * torch.abs(self.desired_omega)),
-            torch.full_like(self.v_delta, 30.0),
+            (torch.abs(self.v_delta) < 0.01 ) &
+            (torch.abs(self.omega_delta) < 0.01),
+            torch.full_like(self.v_delta, 3.0),
             torch.zeros_like(self.v_delta)
         )
         observed_reward = rdense + sparse_reward
