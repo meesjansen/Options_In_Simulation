@@ -75,11 +75,11 @@ TASK_CFG = {"test": False,
                             "control": {"decimation": 10, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 20.0,
+                                        "actionScale": 5.0,
                                         "wheel_radius": 0.1175,
-                                        },   # leave room to overshoot or corner 
+                                        },   
                             },
-                     "sim": {"dt": 0.01, # 600 Hz + PGS for skid steer dynamics
+                     "sim": {"dt": 0.01, # 600 Hz + PGS for realistic skid steer dynamics occording to forum
                              "use_gpu_pipeline": True,
                              "gravity": [0.0, 0.0, -9.81],
                              "add_ground_plane": True,
@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 500.0
-        self.max_sim_steps = 500000.0 # 300 episodes of 10s at 100Hz sim and 10Hz control/policy step
+        self.max_global_episodes = 1000.0
+        self.max_sim_steps = 1000000.0 # 300 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -184,7 +184,7 @@ class TorqueDistributionTask(RLTask):
 
         RLTask.__init__(self, name, env)
 
-        self.bounds = torch.tensor([-30.0, 30.0, -30.0, 30.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-50.0, 50.0, -50.0, 50.0], device=self.device, dtype=torch.float)
 
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
@@ -601,8 +601,11 @@ class TorqueDistributionTask(RLTask):
 
         # Compute gamma_assist (decaying assistance) based on global_episode
         self.gamma_assist = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
-        self.gamma_assist = torch.ones_like(self.gamma_assist, device=self.device).view(-1, 1)
-        
+        if self.gamma_assist == 0.0:
+            self.gamma_assist = torch.zeros_like(self.gamma_assist, device=self.device).view(-1, 1)
+        else:
+            self.gamma_assist = torch.ones_like(self.gamma_assist, device=self.device).view(-1, 1)
+
         # Compute execution action: blend agent action and criteria action
         gamma = self.gamma_assist.view(-1, 1).to(self.device)
         execution_action = (torch.tensor(1.0, device=self.device) - gamma) * self.actions * self.action_scale + gamma * criteria_action
@@ -634,7 +637,7 @@ class TorqueDistributionTask(RLTask):
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, -20.0, 20.0)
+                self.wheel_torqs = torch.clip(self.torques, -5.0, 5.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
