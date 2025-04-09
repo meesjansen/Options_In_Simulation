@@ -75,11 +75,11 @@ TASK_CFG = {"test": False,
                             "control": {"decimation": 10, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 20.0,
+                                        "actionScale": 5.0,
                                         "wheel_radius": 0.1175,
-                                        },   # leave room to overshoot or corner 
+                                        },   
                             },
-                     "sim": {"dt": 0.01, # 600 Hz + PGS for skid steer dynamics
+                     "sim": {"dt": 0.01, # 600 Hz + PGS for realistic skid steer dynamics occording to forum
                              "use_gpu_pipeline": True,
                              "gravity": [0.0, 0.0, -9.81],
                              "add_ground_plane": True,
@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 500.0
-        self.max_sim_steps = 500000.0 # 300 episodes of 10s at 100Hz sim and 10Hz control/policy step
+        self.max_global_episodes = 1000.0
+        self.max_sim_steps = 1000000.0 # 300 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -184,7 +184,7 @@ class TorqueDistributionTask(RLTask):
 
         RLTask.__init__(self, name, env)
 
-        self.bounds = torch.tensor([-30.0, 30.0, -30.0, 30.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-50.0, 50.0, -50.0, 50.0], device=self.device, dtype=torch.float)
 
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
@@ -633,7 +633,7 @@ class TorqueDistributionTask(RLTask):
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, -20.0, 20.0)
+                self.wheel_torqs = torch.clip(self.torques, -5.0, 5.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
@@ -643,14 +643,14 @@ class TorqueDistributionTask(RLTask):
         # print("pre_physics; dof vel: ", self._robots.get_joint_velocities(clone=False))
 
         # print("pre_physics; actions, still x20 for self.action_scale: ", self.actions[0])
-        # print("pre_physics; desired_v: ", self.desired_v[0])
-        # print("pre_physics; current_v: ", self.current_v[0])
-        # print("pre_physics; desired_omega: ", self.desired_omega[0])
-        # print("pre_physics; current_omega: ", self.current_omega[0])
+        print("pre_physics; desired_v: ", self.desired_v[0])
+        print("pre_physics; current_v: ", self.current_v[0])
+        print("pre_physics; desired_omega: ", self.desired_omega[0])
+        print("pre_physics; current_omega: ", self.current_omega[0])
         # # print("pre_physics; expert torques left: ", self.ac_left[0])
         # print("pre_physics; expert torques right: ", self.ac_right[0])
-        # print("pre_physics; executed torques pre clip: ", self.torques[0])
-        # print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
+        print("pre_physics; executed torques pre clip: ", self.torques[0])
+        print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
         # print("base velocitites in z: ", self.base_velocities[0, 2])
 
           

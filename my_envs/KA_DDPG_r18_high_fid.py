@@ -75,7 +75,7 @@ TASK_CFG = {"test": False,
                             "control": {"decimation": 10, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 20.0,
+                                        "actionScale": 5.0,
                                         "wheel_radius": 0.1175,
                                         },   # leave room to overshoot or corner 
                             },
@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 300.0
-        self.max_sim_steps = 300000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
+        self.max_global_episodes = 1000.0
+        self.max_sim_steps = 1000000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -184,7 +184,7 @@ class TorqueDistributionTask(RLTask):
 
         RLTask.__init__(self, name, env)
 
-        self.bounds = torch.tensor([-40.0, 40.0, -40.0, 40.0], device=self.device, dtype=torch.float)
+        self.bounds = torch.tensor([-50.0, 50.0, -50.0, 50.0], device=self.device, dtype=torch.float)
 
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
@@ -632,7 +632,7 @@ class TorqueDistributionTask(RLTask):
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, -20.0, 20.0)
+                self.wheel_torqs = torch.clip(self.torques, -5.0, 5.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
@@ -642,14 +642,14 @@ class TorqueDistributionTask(RLTask):
         # print("pre_physics; dof vel: ", self._robots.get_joint_velocities(clone=False))
 
         # print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
-        # print("pre_physics; desired_v: ", self.desired_v[0])
-        # print("pre_physics; current_v: ", self.current_v[0])
-        # print("pre_physics; desired_omega: ", self.desired_omega[0])
-        # print("pre_physics; current_omega: ", self.current_omega[0])
+        print("pre_physics; desired_v: ", self.desired_v[0])
+        print("pre_physics; current_v: ", self.current_v[0])
+        print("pre_physics; desired_omega: ", self.desired_omega[0])
+        print("pre_physics; current_omega: ", self.current_omega[0])
         # print("pre_physics; expert torques left: ", self.ac_left[0])
         # print("pre_physics; expert torques right: ", self.ac_right[0])
-        # print("pre_physics; executed torques pre clip: ", self.torques[0])
-        # print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
+        print("pre_physics; executed torques pre clip: ", self.torques[0])
+        print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
         # print("base velocitites in z: ", self.base_velocities[0, 2])
 
           
@@ -771,7 +771,7 @@ class TorqueDistributionTask(RLTask):
         sparse_reward = torch.where(
             (torch.abs(self.v_delta) < 0.01) &
             (torch.abs(self.omega_delta) < 0.01 ),
-            torch.full_like(self.v_delta, 30.0),
+            torch.full_like(self.v_delta, 3.0),
             torch.zeros_like(self.v_delta)
         )
         observed_reward = rdense + sparse_reward
