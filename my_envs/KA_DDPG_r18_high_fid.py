@@ -75,7 +75,7 @@ TASK_CFG = {"test": False,
                             "control": {"decimation": 10, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 5.0,
+                                        "actionScale": 4.0,
                                         "wheel_radius": 0.1175,
                                         },   # leave room to overshoot or corner 
                             },
@@ -632,7 +632,7 @@ class TorqueDistributionTask(RLTask):
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, -5.0, 5.0)
+                self.wheel_torqs = torch.clip(self.torques, -4.0, 4.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
@@ -764,14 +764,14 @@ class TorqueDistributionTask(RLTask):
         # r3: Torque penalty (sum of squared torques)
         r3 = torch.sum(self.wheel_torqs ** 2, dim=1)
         # Weight factors (tunable)
-        w1, w2, w3 = -750.0, -0.005, -0.006
+        w1, w2, w3 = -500.0, -0.005, -0.1
         rdense = w1 * r1 + w2 * r2 + w3 * r3
 
         # Sparse reward: bonus if tracking errors are very low
         sparse_reward = torch.where(
             (torch.abs(self.v_delta) < 0.01) &
             (torch.abs(self.omega_delta) < 0.01 ),
-            torch.full_like(self.v_delta, 3.0),
+            torch.full_like(self.v_delta, 24.0),
             torch.zeros_like(self.v_delta)
         )
         observed_reward = rdense + sparse_reward
