@@ -136,7 +136,7 @@ DDPG_DEFAULT_CONFIG = {
     "exploration": {
         "noise": OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device),              # exploration noise
         "initial_scale": 1.0,       # initial scale for the noise
-        "final_scale": 1e-3,        # final scale for the noise
+        "final_scale": 1e-5,        # final scale for the noise
         "timesteps": None,          # timesteps for the noise decay
     },
 
