@@ -176,7 +176,7 @@ class TorqueDistributionTask(RLTask):
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
         self.max_global_episodes = 1500.0
-        self.max_sim_steps = 1500000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
+        self.max_sim_steps = 2000000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
