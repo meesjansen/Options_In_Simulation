@@ -69,7 +69,7 @@ arg_parser.add_argument("--damping", type=float, default=0.005)
 arg_parser.add_argument("--static_friction", type=float, default=0.85)
 arg_parser.add_argument("--dynamic_friction", type=float, default=0.85)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
-arg_parser.add_argument("--linear_x", type=float, default=[1.5, 1.5])
+arg_parser.add_argument("--linear_x", type=float, default=[1., 2.0])
 
 parsed_config = arg_parser.parse_args().__dict__
 
@@ -160,7 +160,7 @@ DDPG_DEFAULT_CONFIG = {
 }
 
 cfg = DDPG_DEFAULT_CONFIG.copy()
-cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.05, base_scale=0.3, device=device)
+cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=1.0, device=device)
 cfg["gradient_steps"] = 1
 cfg["batch_size"] = 3840
 cfg["discount_factor"] = 0.999
