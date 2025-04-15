@@ -70,7 +70,7 @@ TASK_CFG = {"test": False,
                                        "episodeLength_s": 10.0,}, # [s]
                                        "randomCommandVelocityRanges": {"linear_x":[1.5, 1.5], # [m/s]
                                                                        "linear_y": [-0.5, 0.5], # [m/s]
-                                                                       "yaw": [-0.5, 0.5], # [rad/s]
+                                                                       "yaw": [0.5, 0.5], # [rad/s]
                                                                        "yaw_constant": 0.5,},   # [rad/s]
                             "control": {"decimation": 10, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
