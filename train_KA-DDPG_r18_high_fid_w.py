@@ -70,7 +70,7 @@ arg_parser.add_argument("--damping", type=float, default=0.005)
 arg_parser.add_argument("--static_friction", type=float, default=1.2) # 1.2
 arg_parser.add_argument("--dynamic_friction", type=float, default=1.2) # 1.2
 arg_parser.add_argument("--linear_x", type=float, default=[1.0, 1.5])
-arg_parser.add_argument("--yaw", type=float, default=[1.0, 1.5])
+arg_parser.add_argument("--yaw", type=float, default=[0.0, 0.5])
 
 
 parsed_config = arg_parser.parse_args().__dict__
@@ -149,15 +149,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_high_fid_5",
-        "experiment_name": "KA-DDPG_r18_high_fid_5",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_high_fid_w",
+        "experiment_name": "KA-DDPG_r18_high_fid_w",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "Expert Knowledge 1-to-1",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_r18_high_fid_5",
+                         "name": "KA-DDPG_r18_high_fid_w",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
