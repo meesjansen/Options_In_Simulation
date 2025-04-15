@@ -66,8 +66,8 @@ from argparse import ArgumentParser
 arg_parser = ArgumentParser()
 arg_parser.add_argument("--stiffness", type=float, default=0.035)
 arg_parser.add_argument("--damping", type=float, default=0.005)
-arg_parser.add_argument("--static_friction", type=float, default=0.85)
-arg_parser.add_argument("--dynamic_friction", type=float, default=0.85)
+arg_parser.add_argument("--static_friction", type=float, default=1.0)
+arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
 arg_parser.add_argument("--linear_x", type=float, default=[1.0, 2.0])
 
