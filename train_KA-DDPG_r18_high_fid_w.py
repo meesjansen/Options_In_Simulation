@@ -70,6 +70,8 @@ arg_parser.add_argument("--static_friction", type=float, default=1.0)
 arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
 arg_parser.add_argument("--linear_x", type=float, default=[1.0, 2.0])
+arg_parser.add_argument("--yaw", type=float, default=[1.0, 1.0])
+
 
 parsed_config = arg_parser.parse_args().__dict__
 
@@ -88,6 +90,8 @@ TASK_CFG["task"]["sim"]["default_physics_material"]["dynamic_friction"] = parsed
 # commands
 TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["yaw_constant"] = parsed_config["yaw_constant"]
 TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["linear_x"] = parsed_config["linear_x"]
+TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["yaw"] = parsed_config["yaw"]
+
 
 
 sim_config = SimConfig(TASK_CFG)
