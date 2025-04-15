@@ -70,7 +70,7 @@ arg_parser.add_argument("--damping", type=float, default=0.005)
 arg_parser.add_argument("--static_friction", type=float, default=1.2) # 1.2
 arg_parser.add_argument("--dynamic_friction", type=float, default=1.2) # 1.2
 arg_parser.add_argument("--linear_x", type=float, default=[1.0, 1.0])
-arg_parser.add_argument("--yaw", type=float, default=[0.0, 0.0])
+arg_parser.add_argument("--yaw", type=float, default=[1.0, 1.0])
 
 
 parsed_config = arg_parser.parse_args().__dict__
