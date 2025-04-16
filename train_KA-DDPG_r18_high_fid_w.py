@@ -70,7 +70,7 @@ arg_parser.add_argument("--static_friction", type=float, default=1.2) # 1.2
 arg_parser.add_argument("--dynamic_friction", type=float, default=1.2) # 1.2
 arg_parser.add_argument("--linear_x", type=float, default=[1.0, 1.0])
 arg_parser.add_argument("--yaw", type=float, default=[1.5, 1.5])
-arg_parser.add_argument("--yaw_constant", type=float, default=0.75) # 0.95
+arg_parser.add_argument("--yaw_constant", type=float, default=0.65) # 0.95
 
 
 
