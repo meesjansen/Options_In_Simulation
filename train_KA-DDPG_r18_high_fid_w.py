@@ -64,13 +64,14 @@ from my_envs.KA_DDPG_r18_high_fid_w import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
-arg_parser.add_argument("--yaw_constant", type=float, default=1.0) # 0.95
-arg_parser.add_argument("--stiffness", type=float, default=0.00001) # 0.0035
+arg_parser.add_argument("--stiffness", type=float, default=0.0025) # 0.0035
 arg_parser.add_argument("--damping", type=float, default=0.005)
 arg_parser.add_argument("--static_friction", type=float, default=1.2) # 1.2
 arg_parser.add_argument("--dynamic_friction", type=float, default=1.2) # 1.2
 arg_parser.add_argument("--linear_x", type=float, default=[1.0, 1.5])
 arg_parser.add_argument("--yaw", type=float, default=[1.0, 1.5])
+arg_parser.add_argument("--yaw_constant", type=float, default=0.85) # 0.95
+
 
 
 parsed_config = arg_parser.parse_args().__dict__
