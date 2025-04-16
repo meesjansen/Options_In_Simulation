@@ -64,13 +64,14 @@ from my_envs.KA_DDPG_r18_high_fid_w2 import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
-arg_parser.add_argument("--yaw_constant", type=float, default=1.0) # 0.95
-arg_parser.add_argument("--stiffness", type=float, default=0.0035) # 0.0035
+arg_parser.add_argument("--stiffness", type=float, default=0.006) # 0.0035
 arg_parser.add_argument("--damping", type=float, default=0.005)
 arg_parser.add_argument("--static_friction", type=float, default=1.2) # 1.2
 arg_parser.add_argument("--dynamic_friction", type=float, default=1.2) # 1.2
-arg_parser.add_argument("--linear_x", type=float, default=[1.0, 1.5])
-arg_parser.add_argument("--yaw", type=float, default=[1.0, 1.5])
+arg_parser.add_argument("--linear_x", type=float, default=[0.8, 1.2]) # 1.0, 1.5
+arg_parser.add_argument("--yaw", type=float, default=[1.3, 1.7]) # 1.0, 1.5
+arg_parser.add_argument("--yaw_constant", type=float, default=0.006) # 0.95
+
 
 
 parsed_config = arg_parser.parse_args().__dict__
@@ -164,7 +165,7 @@ DDPG_DEFAULT_CONFIG = {
 }
 
 cfg = DDPG_DEFAULT_CONFIG.copy()
-cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.05, base_scale=0.3, device=device)
+cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=1.0, device=device)
 cfg["gradient_steps"] = 1
 cfg["batch_size"] = 512
 cfg["discount_factor"] = 0.999
