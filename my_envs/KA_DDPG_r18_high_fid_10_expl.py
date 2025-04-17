@@ -176,7 +176,7 @@ class TorqueDistributionTask(RLTask):
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
         self.max_global_episodes = 1800.0
-        self.max_sim_steps = 1800000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
+        self.max_sim_steps = 1700000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -765,7 +765,7 @@ class TorqueDistributionTask(RLTask):
         # r3: Torque penalty (sum of squared torques)
         r3 = torch.sum(self.wheel_torqs ** 2, dim=1)
         # Weight factors (tunable)
-        w1, w2, w3 = -25.0, -0.1, -0.09
+        w1, w2, w3 = -25.0, -0.02, -0.09
         rdense = w1 * r1 + w2 * r2 + w3 * r3
 
         # Sparse reward: bonus if tracking errors are very low
