@@ -60,16 +60,16 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.KA_DDPG_r18_se_medium import TorqueDistributionTask, TASK_CFG
+from my_envs.KA_DDPG_r18_high_fid_11 import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
-arg_parser.add_argument("--stiffness", type=float, default=0.004)
+arg_parser.add_argument("--stiffness", type=float, default=0.035)
 arg_parser.add_argument("--damping", type=float, default=0.005)
-arg_parser.add_argument("--static_friction", type=float, default=1.0)
-arg_parser.add_argument("--dynamic_friction", type=float, default=1.0)
+arg_parser.add_argument("--static_friction", type=float, default=0.85)
+arg_parser.add_argument("--dynamic_friction", type=float, default=0.85)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
-arg_parser.add_argument("--linear_x", type=float, default=[1.4, 1.5])
+arg_parser.add_argument("--linear_x", type=float, default=[1.0, 2.0])
 
 parsed_config = arg_parser.parse_args().__dict__
 
@@ -145,15 +145,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_se_medium",
-        "experiment_name": "KA-DDPG_r18_se_medium",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_r18_high_fid_11",
+        "experiment_name": "KA-DDPG_r18_high_fid_11",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "Expert Knowledge Variations",
+        "wandb_kwargs": {"project": "Expert Knowledge final",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_r18_se_medium",
+                         "name": "KA-DDPG_r18_high_fid_11",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
@@ -186,8 +186,7 @@ agent = DDPG(models=models,
 
 
 # Configure and instantiate the RL trainer.
-cfg_trainer = {"timesteps": 1500000, "headless": True}
+cfg_trainer = {"timesteps": 1600000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
-# Start PPO training.
 trainer.train()
