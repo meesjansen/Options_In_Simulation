@@ -1,14 +1,14 @@
 #!/bin/bash
 #SBATCH --job-name=isaac-sim-job
 #SBATCH --partition=general  # Request partition. Default is 'general' 
-#SBATCH --qos=medium         # Request Quality of Service. Default is 'short' (maximum run time: 4 hours)
-#SBATCH --time=20:00:00
+#SBATCH --qos=low      # Request Quality of Service. Default is 'short' (maximum run time: 4 hours)
+#SBATCH --time=3:00:00
 #SBATCH --ntasks=1          # Request number of parallel tasks per job. Default is 1
 #SBATCH --cpus-per-task=2   # Request number of CPUs (threads) per task. Default is 1 (note: CPUs are always allocated to jobs per 2).
 #SBATCH --mem=16GB
 #SBATCH --mail-type=END     # Set mail type to 'END' to receive a mail when the job finishes. 
-#SBATCH --output=KA_DDPG_r18_se_freq_short_output_%j.log
-#SBATCH --error=KA_DDPG_r18_se_freq_short_error_%j.log # Set name of error log. %j is the Slurm jobId
+#SBATCH --output=KA_DDPG_r18_high_fid_10_output_%j.log
+#SBATCH --error=KA_DDPG_r18_high_fid_10_error_%j.log # Set name of error log. %j is the Slurm jobId
 
 #SBATCH --gres=gpu:a40:1 # Request 1 GPU
 
@@ -52,7 +52,7 @@ srun apptainer exec --nv \
     -B "$data/logs:$HOME/.nvidia-omniverse/logs" \
     -B "$data/data:$HOME/.local/share/ov/data" \
     -B "$data/documents:$HOME/Documents" \
-    $APPTAINER_ROOT/$APPTAINER_NAME /isaac-sim/python.sh /workspace/Options_In_Simulation/train_KA-DDPG_r18_se_freq_short.py
+    $APPTAINER_ROOT/$APPTAINER_NAME /isaac-sim/python.sh /workspace/Options_In_Simulation/train_KA-DDPG_r18_high_fid_10.py
 
 
 
