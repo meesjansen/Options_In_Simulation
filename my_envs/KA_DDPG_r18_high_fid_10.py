@@ -207,8 +207,9 @@ class TorqueDistributionTask(RLTask):
             "r3: Torque penalty (sum of squared torques)": torch_zeros(),
             "Dense reward": torch_zeros(),
             "Sparse reward": torch_zeros(),
-            "guiding reward": torch_zeros(),
-            "final reward": torch_zeros(),
+            "Guiding reward": torch_zeros(),
+            "Observed reward": torch_zeros(),
+            "Final reward": torch_zeros(),
               }
         
         self.terrain_levels = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
@@ -772,7 +773,7 @@ class TorqueDistributionTask(RLTask):
         sparse_reward = torch.where(
             (torch.abs(self.v_delta) < 0.01) &
             (torch.abs(self.omega_delta) < 0.01 ),
-            torch.full_like(self.v_delta, 3.0),
+            torch.full_like(self.v_delta, 0.2),
             torch.zeros_like(self.v_delta)
         )
         observed_reward = rdense + sparse_reward
@@ -788,8 +789,9 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["r3: Torque penalty (sum of squared torques)"] += w3 * r3
         self.episode_sums["Dense reward"] += rdense
         self.episode_sums["Sparse reward"] += sparse_reward
-        self.episode_sums["guiding reward"] += self.guiding_reward
-        self.episode_sums["final reward"] += self.rew_buf
+        self.episode_sums["Guiding reward"] += self.guiding_reward
+        self.episode_sums["Observed reward"] += observed_reward
+        self.episode_sums["Final reward"] += self.rew_buf
         
         # print("metrics; r1: Tracking error reward (squared errors):", w1 * r1[0])
         # print("metrics: r2: Convergence reward (squared accelerations):", w2 * r2[0])
