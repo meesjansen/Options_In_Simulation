@@ -765,7 +765,7 @@ class TorqueDistributionTask(RLTask):
         # r3: Torque penalty (sum of squared torques)
         r3 = torch.sum(self.wheel_torqs ** 2, dim=1)
         # Weight factors (tunable)
-        w1, w2, w3 = -30.0, -0.02, -0.1
+        w1, w2, w3 = -30.0, -0.02, -0.3
         rdense = w1 * r1 + w2 * r2 + w3 * r3
 
         # Sparse reward: bonus if tracking errors are very low
