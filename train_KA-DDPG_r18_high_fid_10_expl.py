@@ -137,7 +137,7 @@ DDPG_DEFAULT_CONFIG = {
         "noise": OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device),              # exploration noise
         "initial_scale": 1.0,       # initial scale for the noise
         "final_scale": 1.0,        # final scale for the noise
-        "timesteps": 1700000.0,          # timesteps for the noise decay
+        "timesteps": 700000.0,          # timesteps for the noise decay
     },
 
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
@@ -160,7 +160,7 @@ DDPG_DEFAULT_CONFIG = {
 }
 
 cfg = DDPG_DEFAULT_CONFIG.copy()
-cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=1.0, device=device)
+cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.3, device=device)
 cfg["gradient_steps"] = 1
 cfg["batch_size"] = 512
 cfg["discount_factor"] = 0.999
@@ -186,7 +186,7 @@ agent = DDPG(models=models,
 
 
 # Configure and instantiate the RL trainer.
-cfg_trainer = {"timesteps": 2000000, "headless": True}
+cfg_trainer = {"timesteps": 1000000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 trainer.train()

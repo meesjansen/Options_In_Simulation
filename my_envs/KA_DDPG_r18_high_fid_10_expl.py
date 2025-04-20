@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 1800.0
-        self.max_sim_steps = 1700000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
+        self.max_global_episodes = 700.0
+        self.max_sim_steps = 700000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -772,7 +772,7 @@ class TorqueDistributionTask(RLTask):
         sparse_reward = torch.where(
             (torch.abs(self.v_delta) < 0.01) &
             (torch.abs(self.omega_delta) < 0.01 ),
-            torch.full_like(self.v_delta, 3.0),
+            torch.full_like(self.v_delta, 0.1),
             torch.zeros_like(self.v_delta)
         )
         observed_reward = rdense + sparse_reward
