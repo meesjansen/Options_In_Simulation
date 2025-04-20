@@ -577,8 +577,8 @@ class TorqueDistributionTask(RLTask):
             return max(x_vel, 0.0), omega
         
         elif self.gridsampling:
-            # Compute the progress ratio (from 0 to 1)
-            progress = min(1.0, self.sim_steps.float() / self.max_sim_steps)
+            # Compute the progress ratio (from 0 to 1) for the current environment.
+            progress = min(1.0, self.sim_steps[env_id].float().item() / self.max_sim_steps)
             
             # Sample x velocity using its own range
             x_low = self.command_x_range[0]
