@@ -196,6 +196,10 @@ class Trainer:
                 torque_rr = self.env.task.observed_components["env0_torque_rr"]
                 exp_torque_l = self.env.task.observed_components["env0_ac_left"]
                 exp_torque_r = self.env.task.observed_components["env0_ac_right"]
+                ptorque_fl = self.env.task.observed_components["env0_policy_torque_fl"]
+                ptorque_rl = self.env.task.observed_components["env0_policy_torque_rl"]
+                ptorque_fr = self.env.task.observed_components["env0_policy_torque_fr"]
+                ptorque_rr = self.env.task.observed_components["env0_policy_torque_rr"]
                 env0_perc_r1 = self.env.task.observed_components["env0_perc_r1"]
                 env0_perc_r2 = self.env.task.observed_components["env0_perc_r2"]
                 env0_perc_r3 = self.env.task.observed_components["env0_perc_r3"]
@@ -237,6 +241,10 @@ class Trainer:
                 self.agents.track_data(f"Reward_comp_env0 / torque_rr", torque_rr)
                 self.agents.track_data(f"Reward_comp_env0 / exp_torque_l", exp_torque_l)
                 self.agents.track_data(f"Reward_comp_env0 / exp_torque_r", exp_torque_r)
+                self.agents.track_data(f"Reward_comp_env0 / policy_torqs_fl", ptorque_fl)
+                self.agents.track_data(f"Reward_comp_env0 / policy_torqs_rl", ptorque_rl)                
+                self.agents.track_data(f"Reward_comp_env0 / policy_torqs_fr", ptorque_fr)
+                self.agents.track_data(f"Reward_comp_env0 / policy_torqs_rr", ptorque_rr)
                 self.agents.track_data(f"Reward_comp_env0 / env0_perc_r1", env0_perc_r1)
                 self.agents.track_data(f"Reward_comp_env0 / env0_perc_r2", env0_perc_r2)
                 self.agents.track_data(f"Reward_comp_env0 / env0_perc_r3", env0_perc_r3)
