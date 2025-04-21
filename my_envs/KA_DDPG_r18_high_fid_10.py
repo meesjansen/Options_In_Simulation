@@ -463,6 +463,8 @@ class TorqueDistributionTask(RLTask):
 
 
         # fill extras
+        env_ids = env_ids.to(self.device)           
+
         self.extras["episode"] = {}
         for key in self.episode_sums.keys():
             self.extras["episode"]["rew_" + key] = (
