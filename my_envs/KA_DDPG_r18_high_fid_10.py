@@ -799,13 +799,13 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Guiding reward"] += self.guiding_reward
         self.episode_sums["Observed reward"] += observed_reward
         self.episode_sums["Final reward"] += self.rew_buf
-        self.episode_sums["r1/Final reward"] = self.episode_sums["r1: Tracking error reward (squared errors)"] / self.episode_sums["Final reward"]
-        self.episode_sums["r2/Final reward"] = self.episode_sums["r2: Convergence reward (squared accelerations)"] / self.episode_sums["Final reward"]
-        self.episode_sums["r3/Final reward"] = self.episode_sums["r3: Torque penalty (sum of squared torques)"] / self.episode_sums["Final reward"]
-        self.episode_sums["Dense/Final reward"] = self.episode_sums["Dense reward"] / self.episode_sums["Final reward"]
-        self.episode_sums["Sparse/Final reward"] = self.episode_sums["Sparse reward"] / self.episode_sums["Final reward"]
-        self.episode_sums["Guiding/Final reward"] = self.episode_sums["Guiding reward"] / self.episode_sums["Final reward"]
-        self.episode_sums["Observed/Final reward"] = self.episode_sums["Observed reward"] / self.episode_sums["Final reward"]
+        self.episode_sums["r1/Final reward"] = 100.0 * (1 - self.gamma_assist) * self.episode_sums["r1: Tracking error reward (squared errors)"] / self.episode_sums["Final reward"]
+        self.episode_sums["r2/Final reward"] = 100.0 * (1 - self.gamma_assist) * self.episode_sums["r2: Convergence reward (squared accelerations)"] / self.episode_sums["Final reward"]
+        self.episode_sums["r3/Final reward"] = 100.0 * (1 - self.gamma_assist) * self.episode_sums["r3: Torque penalty (sum of squared torques)"] / self.episode_sums["Final reward"]
+        self.episode_sums["Dense/Final reward"] = 100.0 * (1 - self.gamma_assist) * self.episode_sums["Dense reward"] / self.episode_sums["Final reward"]
+        self.episode_sums["Sparse/Final reward"] = 100.0 * (1 - self.gamma_assist) * self.episode_sums["Sparse reward"] / self.episode_sums["Final reward"] 
+        self.episode_sums["Guiding/Final reward"] = 100.0 * self.gamma_assist * self.episode_sums["Guiding reward"] / self.episode_sums["Final reward"]
+        self.episode_sums["Observed/Final reward"] = 100.0 * (1 - self.gamma_assist) * self.episode_sums["Observed reward"] / self.episode_sums["Final reward"]
         
         self.comp_1 = w1 * r1
         self.comp_2 = w2 * r2
@@ -851,13 +851,13 @@ class TorqueDistributionTask(RLTask):
                     "env0_torque_rr": self.torques[0, 3].item(),
                     "env0_ac_left": self.ac_left[0].item(),
                     "env0_ac_right": self.ac_right[0].item(),
-                    "env0_perc_r1": self.comp_1[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_r2": self.comp_2[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_r3": self.comp_3[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_dense": self.rdense[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_sparse": self.rsparse[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_observed": self.robs[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_guiding": self.rguide[0].item()/self.rew_buf[0].item(),              
+                    "env0_perc_r1": 100.0 * (1 - self.gamma_assist) * self.comp_1[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_r2": 100.0 * (1 - self.gamma_assist) * self.comp_2[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_r3": 100.0 * (1 - self.gamma_assist) * self.comp_3[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_dense": 100.0 * (1 - self.gamma_assist) * self.rdense[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_sparse": 100.0 * (1 - self.gamma_assist) * self.rsparse[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_observed": 100.0 * (1 - self.gamma_assist) * self.robs[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_guiding": 100.0 * self.gamma_assist * self.rguide[0].item()/self.rew_buf[0].item(),              
                 }
                           
         return {self._robots.name: {"obs_buf": self.obs_buf}}
