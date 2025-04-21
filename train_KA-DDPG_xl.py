@@ -13,7 +13,7 @@ from skrl.utils import set_seed
 
 from my_models.categorical import CategoricalMixin
 from my_agents.ddpg import DDPG
-from my_trainers.sequential_KA import SequentialTrainer
+from my_trainers.sequential import SequentialTrainer
 
 # set the seed for reproducibility
 seed = set_seed(42)
@@ -151,7 +151,7 @@ DDPG_DEFAULT_CONFIG = {
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "Expert Knowledge final",
+        "wandb_kwargs": {"project": "Expert Knowledge analysis",
                          "entity": "meesjansen-Delft Technical University",
                          "name": "KA-DDPG_r18_high_fid_10",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],

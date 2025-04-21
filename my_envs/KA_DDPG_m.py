@@ -210,6 +210,13 @@ class TorqueDistributionTask(RLTask):
             "Guiding reward": torch_zeros(),
             "Observed reward": torch_zeros(),
             "Final reward": torch_zeros(),
+            "r1/Final reward": torch_zeros(),
+            "r2/Final reward": torch_zeros(),
+            "r3/Final reward": torch_zeros(),
+            "Dense reward/Final reward": torch_zeros(),
+            "Sparse reward/Final reward": torch_zeros(),
+            "Guiding reward/Final reward": torch_zeros(),
+            "Observed reward/Final reward": torch_zeros(),
               }
         
         self.terrain_levels = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
@@ -792,15 +799,22 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Guiding reward"] += self.guiding_reward
         self.episode_sums["Observed reward"] += observed_reward
         self.episode_sums["Final reward"] += self.rew_buf
+        self.episode_sums["r1/Final reward"] = self.episode_sums["r1: Tracking error reward (squared errors)"] / self.episode_sums["Final reward"]
+        self.episode_sums["r2/Final reward"] = self.episode_sums["r2: Convergence reward (squared accelerations)"] / self.episode_sums["Final reward"]
+        self.episode_sums["r3/Final reward"] = self.episode_sums["r3: Torque penalty (sum of squared torques)"] / self.episode_sums["Final reward"]
+        self.episode_sums["Dense/Final reward"] = self.episode_sums["Dense reward"] / self.episode_sums["Final reward"]
+        self.episode_sums["Sparse/Final reward"] = self.episode_sums["Sparse reward"] / self.episode_sums["Final reward"]
+        self.episode_sums["Guiding/Final reward"] = self.episode_sums["Guiding reward"] / self.episode_sums["Final reward"]
+        self.episode_sums["Observed/Final reward"] = self.episode_sums["Observed reward"] / self.episode_sums["Final reward"]
         
-        # print("metrics; r1: Tracking error reward (squared errors):", w1 * r1[0])
-        # print("metrics: r2: Convergence reward (squared accelerations):", w2 * r2[0])
-        # print("metrics: r3: Torque penalty (sum of squared torques):", w3 * r3[0])
-        # print("metrics: Dense reward:", rdense[0])
-        # print("metrics: Sparse reward:", sparse_reward[0])
-        # print("metrics: observed reward:", observed_reward[0])
-        # print("metrics: guiding reward:", self.guiding_reward[0])
-        # print("metrics: final reward:", self.rew_buf[0])
+        self.comp_1 = w1 * r1
+        self.comp_2 = w2 * r2
+        self.comp_3 = w3 * r3
+        self.rdense = rdense
+        self.rsparse = sparse_reward
+        self.robs = observed_reward
+        self.rguide = self.guiding_reward
+        self.rfinal = self.rew_buf
 
                        
         return self.rew_buf
@@ -834,7 +848,16 @@ class TorqueDistributionTask(RLTask):
                     "env0_torque_fl": self.torques[0, 0].item(),   
                     "env0_torque_rl": self.torques[0, 1].item(),
                     "env0_torque_fr": self.torques[0, 2].item(),
-                    "env0_torque_rr": self.torques[0, 3].item(),         
+                    "env0_torque_rr": self.torques[0, 3].item(),
+                    "env0_ac_left": self.ac_left[0].item(),
+                    "env0_ac_right": self.ac_right[0].item(),
+                    "env0_perc_r1": self.comp_1[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_r2": self.comp_2[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_r3": self.comp_3[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_dense": self.rdense[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_sparse": self.rsparse[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_observed": self.robs[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_guiding": self.rguide[0].item()/self.rew_buf[0].item(),              
                 }
                           
         return {self._robots.name: {"obs_buf": self.obs_buf}}
