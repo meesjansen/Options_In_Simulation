@@ -461,13 +461,16 @@ class TorqueDistributionTask(RLTask):
         self.episode_buf[env_ids] = 0 
         self.episode_count[env_ids] += 1
 
-        self.episode_sums["r1/Final reward"] = (100.0 * (1 - self.gamma_assist) * self.episode_sums["r1: Tracking error reward (squared errors)"] / self.episode_sums["Final reward"])
-        self.episode_sums["r2/Final reward"] = (100.0 * (1 - self.gamma_assist) * self.episode_sums["r2: Convergence reward (squared accelerations)"] / self.episode_sums["Final reward"])
-        self.episode_sums["r3/Final reward"] = (100.0 * (1 - self.gamma_assist) * self.episode_sums["r3: Torque penalty (sum of squared torques)"] / self.episode_sums["Final reward"])
-        self.episode_sums["Dense/Final reward"] = (100.0 * (1 - self.gamma_assist) * self.episode_sums["Dense reward"] / self.episode_sums["Final reward"])
-        self.episode_sums["Sparse/Final reward"] = (100.0 * (1 - self.gamma_assist) * self.episode_sums["Sparse reward"] / self.episode_sums["Final reward"])
-        self.episode_sums["Guiding/Final reward"] = (100.0 * self.gamma_assist * self.episode_sums["Guiding reward"] / self.episode_sums["Final reward"])
-        self.episode_sums["Observed/Final reward"] = (100.0 * (1 - self.gamma_assist) * self.episode_sums["Observed reward"] / self.episode_sums["Final reward"])
+        one = torch.tensor(1.0, device=self.device)
+        hundred = torch.tensor(100.0, device=self.device)
+
+        self.episode_sums["r1/Final reward"] = (hundred * (one - self.gamma_assist) * self.episode_sums["r1: Tracking error reward (squared errors)"] / self.episode_sums["Final reward"])
+        self.episode_sums["r2/Final reward"] = (hundred * (one - self.gamma_assist) * self.episode_sums["r2: Convergence reward (squared accelerations)"] / self.episode_sums["Final reward"])
+        self.episode_sums["r3/Final reward"] = (hundred * (one - self.gamma_assist) * self.episode_sums["r3: Torque penalty (sum of squared torques)"] / self.episode_sums["Final reward"])
+        self.episode_sums["Dense/Final reward"] = (hundred * (one - self.gamma_assist) * self.episode_sums["Dense reward"] / self.episode_sums["Final reward"])
+        self.episode_sums["Sparse/Final reward"] = (hundred * (one - self.gamma_assist) * self.episode_sums["Sparse reward"] / self.episode_sums["Final reward"])
+        self.episode_sums["Guiding/Final reward"] = (hundred * self.gamma_assist * self.episode_sums["Guiding reward"] / self.episode_sums["Final reward"])
+        self.episode_sums["Observed/Final reward"] = (hundred * (one - self.gamma_assist) * self.episode_sums["Observed reward"] / self.episode_sums["Final reward"])
 
 
 
