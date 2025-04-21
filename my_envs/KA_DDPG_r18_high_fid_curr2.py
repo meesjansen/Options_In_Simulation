@@ -609,6 +609,8 @@ class TorqueDistributionTask(RLTask):
             else:
                 omega = torch.normal(mean=yaw_right_mean, std=fixed_std, size=(1,), device=self.device).item()
 
+            omega = 0.0 # max 1.0
+
             return max(x_vel, 0.0), omega
         
     def refresh_dof_state_tensors(self):
