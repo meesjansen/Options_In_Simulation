@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 700.0
-        self.max_sim_steps = 700000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
+        self.max_global_episodes = 1700.0
+        self.max_sim_steps = 1700000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -189,7 +189,7 @@ class TorqueDistributionTask(RLTask):
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
         self.episode_count = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
-        self.gamma_assist = torch.ones(self.num_envs, dtype=torch.float)
+        self.gamma_assist = torch.ones(self.num_envs, dtype=torch.float, device=self.device)
 
         self.linear_acc = torch.zeros((self.num_envs, 1), device=self.device)
         self.angular_acc = torch.zeros((self.num_envs, 1), device=self.device)
@@ -414,7 +414,7 @@ class TorqueDistributionTask(RLTask):
         
 
     def reset_idx(self, env_ids):
-        
+        env_ids = env_ids.to(self.device)
         indices = env_ids.to(dtype=torch.int32)
 
         # self.update_SI_level(env_ids)
@@ -472,6 +472,7 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Sparse/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist) * self.episode_sums["Sparse reward"] / self.episode_sums["Final reward"])
         self.episode_sums["Guiding/Final reward"] = self.max_episode_length_s * (hundred * self.gamma_assist * self.episode_sums["Guiding reward"] / self.episode_sums["Final reward"])
         self.episode_sums["Observed/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist) * self.episode_sums["Observed reward"] / self.episode_sums["Final reward"])
+
 
 
         # fill extras
@@ -785,14 +786,14 @@ class TorqueDistributionTask(RLTask):
         # r3: Torque penalty (sum of squared torques)
         r3 = torch.sum(self.wheel_torqs ** 2, dim=1)
         # Weight factors (tunable)
-        w1, w2, w3 = -25.0, -0.02, -0.09
+        w1, w2, w3 = -25.0, -0.02, -0.15
         rdense = w1 * r1 + w2 * r2 + w3 * r3
 
         # Sparse reward: bonus if tracking errors are very low
         sparse_reward = torch.where(
             (torch.abs(self.v_delta) < 0.01) &
             (torch.abs(self.omega_delta) < 0.01 ),
-            torch.full_like(self.v_delta, 0.2),
+            torch.full_like(self.v_delta, 0.8),
             torch.zeros_like(self.v_delta)
         )
         observed_reward = rdense + sparse_reward
@@ -811,7 +812,7 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Guiding reward"] += self.guiding_reward
         self.episode_sums["Observed reward"] += observed_reward
         self.episode_sums["Final reward"] += self.rew_buf
-
+                
         self.comp_1 = w1 * r1
         self.comp_2 = w2 * r2
         self.comp_3 = w3 * r3
@@ -866,7 +867,7 @@ class TorqueDistributionTask(RLTask):
                     "env0_perc_dense": 100.0 * (1 - self.gamma_assist[0].item()) * self.rdense[0].item()/self.rew_buf[0].item(),
                     "env0_perc_sparse": 100.0 * (1 - self.gamma_assist[0].item()) * self.rsparse[0].item()/self.rew_buf[0].item(),
                     "env0_perc_observed": 100.0 * (1 - self.gamma_assist[0].item()) * self.robs[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_guiding": 100.0 * self.gamma_assist[0].item() * self.rguide[0].item()/self.rew_buf[0].item(),        
+                    "env0_perc_guiding": 100.0 * self.gamma_assist[0].item() * self.rguide[0].item()/self.rew_buf[0].item(),  
                 }
                           
         return {self._robots.name: {"obs_buf": self.obs_buf}}
