@@ -75,7 +75,7 @@ TASK_CFG = {"test": False,
                             "control": {"decimation": 10, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 4.0,
+                                        "actionScale": 3.0,
                                         "wheel_radius": 0.1175,
                                         },   # leave room to overshoot or corner 
                             },
@@ -154,7 +154,7 @@ class TorqueDistributionTask(RLTask):
         
        # --- KA-DDPG/KA-PPO modifications: use a state space of 4 and action space of 4 ---
         self._num_observations = 4  # [v_delta, omega_delta, linear_acc, angular_acc]
-        self._num_actions = 4       # [T_fl, T_rl, T_fr, T_rr]
+        self._num_actions = 1       # [T_fl, T_rl, T_fr, T_rr]
         self.observation_space = spaces.Box(
             low=-1.0,
             high=1.0,
@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 1700.0
-        self.max_sim_steps = 1700000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
+        self.max_global_episodes = 700.0
+        self.max_sim_steps = 700000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -189,7 +189,7 @@ class TorqueDistributionTask(RLTask):
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
         self.episode_count = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
-        self.gamma_assist = torch.ones(self.num_envs, dtype=torch.float, device=self.device)
+        self.gamma_assist = torch.ones(self.num_envs, dtype=torch.float)
 
         self.linear_acc = torch.zeros((self.num_envs, 1), device=self.device)
         self.angular_acc = torch.zeros((self.num_envs, 1), device=self.device)
@@ -414,7 +414,7 @@ class TorqueDistributionTask(RLTask):
         
 
     def reset_idx(self, env_ids):
-        env_ids = env_ids.to(self.device)
+        
         indices = env_ids.to(dtype=torch.int32)
 
         # self.update_SI_level(env_ids)
@@ -594,6 +594,10 @@ class TorqueDistributionTask(RLTask):
         if not self.world.is_playing():
             return
         
+        if actions.ndim == 1:
+            actions = actions.unsqueeze(1)
+        actions = actions.repeat(1, 4)
+        
         self.actions = actions.clone().to(self.device)
 
         # Compute state errors for the low-fidelity controller:
@@ -621,11 +625,10 @@ class TorqueDistributionTask(RLTask):
         criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
 
         # Compute gamma_assist (decaying assistance) based on global_episode
-        self.gamma_assist2 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
-        self.gamma_assist = torch.ones(self.num_envs, dtype=torch.float, device=self.device)
+        self.gamma_assist = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
 
         # Compute execution action: blend agent action and criteria action
-        gamma = self.gamma_assist2.view(-1, 1).to(self.device)
+        gamma = self.gamma_assist.view(-1, 1).to(self.device)
         execution_action = (torch.tensor(1.0, device=self.device) - gamma) * self.actions * self.action_scale + gamma * criteria_action
 
         # print("pre_physics; gamma_assist: ", self.gamma_assist[0])
@@ -793,7 +796,7 @@ class TorqueDistributionTask(RLTask):
         sparse_reward = torch.where(
             (torch.abs(self.v_delta) < 0.01) &
             (torch.abs(self.omega_delta) < 0.01 ),
-            torch.full_like(self.v_delta, 0.8),
+            torch.full_like(self.v_delta, 0.2),
             torch.zeros_like(self.v_delta)
         )
         observed_reward = rdense + sparse_reward
@@ -812,7 +815,7 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Guiding reward"] += self.guiding_reward
         self.episode_sums["Observed reward"] += observed_reward
         self.episode_sums["Final reward"] += self.rew_buf
-                
+
         self.comp_1 = w1 * r1
         self.comp_2 = w2 * r2
         self.comp_3 = w3 * r3
@@ -867,7 +870,7 @@ class TorqueDistributionTask(RLTask):
                     "env0_perc_dense": 100.0 * (1 - self.gamma_assist[0].item()) * self.rdense[0].item()/self.rew_buf[0].item(),
                     "env0_perc_sparse": 100.0 * (1 - self.gamma_assist[0].item()) * self.rsparse[0].item()/self.rew_buf[0].item(),
                     "env0_perc_observed": 100.0 * (1 - self.gamma_assist[0].item()) * self.robs[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_guiding": 100.0 * self.gamma_assist[0].item() * self.rguide[0].item()/self.rew_buf[0].item(),  
+                    "env0_perc_guiding": 100.0 * self.gamma_assist[0].item() * self.rguide[0].item()/self.rew_buf[0].item(),        
                 }
                           
         return {self._robots.name: {"obs_buf": self.obs_buf}}
