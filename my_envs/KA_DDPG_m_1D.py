@@ -598,8 +598,8 @@ class TorqueDistributionTask(RLTask):
             return
         
         if actions.ndim == 1:
-            actions = actions.unsqueeze(1)
-        actions_repeated = actions.repeat(1, 4)
+            action = actions.unsqueeze(1)
+        actions_repeated = action.repeat(1, 4)
         
         self.action = actions_repeated.clone().to(self.device)
 
