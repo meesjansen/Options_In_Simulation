@@ -391,6 +391,9 @@ class TorqueDistributionTask(RLTask):
         self.actions = torch.zeros(
             self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False
         )
+        self.action = torch.zeros(
+            self.num_envs, 4, dtype=torch.float, device=self.device, requires_grad=False
+        )
         
         # for i in range(self.num_envs):
             # self.env_origins[i] = self.terrain_origins[self.terrain_levels[i], self.terrain_types[i]]
