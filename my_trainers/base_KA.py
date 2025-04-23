@@ -190,13 +190,25 @@ class Trainer:
                 linear_acc = self.env.task.observed_components["env0_linear_acc"]
                 angular_acc = self.env.task.observed_components["env0_angular_acc"]
                 episode_count = self.env.task.observed_components["env0_episode_count"]
-                torque_fl = self.env.task.observed_components["env0_torque_fl"]
-                torque_rl = self.env.task.observed_components["env0_torque_rl"]
-                torque_fr = self.env.task.observed_components["env0_torque_fr"]
-                torque_rr = self.env.task.observed_components["env0_torque_rr"]
+                torque_fl = self.env.task.observed_components["env0_torque_apl_fl"]
+                torque_rl = self.env.task.observed_components["env0_torque_apl_rl"]
+                torque_fr = self.env.task.observed_components["env0_torque_apl_fr"]
+                torque_rr = self.env.task.observed_components["env0_torque_apl_rr"]
+                exp_torque_l = self.env.task.observed_components["env0_exp_left"]
+                exp_torque_r = self.env.task.observed_components["env0_exp_right"]
+                ptorque_fl = self.env.task.observed_components["env0_policy_torque_fl"]
+                ptorque_rl = self.env.task.observed_components["env0_policy_torque_rl"]
+                ptorque_fr = self.env.task.observed_components["env0_policy_torque_fr"]
+                ptorque_rr = self.env.task.observed_components["env0_policy_torque_rr"]
+                env0_perc_r1 = self.env.task.observed_components["env0_perc_r1"]
+                env0_perc_r2 = self.env.task.observed_components["env0_perc_r2"]
+                env0_perc_r3 = self.env.task.observed_components["env0_perc_r3"]
+                env0_perc_dense = self.env.task.observed_components["env0_perc_dense"]
+                env0_perc_sparse = self.env.task.observed_components["env0_perc_sparse"]
+                env0_perc_observed = self.env.task.observed_components["env0_perc_observed"]
+                env0_perc_guiding = self.env.task.observed_components["env0_perc_guiding"]
 
 
-                actions = self.env.task.wheel_torqs / self.env.task.action_scale
                 
                 # render scene
                 if not self.headless:
@@ -226,6 +238,19 @@ class Trainer:
                 self.agents.track_data(f"Reward_comp_env0 / torque_rl", torque_rl)
                 self.agents.track_data(f"Reward_comp_env0 / torque_fr", torque_fr)
                 self.agents.track_data(f"Reward_comp_env0 / torque_rr", torque_rr)
+                self.agents.track_data(f"Reward_comp_env0 / exp_torque_l", exp_torque_l)
+                self.agents.track_data(f"Reward_comp_env0 / exp_torque_r", exp_torque_r)
+                self.agents.track_data(f"Reward_comp_env0 / policy_torqs_fl", ptorque_fl)
+                self.agents.track_data(f"Reward_comp_env0 / policy_torqs_rl", ptorque_rl)                
+                self.agents.track_data(f"Reward_comp_env0 / policy_torqs_fr", ptorque_fr)
+                self.agents.track_data(f"Reward_comp_env0 / policy_torqs_rr", ptorque_rr)
+                self.agents.track_data(f"Reward_comp_env0 / env0_perc_r1", env0_perc_r1)
+                self.agents.track_data(f"Reward_comp_env0 / env0_perc_r2", env0_perc_r2)
+                self.agents.track_data(f"Reward_comp_env0 / env0_perc_r3", env0_perc_r3)
+                self.agents.track_data(f"Reward_comp_env0 / env0_perc_dense", env0_perc_dense)
+                self.agents.track_data(f"Reward_comp_env0 / env0_perc_sparse", env0_perc_sparse)
+                self.agents.track_data(f"Reward_comp_env0 / env0_perc_observed", env0_perc_observed)
+                self.agents.track_data(f"Reward_comp_env0 / env0_perc_guiding", env0_perc_guiding)
 
 
 
