@@ -597,10 +597,7 @@ class TorqueDistributionTask(RLTask):
         if not self.world.is_playing():
             return
         
-
-    
-        action = actions
-        actions_repeated = action.repeat(1, 4)
+        actions_repeated = actions.repeat(1, 4)
         
         self.action = actions_repeated.clone().to(self.device)
 

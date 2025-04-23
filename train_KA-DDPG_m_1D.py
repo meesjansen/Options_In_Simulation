@@ -13,7 +13,7 @@ from skrl.utils import set_seed
 
 from my_models.categorical import CategoricalMixin
 from my_agents.ddpg import DDPG
-from my_trainers.sequential import SequentialTrainer
+from my_trainers.sequential_KA import SequentialTrainer
 
 # set the seed for reproducibility
 seed = set_seed(42)
