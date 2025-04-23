@@ -596,9 +596,9 @@ class TorqueDistributionTask(RLTask):
         
         if actions.ndim == 1:
             actions = actions.unsqueeze(1)
-        actions = actions.repeat(1, 4)
+        actions_repeated = actions.repeat(1, 4)
         
-        self.actions = actions.clone().to(self.device)
+        self.actions = actions_repeated.clone().to(self.device)
 
         # Compute state errors for the low-fidelity controller:
         # Desired longitudinal speed and yaw rate from commands:
