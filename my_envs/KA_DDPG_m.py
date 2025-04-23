@@ -75,7 +75,7 @@ TASK_CFG = {"test": False,
                             "control": {"decimation": 10, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 4.0,
+                                        "actionScale": 3.0,
                                         "wheel_radius": 0.1175,
                                         },   # leave room to overshoot or corner 
                             },

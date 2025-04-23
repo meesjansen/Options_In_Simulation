@@ -136,7 +136,7 @@ DDPG_DEFAULT_CONFIG = {
     "exploration": {
         "noise": OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device),              # exploration noise
         "initial_scale": 1.0,       # initial scale for the noise
-        "final_scale": 1e-3,        # final scale for the noise
+        "final_scale": 1e-4,        # final scale for the noise
         "timesteps": 1700000.0,          # timesteps for the noise decay
     },
 
@@ -160,7 +160,7 @@ DDPG_DEFAULT_CONFIG = {
 }
 
 cfg = DDPG_DEFAULT_CONFIG.copy()
-cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=1.0, device=device)
+cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.2, device=device)
 cfg["gradient_steps"] = 1
 cfg["batch_size"] = 512
 cfg["discount_factor"] = 0.999
