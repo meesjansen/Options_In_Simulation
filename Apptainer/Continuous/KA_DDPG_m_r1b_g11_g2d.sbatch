@@ -7,8 +7,8 @@
 #SBATCH --cpus-per-task=2   # Request number of CPUs (threads) per task. Default is 1 (note: CPUs are always allocated to jobs per 2).
 #SBATCH --mem=16GB
 #SBATCH --mail-type=END     # Set mail type to 'END' to receive a mail when the job finishes. 
-#SBATCH --output=KA_DDPG_m_r1b_r1d_r2d_output_%j.log
-#SBATCH --error=KA_DDPG_m_r1b_r1d_r2d_error_%j.log # Set name of error log. %j is the Slurm jobId
+#SBATCH --output=KA_DDPG_m_r1b_g11_g2d_output_%j.log
+#SBATCH --error=KA_DDPG_m_r1b_g11_g2d_error_%j.log # Set name of error log. %j is the Slurm jobId
 
 #SBATCH --gres=gpu:a40:1 # Request 1 GPU
 
@@ -52,7 +52,7 @@ srun apptainer exec --nv \
     -B "$data/logs:$HOME/.nvidia-omniverse/logs" \
     -B "$data/data:$HOME/.local/share/ov/data" \
     -B "$data/documents:$HOME/Documents" \
-    $APPTAINER_ROOT/$APPTAINER_NAME /isaac-sim/python.sh /workspace/Options_In_Simulation/train_KA-DDPG_m_r1b_r1d_r2d.py
+    $APPTAINER_ROOT/$APPTAINER_NAME /isaac-sim/python.sh /workspace/Options_In_Simulation/train_KA-DDPG_m_r1b_g11_g2d.py
 
 
 
