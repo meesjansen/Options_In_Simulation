@@ -630,7 +630,7 @@ class TorqueDistributionTask(RLTask):
         # Compute execution action: blend agent action and criteria action
         gamma = self.gamma_assist1.view(-1, 1).to(self.device)
         rand_vals = torch.rand(self.num_envs, 1, device=self.device)
-        mask = (rand_vals < gamma).float()
+        mask = (rand_vals > gamma).float()
         execution_action = mask * criteria_action + (1 - mask) * (self.actions * self.action_scale)
 
         # print("pre_physics; gamma_assist: ", self.gamma_assist[0])

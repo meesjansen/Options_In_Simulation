@@ -145,15 +145,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_m",
-        "experiment_name": "KA-DDPG_m",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_m_1D",
+        "experiment_name": "KA-DDPG_m_1D",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "Expert Knowledge analysis",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_m",
+                         "name": "KA-DDPG_m_1D",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
@@ -186,7 +186,7 @@ agent = DDPG(models=models,
 
 
 # Configure and instantiate the RL trainer.
-cfg_trainer = {"timesteps": 1200000, "headless": True}
+cfg_trainer = {"timesteps": 1000000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 trainer.train()
