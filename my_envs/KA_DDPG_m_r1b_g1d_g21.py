@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 1700.0
-        self.max_sim_steps = 1700000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
+        self.max_global_episodes = 700.0
+        self.max_sim_steps = 700000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -189,7 +189,8 @@ class TorqueDistributionTask(RLTask):
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
         self.episode_count = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
-        self.gamma_assist = torch.ones(self.num_envs, dtype=torch.float, device=self.device)
+        self.gamma_assist1 = torch.ones(self.num_envs, dtype=torch.float)
+        self.gamma_assist2 = torch.ones(self.num_envs, dtype=torch.float)
 
         self.linear_acc = torch.zeros((self.num_envs, 1), device=self.device)
         self.angular_acc = torch.zeros((self.num_envs, 1), device=self.device)
@@ -414,7 +415,7 @@ class TorqueDistributionTask(RLTask):
         
 
     def reset_idx(self, env_ids):
-        env_ids = env_ids.to(self.device)
+        
         indices = env_ids.to(dtype=torch.int32)
 
         # self.update_SI_level(env_ids)
@@ -463,15 +464,16 @@ class TorqueDistributionTask(RLTask):
 
         one = torch.tensor(1.0, device=self.device)
         hundred = torch.tensor(100.0, device=self.device)
-        self.gamma_assist = self.gamma_assist.to(device=self.device)
+        self.gamma_assist1 = self.gamma_assist1.to(device=self.device)
+        self.gamma_assist2 = self.gamma_assist2.to(device=self.device)
 
-        self.episode_sums["r1/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist) * self.episode_sums["r1: Tracking error reward (squared errors)"] / self.episode_sums["Final reward"])
-        self.episode_sums["r2/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist) * self.episode_sums["r2: Convergence reward (squared accelerations)"] / self.episode_sums["Final reward"])
-        self.episode_sums["r3/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist) * self.episode_sums["r3: Torque penalty (sum of squared torques)"] / self.episode_sums["Final reward"])
-        self.episode_sums["Dense/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist) * self.episode_sums["Dense reward"] / self.episode_sums["Final reward"])
-        self.episode_sums["Sparse/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist) * self.episode_sums["Sparse reward"] / self.episode_sums["Final reward"])
-        self.episode_sums["Guiding/Final reward"] = self.max_episode_length_s * (hundred * self.gamma_assist * self.episode_sums["Guiding reward"] / self.episode_sums["Final reward"])
-        self.episode_sums["Observed/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist) * self.episode_sums["Observed reward"] / self.episode_sums["Final reward"])
+        self.episode_sums["r1/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist2) * self.episode_sums["r1: Tracking error reward (squared errors)"] / self.episode_sums["Final reward"])
+        self.episode_sums["r2/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist2) * self.episode_sums["r2: Convergence reward (squared accelerations)"] / self.episode_sums["Final reward"])
+        self.episode_sums["r3/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist2) * self.episode_sums["r3: Torque penalty (sum of squared torques)"] / self.episode_sums["Final reward"])
+        self.episode_sums["Dense/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist2) * self.episode_sums["Dense reward"] / self.episode_sums["Final reward"])
+        self.episode_sums["Sparse/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist2) * self.episode_sums["Sparse reward"] / self.episode_sums["Final reward"])
+        self.episode_sums["Guiding/Final reward"] = self.max_episode_length_s * (hundred * self.gamma_assist2 * self.episode_sums["Guiding reward"] / self.episode_sums["Final reward"])
+        self.episode_sums["Observed/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist2) * self.episode_sums["Observed reward"] / self.episode_sums["Final reward"])
 
 
         # fill extras
@@ -481,7 +483,8 @@ class TorqueDistributionTask(RLTask):
                 torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
             )
             self.episode_sums[key][env_ids] = 0.0
-        self.extras["episode"]["gamma assist"] = torch.mean(self.gamma_assist.float())
+        self.extras["episode"]["gamma_1 action assist"] = torch.mean(self.gamma_assist1.float())
+        self.extras["episode"]["gamma_2 reward assist"] = torch.mean(self.gamma_assist2.float())
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
 
         if not self.curriculum:
@@ -621,11 +624,11 @@ class TorqueDistributionTask(RLTask):
         criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
 
         # Compute gamma_assist (decaying assistance) based on global_episode
-        self.gamma_assist2 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
-        self.gamma_assist = torch.ones(self.num_envs, dtype=torch.float, device=self.device)
+        self.gamma_assist1 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
+        self.gamma_assist2 = torch.ones(self.num_envs, dtype=torch.float, device=self.device)
 
         # Compute execution action: blend agent action and criteria action
-        gamma = self.gamma_assist2.view(-1, 1).to(self.device)
+        gamma = self.gamma_assist1.view(-1, 1).to(self.device)
         execution_action = (torch.tensor(1.0, device=self.device) - gamma) * self.actions * self.action_scale + gamma * criteria_action
 
         # print("pre_physics; gamma_assist: ", self.gamma_assist[0])
@@ -786,20 +789,20 @@ class TorqueDistributionTask(RLTask):
         # r3: Torque penalty (sum of squared torques)
         r3 = torch.sum(self.wheel_torqs ** 2, dim=1)
         # Weight factors (tunable)
-        w1, w2, w3 = -35.0, -0.02, -0.09
+        w1, w2, w3 = -50.0, -0.02, -0.09
         rdense = w1 * r1 + w2 * r2 + w3 * r3
 
         # Sparse reward: bonus if tracking errors are very low
         sparse_reward = torch.where(
             (torch.abs(self.v_delta) < 0.01) &
             (torch.abs(self.omega_delta) < 0.01 ),
-            torch.full_like(self.v_delta, 0.8),
+            torch.full_like(self.v_delta, 0.2),
             torch.zeros_like(self.v_delta)
         )
         observed_reward = rdense + sparse_reward
 
         # Final updating reward: blend observed reward with guiding reward
-        self.rew_buf = (1 - self.gamma_assist) * observed_reward.to(self.device) + self.gamma_assist * self.guiding_reward
+        self.rew_buf = (1 - self.gamma_assist2) * observed_reward.to(self.device) + self.gamma_assist2 * self.guiding_reward
         
         
         self.rew_buf += self.rew_scales["termination"] * self.reset_buf * ~self.timeout_buf
@@ -812,7 +815,7 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Guiding reward"] += self.guiding_reward
         self.episode_sums["Observed reward"] += observed_reward
         self.episode_sums["Final reward"] += self.rew_buf
-                
+
         self.comp_1 = w1 * r1
         self.comp_2 = w2 * r2
         self.comp_3 = w3 * r3
@@ -861,13 +864,13 @@ class TorqueDistributionTask(RLTask):
                     "env0_policy_torque_rl": self.action_scale * self.actions[0, 1].item(),
                     "env0_policy_torque_fr": self.action_scale * self.actions[0, 2].item(),
                     "env0_policy_torque_rr": self.action_scale * self.actions[0, 3].item(),
-                    "env0_perc_r1": 100.0 * (1 - self.gamma_assist[0].item()) * self.comp_1[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_r2": 100.0 * (1 - self.gamma_assist[0].item()) * self.comp_2[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_r3": 100.0 * (1 - self.gamma_assist[0].item()) * self.comp_3[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_dense": 100.0 * (1 - self.gamma_assist[0].item()) * self.rdense[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_sparse": 100.0 * (1 - self.gamma_assist[0].item()) * self.rsparse[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_observed": 100.0 * (1 - self.gamma_assist[0].item()) * self.robs[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_guiding": 100.0 * self.gamma_assist[0].item() * self.rguide[0].item()/self.rew_buf[0].item(),  
+                    "env0_perc_r1": 100.0 * (1 - self.gamma_assist2[0].item()) * self.comp_1[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_r2": 100.0 * (1 - self.gamma_assist2[0].item()) * self.comp_2[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_r3": 100.0 * (1 - self.gamma_assist2[0].item()) * self.comp_3[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_dense": 100.0 * (1 - self.gamma_assist2[0].item()) * self.rdense[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_sparse": 100.0 * (1 - self.gamma_assist2[0].item()) * self.rsparse[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_observed": 100.0 * (1 - self.gamma_assist2[0].item()) * self.robs[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_guiding": 100.0 * self.gamma_assist2[0].item() * self.rguide[0].item()/self.rew_buf[0].item(),        
                 }
                           
         return {self._robots.name: {"obs_buf": self.obs_buf}}
