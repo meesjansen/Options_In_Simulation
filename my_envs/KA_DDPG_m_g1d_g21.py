@@ -53,8 +53,8 @@ TASK_CFG = {"test": False,
                                         "restitution": 0.0,  # [-]
                                         # rough terrain only:
                                         "curriculum": False,
-                                        "RandSampling": False,
-                                        "BoxSampling": True,
+                                        "RandSampling": True,
+                                        "BoxSampling": False,
                                         "GridSampling": False,
                                         "maxInitMapLevel": 0,
                                         "mapLength": 10.0,
@@ -75,7 +75,7 @@ TASK_CFG = {"test": False,
                             "control": {"decimation": 10, # decimation: Number of control action updates @ sim DT per policy DT
                                         "stiffness": 1.0, # [N*m/rad] For torque setpoint control
                                         "damping": .005, # [N*m*s/rad]
-                                        "actionScale": 4.0,
+                                        "actionScale": 3.0,
                                         "wheel_radius": 0.1175,
                                         },   # leave room to overshoot or corner 
                             },
@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 1700.0
-        self.max_sim_steps = 1700000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
+        self.max_global_episodes = 700.0
+        self.max_sim_steps = 700000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -189,7 +189,8 @@ class TorqueDistributionTask(RLTask):
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
         self.episode_count = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
-        self.gamma_assist = torch.ones(self.num_envs, dtype=torch.float)
+        self.gamma_assist1 = torch.ones(self.num_envs, dtype=torch.float)
+        self.gamma_assist2 = torch.ones(self.num_envs, dtype=torch.float)
 
         self.linear_acc = torch.zeros((self.num_envs, 1), device=self.device)
         self.angular_acc = torch.zeros((self.num_envs, 1), device=self.device)
@@ -210,6 +211,13 @@ class TorqueDistributionTask(RLTask):
             "Guiding reward": torch_zeros(),
             "Observed reward": torch_zeros(),
             "Final reward": torch_zeros(),
+            "r1/Final reward": torch_zeros(),
+            "r2/Final reward": torch_zeros(),
+            "r3/Final reward": torch_zeros(),
+            "Dense reward/Final reward": torch_zeros(),
+            "Sparse reward/Final reward": torch_zeros(),
+            "Guiding reward/Final reward": torch_zeros(),
+            "Observed reward/Final reward": torch_zeros(),
               }
         
         self.terrain_levels = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
@@ -454,6 +462,19 @@ class TorqueDistributionTask(RLTask):
         self.episode_buf[env_ids] = 0 
         self.episode_count[env_ids] += 1
 
+        one = torch.tensor(1.0, device=self.device)
+        hundred = torch.tensor(100.0, device=self.device)
+        self.gamma_assist1 = self.gamma_assist1.to(device=self.device)
+        self.gamma_assist2 = self.gamma_assist2.to(device=self.device)
+
+        self.episode_sums["r1/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist2) * self.episode_sums["r1: Tracking error reward (squared errors)"] / self.episode_sums["Final reward"])
+        self.episode_sums["r2/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist2) * self.episode_sums["r2: Convergence reward (squared accelerations)"] / self.episode_sums["Final reward"])
+        self.episode_sums["r3/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist2) * self.episode_sums["r3: Torque penalty (sum of squared torques)"] / self.episode_sums["Final reward"])
+        self.episode_sums["Dense/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist2) * self.episode_sums["Dense reward"] / self.episode_sums["Final reward"])
+        self.episode_sums["Sparse/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist2) * self.episode_sums["Sparse reward"] / self.episode_sums["Final reward"])
+        self.episode_sums["Guiding/Final reward"] = self.max_episode_length_s * (hundred * self.gamma_assist2 * self.episode_sums["Guiding reward"] / self.episode_sums["Final reward"])
+        self.episode_sums["Observed/Final reward"] = self.max_episode_length_s * (hundred * (one - self.gamma_assist2) * self.episode_sums["Observed reward"] / self.episode_sums["Final reward"])
+
 
         # fill extras
         self.extras["episode"] = {}
@@ -462,7 +483,8 @@ class TorqueDistributionTask(RLTask):
                 torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
             )
             self.episode_sums[key][env_ids] = 0.0
-        self.extras["episode"]["gamma assist"] = torch.mean(self.gamma_assist.float())
+        self.extras["episode"]["gamma_1 action assist"] = torch.mean(self.gamma_assist1.float())
+        self.extras["episode"]["gamma_2 reward assist"] = torch.mean(self.gamma_assist2.float())
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
 
         if not self.curriculum:
@@ -553,64 +575,13 @@ class TorqueDistributionTask(RLTask):
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
-            # Box sampling with a progressively expanding range
-            progress = min(1.0, self.sim_steps.float() / self.max_sim_steps)
-            # Start with a small fraction of the full range (e.g., 10%)
-            initial_fraction = 0.1
-            # Interpolate between the initial small range and the full range
-            factor = initial_fraction + (1.0 - initial_fraction) * progress
-
-            # Sample x velocity using its range
-            x_low = self.command_x_range[0]
-            x_high = self.command_x_range[1]
-            x_center = (x_low + x_high) / 2.0
-
-            x_min = x_center - (x_center - self.command_x_range[0]) * factor
-            x_max = x_center + (self.command_x_range[1] - x_center) * factor
-            yaw_min = self.command_yaw_range[0] * factor
-            yaw_max = self.command_yaw_range[1] * factor
-
-            x_vel = torch_rand_float(x_min, x_max, (1, 1), device=self.device).squeeze()
-            # omega = torch_rand_float(yaw_min, yaw_max, (1, 1), device=self.device).squeeze()
-            omega = 0.0 # max 1.0
-
+            # Box sampling
+            
             return max(x_vel, 0.0), omega
         
         elif self.gridsampling:
-            # Compute the progress ratio (from 0 to 1)
-            progress = min(1.0, self.sim_steps.float() / self.max_sim_steps)
+            # Grid sampling
             
-            # Sample x velocity using its own range
-            x_low = self.command_x_range[0]
-            x_high = self.command_x_range[1]
-            x_center = (x_low + x_high) / 2.0
-
-            # Linearly shift the means from the center to the extremes.
-            x_left_mean = x_center - progress * (x_center - x_low)
-            x_right_mean = x_center + progress * (x_high - x_center)
-
-            fixed_std = 0.05  # Fixed standard deviation; adjust if needed.
-
-            if torch.rand(1, device=self.device).item() < 0.5:
-                x_vel = torch.normal(mean=x_left_mean, std=fixed_std, size=(1,), device=self.device).item()
-            else:
-                x_vel = torch.normal(mean=x_right_mean, std=fixed_std, size=(1,), device=self.device).item()
-
-            # Sample omega using its own range in the same manner as x_vel
-            yaw_low = self.command_yaw_range[0]
-            yaw_high = self.command_yaw_range[1]
-            yaw_center = (yaw_low + yaw_high) / 2.0
-
-            yaw_left_mean = yaw_center - progress * (yaw_center - yaw_low)
-            yaw_right_mean = yaw_center + progress * (yaw_high - yaw_center)
-
-            if torch.rand(1, device=self.device).item() < 0.5:
-                omega = torch.normal(mean=yaw_left_mean, std=fixed_std, size=(1,), device=self.device).item()
-            else:
-                omega = torch.normal(mean=yaw_right_mean, std=fixed_std, size=(1,), device=self.device).item()
-
-            omega = 0.0 # max 1.0
-
             return max(x_vel, 0.0), omega
         
     def refresh_dof_state_tensors(self):
@@ -653,10 +624,11 @@ class TorqueDistributionTask(RLTask):
         criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
 
         # Compute gamma_assist (decaying assistance) based on global_episode
-        self.gamma_assist = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
+        self.gamma_assist1 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
+        self.gamma_assist2 = torch.ones(self.num_envs, dtype=torch.float, device=self.device)
 
         # Compute execution action: blend agent action and criteria action
-        gamma = self.gamma_assist.view(-1, 1).to(self.device)
+        gamma = self.gamma_assist1.view(-1, 1).to(self.device)
         execution_action = (torch.tensor(1.0, device=self.device) - gamma) * self.actions * self.action_scale + gamma * criteria_action
 
         # print("pre_physics; gamma_assist: ", self.gamma_assist[0])
@@ -685,7 +657,7 @@ class TorqueDistributionTask(RLTask):
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, -4.0, 4.0)
+                self.wheel_torqs = torch.clip(self.torques, -3.0, 3.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
@@ -824,13 +796,13 @@ class TorqueDistributionTask(RLTask):
         sparse_reward = torch.where(
             (torch.abs(self.v_delta) < 0.01) &
             (torch.abs(self.omega_delta) < 0.01 ),
-            torch.full_like(self.v_delta, 3.0),
+            torch.full_like(self.v_delta, 0.2),
             torch.zeros_like(self.v_delta)
         )
         observed_reward = rdense + sparse_reward
 
         # Final updating reward: blend observed reward with guiding reward
-        self.rew_buf = (1 - self.gamma_assist) * observed_reward.to(self.device) + self.gamma_assist * self.guiding_reward
+        self.rew_buf = (1 - self.gamma_assist2) * observed_reward.to(self.device) + self.gamma_assist2 * self.guiding_reward
         
         
         self.rew_buf += self.rew_scales["termination"] * self.reset_buf * ~self.timeout_buf
@@ -843,15 +815,15 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Guiding reward"] += self.guiding_reward
         self.episode_sums["Observed reward"] += observed_reward
         self.episode_sums["Final reward"] += self.rew_buf
-        
-        # print("metrics; r1: Tracking error reward (squared errors):", w1 * r1[0])
-        # print("metrics: r2: Convergence reward (squared accelerations):", w2 * r2[0])
-        # print("metrics: r3: Torque penalty (sum of squared torques):", w3 * r3[0])
-        # print("metrics: Dense reward:", rdense[0])
-        # print("metrics: Sparse reward:", sparse_reward[0])
-        # print("metrics: observed reward:", observed_reward[0])
-        # print("metrics: guiding reward:", self.guiding_reward[0])
-        # print("metrics: final reward:", self.rew_buf[0])
+
+        self.comp_1 = w1 * r1
+        self.comp_2 = w2 * r2
+        self.comp_3 = w3 * r3
+        self.rdense = rdense
+        self.rsparse = sparse_reward
+        self.robs = observed_reward
+        self.rguide = self.guiding_reward
+        self.rfinal = self.rew_buf
 
                        
         return self.rew_buf
@@ -882,10 +854,23 @@ class TorqueDistributionTask(RLTask):
                     "env0_linear_acc": self.linear_acc[0].item(),
                     "env0_angular_acc": self.angular_acc[0].item(), 
                     "env0_episode_count": self.episode_count[0].item(),
-                    "env0_torque_fl": self.torques[0, 0].item(),   
-                    "env0_torque_rl": self.torques[0, 1].item(),
-                    "env0_torque_fr": self.torques[0, 2].item(),
-                    "env0_torque_rr": self.torques[0, 3].item(),         
+                    "env0_torque_apl_fl": self.torques[0, 0].item(),   
+                    "env0_torque_apl_rl": self.torques[0, 1].item(),
+                    "env0_torque_apl_fr": self.torques[0, 2].item(),
+                    "env0_torque_apl_rr": self.torques[0, 3].item(),
+                    "env0_exp_left": self.ac_left[0].item(),
+                    "env0_exp_right": self.ac_right[0].item(),
+                    "env0_policy_torque_fl": self.action_scale * self.actions[0, 0].item(),
+                    "env0_policy_torque_rl": self.action_scale * self.actions[0, 1].item(),
+                    "env0_policy_torque_fr": self.action_scale * self.actions[0, 2].item(),
+                    "env0_policy_torque_rr": self.action_scale * self.actions[0, 3].item(),
+                    "env0_perc_r1": 100.0 * (1 - self.gamma_assist2[0].item()) * self.comp_1[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_r2": 100.0 * (1 - self.gamma_assist2[0].item()) * self.comp_2[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_r3": 100.0 * (1 - self.gamma_assist2[0].item()) * self.comp_3[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_dense": 100.0 * (1 - self.gamma_assist2[0].item()) * self.rdense[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_sparse": 100.0 * (1 - self.gamma_assist2[0].item()) * self.rsparse[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_observed": 100.0 * (1 - self.gamma_assist2[0].item()) * self.robs[0].item()/self.rew_buf[0].item(),
+                    "env0_perc_guiding": 100.0 * self.gamma_assist2[0].item() * self.rguide[0].item()/self.rew_buf[0].item(),         
                 }
                           
         return {self._robots.name: {"obs_buf": self.obs_buf}}
