@@ -134,7 +134,7 @@ DDPG_DEFAULT_CONFIG = {
     "grad_norm_clip": 0,            # clipping coefficient for the norm of the gradients
 
     "exploration": {
-        "noise": OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device),              # exploration noise
+        "noise": OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.05, device=device),              # exploration noise
         "initial_scale": 1.0,       # initial scale for the noise
         "final_scale": 1e-4,        # final scale for the noise
         "timesteps": 700000.0,          # timesteps for the noise decay
