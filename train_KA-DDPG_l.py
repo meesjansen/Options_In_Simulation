@@ -13,7 +13,7 @@ from skrl.utils import set_seed
 
 from my_models.categorical import CategoricalMixin
 from my_agents.ddpg import DDPG
-from my_trainers.sequential_KA import SequentialTrainer
+from my_trainers.sequential import SequentialTrainer
 
 # set the seed for reproducibility
 seed = set_seed(42)
@@ -60,7 +60,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.KA_DDPG_m_1D import TorqueDistributionTask, TASK_CFG
+from my_envs.KA_DDPG_l import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
@@ -134,10 +134,10 @@ DDPG_DEFAULT_CONFIG = {
     "grad_norm_clip": 0,            # clipping coefficient for the norm of the gradients
 
     "exploration": {
-        "noise": OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.05, device=device),              # exploration noise
+        "noise": OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device),              # exploration noise
         "initial_scale": 1.0,       # initial scale for the noise
         "final_scale": 1e-4,        # final scale for the noise
-        "timesteps": 700000.0,          # timesteps for the noise decay
+        "timesteps": 1200000.0,          # timesteps for the noise decay
     },
 
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
@@ -145,22 +145,22 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_m_1D",
-        "experiment_name": "KA-DDPG_m_1D",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_l",
+        "experiment_name": "KA-DDPG_l",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "Expert Knowledge analysis",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_m_1D",
+                         "name": "KA-DDPG_l",
                          "tags": ["DDPG", "KA", "r18", "o4", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
 }
 
 cfg = DDPG_DEFAULT_CONFIG.copy()
-cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device)
+cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.02, device=device)
 cfg["gradient_steps"] = 1
 cfg["batch_size"] = 512
 cfg["discount_factor"] = 0.999
@@ -173,7 +173,7 @@ cfg["state_preprocessor"] = RunningStandardScaler
 cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
 # logging to TensorBoard and write checkpoints (in timesteps)
 cfg["experiment"]["write_interval"] = 800
-cfg["experiment"]["checkpoint_interval"] = 700000
+cfg["experiment"]["checkpoint_interval"] = 500000
 
 
 agent = DDPG(models=models,
@@ -186,7 +186,7 @@ agent = DDPG(models=models,
 
 
 # Configure and instantiate the RL trainer.
-cfg_trainer = {"timesteps": 1000000, "headless": True}
+cfg_trainer = {"timesteps": 1300000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 trainer.train()
