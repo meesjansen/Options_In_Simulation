@@ -53,9 +53,9 @@ TASK_CFG = {"test": False,
                                         "restitution": 0.0,  # [-]
                                         # rough terrain only:
                                         "curriculum": False,
-                                        "RandSampling": False,
+                                        "RandSampling": True,
                                         "BoxSampling": False,
-                                        "GridSampling": True,
+                                        "GridSampling": False,
                                         "maxInitMapLevel": 0,
                                         "mapLength": 10.0,
                                         "mapWidth": 10.0,
@@ -572,64 +572,13 @@ class TorqueDistributionTask(RLTask):
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
-            # Box sampling with a progressively expanding range
-            progress = min(1.0, self.sim_steps.float() / self.max_sim_steps)
-            # Start with a small fraction of the full range (e.g., 10%)
-            initial_fraction = 0.1
-            # Interpolate between the initial small range and the full range
-            factor = initial_fraction + (1.0 - initial_fraction) * progress
-
-            # Sample x velocity using its range
-            x_low = self.command_x_range[0]
-            x_high = self.command_x_range[1]
-            x_center = (x_low + x_high) / 2.0
-
-            x_min = x_center - (x_center - self.command_x_range[0]) * factor
-            x_max = x_center + (self.command_x_range[1] - x_center) * factor
-            yaw_min = self.command_yaw_range[0] * factor
-            yaw_max = self.command_yaw_range[1] * factor
-
-            x_vel = torch_rand_float(x_min, x_max, (1, 1), device=self.device).squeeze()
-            # omega = torch_rand_float(yaw_min, yaw_max, (1, 1), device=self.device).squeeze()
-            omega = 0.0 # max 1.0
-
+            # Box sampling
+            
             return max(x_vel, 0.0), omega
         
         elif self.gridsampling:
-            # Compute the progress ratio (from 0 to 1)
-            progress = min(1.0, self.sim_steps[env_id].float().item() / self.max_sim_steps)
+            # Grid sampling
             
-            # Sample x velocity using its own range
-            x_low = self.command_x_range[0]
-            x_high = self.command_x_range[1]
-            x_center = (x_low + x_high) / 2.0
-
-            # Linearly shift the means from the center to the extremes.
-            x_left_mean = x_center - progress * (x_center - x_low)
-            x_right_mean = x_center + progress * (x_high - x_center)
-
-            fixed_std = 0.05  # Fixed standard deviation; adjust if needed.
-
-            if torch.rand(1, device=self.device).item() < 0.5:
-                x_vel = torch.normal(mean=x_left_mean, std=fixed_std, size=(1,), device=self.device).item()
-            else:
-                x_vel = torch.normal(mean=x_right_mean, std=fixed_std, size=(1,), device=self.device).item()
-
-            # Sample omega using its own range in the same manner as x_vel
-            yaw_low = self.command_yaw_range[0]
-            yaw_high = self.command_yaw_range[1]
-            yaw_center = (yaw_low + yaw_high) / 2.0
-
-            yaw_left_mean = yaw_center - progress * (yaw_center - yaw_low)
-            yaw_right_mean = yaw_center + progress * (yaw_high - yaw_center)
-
-            if torch.rand(1, device=self.device).item() < 0.5:
-                omega = torch.normal(mean=yaw_left_mean, std=fixed_std, size=(1,), device=self.device).item()
-            else:
-                omega = torch.normal(mean=yaw_right_mean, std=fixed_std, size=(1,), device=self.device).item()
-
-            omega = 0.0 # max 1.0
-
             return max(x_vel, 0.0), omega
         
     def refresh_dof_state_tensors(self):

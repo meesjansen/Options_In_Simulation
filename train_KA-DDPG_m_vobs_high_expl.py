@@ -33,7 +33,7 @@ class DeterministicActor(DeterministicMixin, Model):
                                  nn.Linear(512, 128),
                                  nn.ELU(),
                                  nn.Linear(128, self.num_actions),
-                                 nn.Tanh())
+                                 nn.Sigmoid())
 
     def compute(self, inputs, role):
         return self.net(inputs["states"]), {}
@@ -60,7 +60,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.KA_DDPG_m_r1b_g1d_g2d import TorqueDistributionTask, TASK_CFG
+from my_envs.KA_DDPG_m_vobs_high_expl import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
@@ -145,22 +145,22 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_m_r1b_g1d_g2d",
-        "experiment_name": "KA-DDPG_m_r1b_g1d_g2d",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_m_vobs_high_expl",
+        "experiment_name": "KA-DDPG_m_vobs_vobs_high_expl",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "Expert Knowledge analysis",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_m_r1b_g1d_g2d",
-                         "tags": ["DDPG", "KA", "r18", "o4", "torq"],
+                         "name": "KA-DDPG_m_vobs_vobs_high_expl",
+                         "tags": ["DDPG", "KA", "r18", "o6", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
 }
 
 cfg = DDPG_DEFAULT_CONFIG.copy()
-cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.05, device=device)
+cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.08, device=device)
 cfg["gradient_steps"] = 1
 cfg["batch_size"] = 512
 cfg["discount_factor"] = 0.999
@@ -173,7 +173,7 @@ cfg["state_preprocessor"] = RunningStandardScaler
 cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
 # logging to TensorBoard and write checkpoints (in timesteps)
 cfg["experiment"]["write_interval"] = 800
-cfg["experiment"]["checkpoint_interval"] = 500000
+cfg["experiment"]["checkpoint_interval"] = 700000
 
 
 agent = DDPG(models=models,
