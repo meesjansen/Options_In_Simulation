@@ -16,7 +16,7 @@ from my_agents.ddpg import DDPG
 from my_trainers.sequential import SequentialTrainer
 
 # set the seed for reproducibility
-seed = set_seed(42)
+seed = set_seed(83)
 
 # Define the models (stochastic and deterministic) for the agent using helper mixin.
 # - Policy: takes as input the environment's observation/state and returns action
@@ -60,7 +60,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.KA_DDPG_m import TorqueDistributionTask, TASK_CFG
+from my_envs.KA_DDPG_m_extra import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
