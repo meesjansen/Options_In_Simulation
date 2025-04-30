@@ -145,22 +145,22 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_m_vobs_curr2",
-        "experiment_name": "KA-DDPG_m_vobs_curr2",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_m_vobs_curr2_high_expl",
+        "experiment_name": "KA-DDPG_m_vobs_curr2_high_expl",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "Expert Knowledge analysis",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_m_vobs_curr2",
+                         "name": "KA-DDPG_m_vobs_curr2_high_expl",
                          "tags": ["DDPG", "KA", "r18", "o6", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
 }
 
 cfg = DDPG_DEFAULT_CONFIG.copy()
-cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.01, device=device)
+cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.05, device=device)
 cfg["gradient_steps"] = 1
 cfg["batch_size"] = 512
 cfg["discount_factor"] = 0.999
