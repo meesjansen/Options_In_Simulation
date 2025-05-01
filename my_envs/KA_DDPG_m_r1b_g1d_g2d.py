@@ -627,7 +627,7 @@ class TorqueDistributionTask(RLTask):
         self.gamma_assist1 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
         self.gamma_assist2 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
 
-        # Compute execution action: blend agent action and criteria action
+        # Compute execution action: seperate agent action and criteria action
         gamma = self.gamma_assist1.view(-1, 1).to(self.device)
         rand_vals = torch.rand(self.num_envs, 1, device=self.device)
         mask = (rand_vals > gamma).float()
