@@ -638,9 +638,11 @@ class TorqueDistributionTask(RLTask):
         self.guiding_reward = self.guiding_reward
 
 
-        # Apply the blended execution action as torques (assumed direct mapping)
-        self.torques = execution_action
-        # self.torques = criteria_action
+        # Compute execution action: seperate agent action and criteria action
+        gamma = self.gamma_assist1.view(-1, 1).to(self.device)
+        rand_vals = torch.rand(self.num_envs, 1, device=self.device)
+        mask = (rand_vals > gamma).float()
+        execution_action = mask * criteria_action + (1 - mask) * (self.actions * self.action_scale)
 
 
         # # Retrieve the ordered DOF names from your RobotView
