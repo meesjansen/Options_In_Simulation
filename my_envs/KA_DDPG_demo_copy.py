@@ -21,7 +21,7 @@ from omni.isaac.core.prims import GeometryPrim, GeometryPrimView
 from pxr import PhysxSchema, UsdPhysics
 
 
-from my_robots.origin_v18 import AvularOrigin_v10 as Robot_v10 
+from my_robots.origin_v10_meshes import AvularOrigin_v10 as Robot_v10 
 
 from my_utils.origin_terrain_generator import *
 from my_utils.terrain_utils import *
@@ -221,6 +221,7 @@ class TorqueDistributionTask(RLTask):
         
         self.terrain_levels = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.env_origins = torch.zeros((self.num_envs, 3), device=self.device, requires_grad=False)
+        self.flip = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
         self.phase_name = ""
 
         
@@ -568,7 +569,13 @@ class TorqueDistributionTask(RLTask):
             x_vel = torch_rand_float(self.command_x_range[0], self.command_x_range[1], (1,1), device=self.device).squeeze()
             omega = torch_rand_float(self.command_yaw_range[0], self.command_yaw_range[1], (1,1), device=self.device).squeeze()
             # x_vel = 0.0 # max 1.0
-            omega = 0.0 # max 1.0
+            # omega = 0.0 # max 1.0
+            if self.flip[env_id] == 1:
+                x_vel = 0
+                self.flip[env_id] = 0
+            else:
+                omega = 0
+                self.flip[env_id] = 1 
             return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
