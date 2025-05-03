@@ -581,7 +581,7 @@ class TorqueDistributionTask(RLTask):
                 self.flip[env_id] = 1 
             return max(x_vel, 0.0), omega
         
-         elif self.boxsampling:
+        elif self.boxsampling:
             # Box sampling with a progressively expanding range
             progress = min(1.0, self.sim_steps.float() / self.max_sim_steps)
             # Start with a small fraction of the full range (e.g., 10%)
