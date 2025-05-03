@@ -153,8 +153,8 @@ class TorqueDistributionTask(RLTask):
         self._env_spacing = 0.0
         
        # --- KA-DDPG/KA-PPO modifications: use a state space of 4 and action space of 4 ---
-        self._num_observations = 6  # [v_desired, omega_desired, v_delta, omega_delta, linear_acc, angular_acc]
-        self._num_actions = 1       # [T_fl,_rl,_fr,_rr]
+        self._num_observations = 6  # [desired_v, desired_omega, v_delta, omega_delta, linear_acc, angular_acc]
+        self._num_actions = 4       # [T_fl, T_rl, T_fr, T_rr]
         self.observation_space = spaces.Box(
             low=-1.0,
             high=1.0,
@@ -199,8 +199,6 @@ class TorqueDistributionTask(RLTask):
         self.v_forward_projected = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
         self.v_lateral_projected = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
         self.v_upward_projected = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
-
-        self.action = torch.zeros(self.num_envs, 4, dtype=torch.float, device=self.device, requires_grad=False)
 
         torch_zeros = lambda: torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
         self.episode_sums = {
@@ -395,7 +393,6 @@ class TorqueDistributionTask(RLTask):
             self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False
         )
         
-        
         # for i in range(self.num_envs):
             # self.env_origins[i] = self.terrain_origins[self.terrain_levels[i], self.terrain_types[i]]
 
@@ -576,10 +573,11 @@ class TorqueDistributionTask(RLTask):
             if self.flip[env_id] == 1:
                 x_vel = 0
                 self.flip[env_id] = 0
+                return max(x_vel, 0.0), omega
             else:
                 omega = 0
                 self.flip[env_id] = 1 
-            return max(x_vel, 0.0), omega
+                return max(x_vel, 0.0), omega
         
         elif self.boxsampling:
             # Box sampling
@@ -604,9 +602,7 @@ class TorqueDistributionTask(RLTask):
         if not self.world.is_playing():
             return
         
-        actions_repeated = actions.repeat(1, 4)
-        
-        self.action = actions_repeated.clone().to(self.device)
+        self.actions = actions.clone().to(self.device)
 
         # Compute state errors for the low-fidelity controller:
         # Desired longitudinal speed and yaw rate from commands:
@@ -637,7 +633,7 @@ class TorqueDistributionTask(RLTask):
 
         # Compute execution action: blend agent action and criteria action
         gamma = self.gamma_assist.view(-1, 1).to(self.device)
-        execution_action = (torch.tensor(1.0, device=self.device) - gamma) * self.action * self.action_scale + gamma * criteria_action
+        execution_action = (torch.tensor(1.0, device=self.device) - gamma) * self.actions * self.action_scale + gamma * criteria_action
 
         # print("pre_physics; gamma_assist: ", self.gamma_assist[0])
         # print("pre_physics; self.episode_count.float(): ", self.episode_count.float()[0])
@@ -646,7 +642,7 @@ class TorqueDistributionTask(RLTask):
 
 
         # Compute guiding reward: negative Euclidean distance between agent and criteria actions
-        self.guiding_reward = -torch.norm(self.action * self.action_scale - criteria_action, dim=1).to(self.device)
+        self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device)
         self.guiding_reward = self.guiding_reward
 
 
@@ -868,10 +864,10 @@ class TorqueDistributionTask(RLTask):
                     "env0_torque_apl_rr": self.torques[0, 3].item(),
                     "env0_exp_left": self.ac_left[0].item(),
                     "env0_exp_right": self.ac_right[0].item(),
-                    "env0_policy_torque_fl": self.action_scale * self.action[0, 0].item(),
-                    "env0_policy_torque_rl": self.action_scale * self.action[0, 1].item(),
-                    "env0_policy_torque_fr": self.action_scale * self.action[0, 2].item(),
-                    "env0_policy_torque_rr": self.action_scale * self.action[0, 3].item(),
+                    "env0_policy_torque_fl": self.action_scale * self.actions[0, 0].item(),
+                    "env0_policy_torque_rl": self.action_scale * self.actions[0, 1].item(),
+                    "env0_policy_torque_fr": self.action_scale * self.actions[0, 2].item(),
+                    "env0_policy_torque_rr": self.action_scale * self.actions[0, 3].item(),
                     "env0_perc_r1": 100.0 * (1 - self.gamma_assist[0].item()) * self.comp_1[0].item()/self.rew_buf[0].item(),
                     "env0_perc_r2": 100.0 * (1 - self.gamma_assist[0].item()) * self.comp_2[0].item()/self.rew_buf[0].item(),
                     "env0_perc_r3": 100.0 * (1 - self.gamma_assist[0].item()) * self.comp_3[0].item()/self.rew_buf[0].item(),
