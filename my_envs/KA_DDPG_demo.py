@@ -615,7 +615,7 @@ class TorqueDistributionTask(RLTask):
         self.omega_delta = self.desired_omega - self.current_omega
 
 
-        self.Kp_omega = 2.0
+        self.Kp_omega = 10.0
         # Compute criteria actions for each wheel:
         # Left wheels get: Kp * ( (m*v_delta/dt) - (J*omega_delta/dt) )
         # Right wheels get: Kp * ( (m*v_delta/dt) + (J*omega_delta/dt) )
@@ -661,7 +661,7 @@ class TorqueDistributionTask(RLTask):
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, -4.0, 4.0)
+                self.wheel_torqs = torch.clip(self.torques, -8.0, 8.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
@@ -842,10 +842,11 @@ class TorqueDistributionTask(RLTask):
 
         # New observation: 4D vector per environment
         self.obs_buf = torch.cat([self.desired_v.unsqueeze(1), self.desired_omega.unsqueeze(1), self.v_delta.unsqueeze(1), self.omega_delta.unsqueeze(1), self.linear_acc.unsqueeze(1), self.angular_acc.unsqueeze(1)], dim=1)
-        print("self.v_delta[0]", self.desired_v.unsqueeze(1))
         print("self.desired_v[0]", self.desired_v[0])
         print("self.current_v[0]", self.current_v[0])
+
         print("self.desired_omega[0]", self.desired_omega[0])
+        print("self.current_omega[0]", self.current_omega[0])
         # print("self.omega_delta[0]", self.omega_delta[0])
         # print("self.linear_acc[0]", self.linear_acc[0])
         # print("self.angular_acc[0]", self.angular_acc[0])
