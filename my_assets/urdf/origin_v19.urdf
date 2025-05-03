@@ -3,7 +3,7 @@
 
   <!-- Define custom materials -->
   <material name="anthracite">
-    <color rgba="0.05 0.05 0.05 1"/>
+    <color rgba="0.02 0.02 0.02 1"/>
   </material>
 
   <material name="rubber_gray">
