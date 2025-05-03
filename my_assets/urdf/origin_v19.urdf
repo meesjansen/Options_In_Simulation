@@ -43,7 +43,7 @@
       </geometry>
     </visual>
     <collision name="left_front_wheel_collision">
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 1.5708"/>
       <geometry>
         <cylinder length="0.07" radius="0.1175"/>
       </geometry>
