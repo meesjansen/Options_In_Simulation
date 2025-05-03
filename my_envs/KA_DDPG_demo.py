@@ -21,7 +21,7 @@ from omni.isaac.core.prims import GeometryPrim, GeometryPrimView
 from pxr import PhysxSchema, UsdPhysics
 
 
-from my_robots.origin_v19 import AvularOrigin_v10 as Robot_v10 
+from my_robots.origin_v10_meshes import AvularOrigin_v10 as Robot_v10 
 
 from my_utils.origin_terrain_generator import *
 from my_utils.terrain_utils import *
