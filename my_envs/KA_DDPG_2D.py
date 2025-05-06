@@ -597,10 +597,6 @@ class TorqueDistributionTask(RLTask):
         if not self.world.is_playing():
             return
         
-        actions_repeated = actions.repeat(1, 4)
-        
-        self.action = actions_repeated.clone().to(self.device)
-
         # Compute state errors for the low-fidelity controller:
         # Desired longitudinal speed and yaw rate from commands:
         self.desired_v = self.commands[:, 0]
@@ -625,7 +621,7 @@ class TorqueDistributionTask(RLTask):
         # Build criteria action vector: [T_fl, T_rl, T_fr, T_rr]
         criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
         # Expand the actions tensor to match the required (N,4) shape
-        actions_expanded = torch.cat([actions[:, 0:1].repeat(1, 2), actions[:, 1:2].repeat(1, 2)], dim=1).to(self.device)
+        self.action = torch.cat([actions[:, 0:1].repeat(1, 2), actions[:, 1:2].repeat(1, 2)], dim=1).to(self.device)
 
         # Compute gamma_assist (decaying assistance) based on global_episode
         self.gamma_assist = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
