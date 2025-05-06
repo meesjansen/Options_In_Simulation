@@ -609,14 +609,17 @@ class TorqueDistributionTask(RLTask):
 
             # Linearly shift the means from the center to the extremes.
             x_left_mean = x_center - progress * (x_center - x_low)
+            x_left_mean = torch.tensor(x_left_mean, device=self.device)
             x_right_mean = x_center + progress * (x_high - x_center)
+            x_right_mean = torch.tensor(x_right_mean, device=self.device)
 
             fixed_std = 0.05  # Fixed standard deviation; adjust if needed.
+            fixed_std = torch.tensor(fixed_std, device=self.device)
 
             if torch.rand(1, device=self.device).item() < 0.5:
-                x_vel = torch.normal(mean=x_left_mean, std=fixed_std, size=(1,), device=self.device).item()
+                x_vel = torch.normal(mean=x_left_mean, std=fixed_std, size=(1,)).item()
             else:
-                x_vel = torch.normal(mean=x_right_mean, std=fixed_std, size=(1,), device=self.device).item()
+                x_vel = torch.normal(mean=x_right_mean, std=fixed_std, size=(1,)).item()
 
             # Sample omega using its own range in the same manner as x_vel
             yaw_low = self.command_yaw_range[0]
@@ -624,12 +627,14 @@ class TorqueDistributionTask(RLTask):
             yaw_center = (yaw_low + yaw_high) / 2.0
 
             yaw_left_mean = yaw_center - progress * (yaw_center - yaw_low)
+            yaw_left_mean = torch.tensor(yaw_left_mean, device=self.device)
             yaw_right_mean = yaw_center + progress * (yaw_high - yaw_center)
+            yaw_right_mean = torch.tensor(yaw_right_mean, device=self.device)
 
             if torch.rand(1, device=self.device).item() < 0.5:
-                omega = torch.normal(mean=yaw_left_mean, std=fixed_std, size=(1,), device=self.device).item()
+                omega = torch.normal(mean=yaw_left_mean, std=fixed_std, size=(1,)).item()
             else:
-                omega = torch.normal(mean=yaw_right_mean, std=fixed_std, size=(1,), device=self.device).item()
+                omega = torch.normal(mean=yaw_right_mean, std=fixed_std, size=(1,)).item()
 
             omega = 0.0 # max 1.0
 
