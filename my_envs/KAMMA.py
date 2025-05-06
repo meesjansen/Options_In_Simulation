@@ -665,9 +665,9 @@ class TorqueDistributionTask(RLTask):
         # print("pre_physics; desired_omega: ", self.desired_omega[0])
         # print("pre_physics; current_omega: ", self.current_omega[0])
         # print("pre_physics; expert torques left: ", self.ac_left[0])
-        # print("pre_physics; expert torques right: ", self.ac_right[0])
-        print("pre_physics; executed torques pre clip: ", self.torques[0])
-        print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
+        # # print("pre_physics; expert torques right: ", self.ac_right[0])
+        # print("pre_physics; executed torques pre clip: ", self.torques[0])
+        # print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
         # print("base velocitites in z: ", self.base_velocities[0, 2])
 
           
