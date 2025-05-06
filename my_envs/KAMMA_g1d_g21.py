@@ -637,6 +637,7 @@ class TorqueDistributionTask(RLTask):
         rand_vals = torch.rand(self.num_envs, 1, device=self.device)
         mask = (rand_vals > gamma).float()
         execution_action = mask * criteria_action + (1 - mask) * (self.actions * self.action_scale)
+        self.torques = execution_action
 
 
         # # Retrieve the ordered DOF names from your RobotView
@@ -665,8 +666,8 @@ class TorqueDistributionTask(RLTask):
         # print("pre_physics; current_omega: ", self.current_omega[0])
         # print("pre_physics; expert torques left: ", self.ac_left[0])
         # print("pre_physics; expert torques right: ", self.ac_right[0])
-        # print("pre_physics; executed torques pre clip: ", self.torques[0])
-        # print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
+        print("pre_physics; executed torques pre clip: ", self.torques[0])
+        print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
         # print("base velocitites in z: ", self.base_velocities[0, 2])
 
           
