@@ -119,7 +119,7 @@ class ReplayMemory(RandomMemory):
                 self._write_index = (self._write_index + 1) % self.memory_size
 
 # Instantiate a memory as experience replay
-memory = ReplayMemory(memory_size=200_000, num_envs=env.num_envs, device=device, replacement=False)
+memory = ReplayMemory(memory_size=200_000, num_envs=env.num_envs, device=device)
 
 # instantiate the agent's models (function approximators).
 # DDPG requires 4 models, visit its documentation for more details
