@@ -664,17 +664,17 @@ class TorqueDistributionTask(RLTask):
 
         
 
-        if hasattr(self, "memory") and len(self.memory) > 0:
-            print(f"[FIFO DEBUG] Memory length: {len(self.memory)}")
-            try:
-                # Print first few 'states' to verify overwrite
-                states = self.memory.get_tensor_by_name("states", keepdim=False)
-                print(f"[FIFO DEBUG] Oldest state: {states[0].cpu().numpy()}")
-                print(f"[FIFO DEBUG] Newest state: {states[len(self.memory) - 1].cpu().numpy()}")
-            except Exception as e:
-                print(f"[FIFO DEBUG] Error accessing memory tensor: {e}")
+        # if hasattr(self, "memory") and len(self.memory) > 0:
+        #     print(f"[FIFO DEBUG] Memory length: {len(self.memory)}")
+        #     try:
+        #         # Print first few 'states' to verify overwrite
+        #         states = self.memory.get_tensor_by_name("states", keepdim=False)
+        #         print(f"[FIFO DEBUG] Oldest state: {states[0].cpu().numpy()}")
+        #         print(f"[FIFO DEBUG] Newest state: {states[len(self.memory) - 1].cpu().numpy()}")
+        #     except Exception as e:
+        #         print(f"[FIFO DEBUG] Error accessing memory tensor: {e}")
 
-        print(f"[FIFO DEBUG] memory_index = {self.memory.memory_index}, filled = {self.memory.filled}")
+        # print(f"[FIFO DEBUG] memory_index = {self.memory.memory_index}, filled = {self.memory.filled}")
 
 
         # print("pre_physics; applied efforts: ", self._robots.get_applied_joint_efforts(clone=False))
