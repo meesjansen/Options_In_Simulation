@@ -99,8 +99,27 @@ env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="tor
 env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
+class ReplayMemory(RandomMemory):
+    def __init__(self, memory_size, batch_size=64, num_envs=1, device="cuda:0"):
+        super().__init__(memory_size=memory_size, batch_size=batch_size, num_envs=num_envs, device=device)
+        self._write_index = 0  # FIFO index pointer
+
+    def add_samples(self, samples):
+        for i in range(self.num_envs):
+            if self._size < self.memory_size:
+                # Append new transition to each buffer field
+                for key, value in samples.items():
+                    self._storage[key].append(value[i].detach().clone().to(self.device))
+                self._size += 1
+            else:
+                # FIFO overwrite at current pointer
+                for key, value in samples.items():
+                    self._storage[key][self._write_index] = value[i].detach().clone().to(self.device)
+
+                self._write_index = (self._write_index + 1) % self.memory_size
+
 # Instantiate a memory as experience replay
-memory = RandomMemory(memory_size=1_000_000, num_envs=env.num_envs, device=device, replacement=False)
+memory = ReplayMemory(memory_size=200_000, num_envs=env.num_envs, device=device, replacement=False)
 
 # instantiate the agent's models (function approximators).
 # DDPG requires 4 models, visit its documentation for more details
@@ -186,7 +205,7 @@ agent = DDPG(models=models,
 
 
 # Configure and instantiate the RL trainer.
-cfg_trainer = {"timesteps": 1000000, "headless": True}
+cfg_trainer = {"timesteps": 700000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 trainer.train()

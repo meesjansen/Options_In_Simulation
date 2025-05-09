@@ -693,7 +693,7 @@ class TorqueDistributionTask(RLTask):
         rand_vals = torch.rand(self.num_envs, 1, device=self.device)
         mask = (rand_vals > gamma).float()
         execution_action = mask * criteria_action + (1 - mask) * (self.actions * self.action_scale)
-
+        self.torques = execution_action
 
         # # Retrieve the ordered DOF names from your RobotView
         # dof_names = self._robots.dof_names

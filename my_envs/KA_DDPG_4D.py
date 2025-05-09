@@ -162,7 +162,7 @@ class TorqueDistributionTask(RLTask):
             dtype=np.float32
         )
         self.action_space = spaces.Box(
-            low=0.0,
+            low=-1.0,
             high=1.0,
             shape=(self._num_actions,),
             dtype=np.float32
