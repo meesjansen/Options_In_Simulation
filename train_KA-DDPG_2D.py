@@ -162,10 +162,7 @@ class FIFOMemory(Memory):
             # if not allow_overwrite and full → drop sample silently
 
 # Instantiate a memory as experience replay
-memory = FIFOMemory(memory_size=200_000,
-                      num_envs=env.num_envs,
-                      device=device,
-                      allow_overwrite=True)   # FIFO behaviour
+memory = FIFOMemory(memory_size=200_000, num_envs=env.num_envs, device=device, replacement=False)   # FIFO behaviour
 
 # instantiate the agent's models (function approximators).
 # DDPG requires 4 models, visit its documentation for more details
