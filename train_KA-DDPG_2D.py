@@ -4,7 +4,7 @@ import torch.nn as nn
 # Import the skrl components to build the RL system
 from skrl.models.torch import Model, DeterministicMixin
 from skrl.resources.noises.torch import OrnsteinUhlenbeckNoise
-from skrl.memories.torch import RandomMemory
+from skrl.memories.torch import Memory
 from skrl.resources.schedulers.torch import KLAdaptiveRL
 from skrl.resources.preprocessors.torch import RunningStandardScaler
 from skrl.utils.omniverse_isaacgym_utils import get_env_instance
@@ -99,80 +99,70 @@ env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="tor
 env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
-class ReplayMemory(RandomMemory):
-    """
-    First‑in/first‑out overwrite version of SKRL's RandomMemory.
-
-    Parameters
-    ----------
-    memory_size : int
-        Maximum number of transitions to store.
-    num_envs : int, default 1
-        Parallel environments feeding the memory.
-    device : str, default "cuda:0"
-        Torch device where tensors will be moved.
-    export : bool, default False
-        Same as RandomMemory (ignored if you don’t call .export()).
-    export_format : str, default "pt"
-        Same as RandomMemory.
-    export_directory : str, default "export"
-        Same as RandomMemory.
-    allow_overwrite : bool, keyword‑only, default True
-        If False the buffer stops accepting new samples once full.
-    """
-    def __init__(self,
-                 memory_size: int,
-                 num_envs: int = 1,
-                 device: str = "cuda:0",
-                 export: bool = False,
-                 export_format: str = "pt",
-                 export_directory: str = "export",
-                 *,
-                 allow_overwrite: bool = True):
-        super().__init__(memory_size=memory_size,
-                         num_envs=num_envs,
-                         device=device,
-                         export=export,
-                         export_format=export_format,
-                         export_directory=export_directory)
-
-        self._write_index       = 0           # points to the oldest slot
-        self._allow_overwrite   = allow_overwrite
-        # _storage and _size are created lazily in add_samples (mirrors base)
-
-    # ------------------------------------------------------------------ #
-    #   FIFO add_samples                                                 #
-    # ------------------------------------------------------------------ #
+class FIFOMemory(Memory):
     def add_samples(self, **tensors: torch.Tensor) -> None:
-        # one‑time lazy initialisation (same pattern as RandomMemory)
-        if not hasattr(self, "_storage"):
-            self._storage = {}
-            self._size    = 0
+        if not tensors:
+            raise ValueError("No samples to be recorded")
 
-        n_envs = next(iter(tensors.values())).shape[0]
+        tmp = tensors.get("states", tensors[next(iter(tensors))])
+        dim, shape = tmp.ndim, tmp.shape
 
-        for env in range(n_envs):
+        if dim > 1 and shape[0] == self.num_envs:
+            for name, tensor in tensors.items():
+                if name in self.tensors:
+                    self.tensors[name][self.memory_index].copy_(tensor)
+            self.memory_index = (self.memory_index + 1) % self.memory_size
+            if self.memory_index == 0:
+                self.filled = True
 
-            # Ensure every key has a list even if it appears late
-            for key in tensors:
-                if key not in self._storage:
-                    self._storage[key] = []
+        elif dim > 1 and shape[0] < self.num_envs:
+            batch_size = shape[0]
+            for name, tensor in tensors.items():
+                if name in self.tensors:
+                    self.tensors[name][self.memory_index, self.env_index:self.env_index + batch_size].copy_(tensor)
+            self.env_index += batch_size
 
-            if self._size < self.memory_size:                     # still filling
-                for k, v in tensors.items():
-                    self._storage[k].append(
-                        v[env].detach().clone().to(self.device))
-                self._size += 1
+            if self.env_index >= self.num_envs:
+                self.env_index = 0
+                self.memory_index = (self.memory_index + 1) % self.memory_size
+                if self.memory_index == 0:
+                    self.filled = True
 
-            elif self._allow_overwrite:                            # FIFO
-                for k, v in tensors.items():
-                    self._storage[k][self._write_index] = (
-                        v[env].detach().clone().to(self.device))
-                self._write_index = (self._write_index + 1) % self.memory_size
+        elif dim > 1 and self.num_envs == 1:
+            num_samples = shape[0]
+            for name, tensor in tensors.items():
+                if name in self.tensors:
+                    insert_pos = self.memory_index
+                    overflow = max(0, insert_pos + num_samples - self.memory_size)
+                    if overflow == 0:
+                        self.tensors[name][insert_pos:insert_pos + num_samples].copy_(tensor.unsqueeze(1))
+                        self.memory_index += num_samples
+                    else:
+                        split = num_samples - overflow
+                        self.tensors[name][insert_pos:insert_pos + split].copy_(tensor[:split].unsqueeze(1))
+                        self.tensors[name][:overflow].copy_(tensor[split:].unsqueeze(1))
+                        self.memory_index = overflow
+                        self.filled = True
+                    self.memory_index %= self.memory_size
+
+        elif dim == 1:
+            for name, tensor in tensors.items():
+                if name in self.tensors:
+                    self.tensors[name][self.memory_index, self.env_index].copy_(tensor)
+            self.env_index += 1
+
+            if self.env_index >= self.num_envs:
+                self.env_index = 0
+                self.memory_index = (self.memory_index + 1) % self.memory_size
+                if self.memory_index == 0:
+                    self.filled = True
+
+        else:
+            raise ValueError(f"Unexpected tensor shape: {shape}")
             # if not allow_overwrite and full → drop sample silently
 
 # Instantiate a memory as experience replay
-memory = ReplayMemory(memory_size=200_000,
+memory = FIFOMemory(memory_size=200_000,
                       num_envs=env.num_envs,
                       device=device,
                       allow_overwrite=True)   # FIFO behaviour
