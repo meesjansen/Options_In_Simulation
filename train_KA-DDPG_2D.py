@@ -100,32 +100,34 @@ env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
 class ReplayMemory(RandomMemory):
-    def __init__(self, memory_size, cfg=None):
-        if cfg is None:
-            cfg = {}
-        cfg["memory_size"] = memory_size
-        super().__init__(cfg)
-
+    def __init__(self, memory_size: int, num_envs: int = 1, device: str = "cuda:0", replacement: bool = True):
+        super().__init__(memory_size=memory_size, num_envs=num_envs, device=device, replacement=replacement)
         self._write_index = 0
-        self._replacement = cfg.get("replacement", True)
+        self._replacement = replacement
 
-    def add_samples(self, samples):
-        for i in range(self.num_envs):
+    def add_samples(self, **tensors: torch.Tensor) -> None:
+        # Determine the number of environments from the shape of the tensors
+        num_envs = next(iter(tensors.values())).shape[0]
+
+        for i in range(num_envs):
             if self._size < self.memory_size:
                 # Append new transition to each buffer field
-                for key, value in samples.items():
+                for key, value in tensors.items():
                     self._storage[key].append(value[i].detach().clone().to(self.device))
                 self._size += 1
-            else:
+            elif self._replacement:
                 # FIFO overwrite at current pointer
-                for key, value in samples.items():
+                for key, value in tensors.items():
                     self._storage[key][self._write_index] = value[i].detach().clone().to(self.device)
-
                 self._write_index = (self._write_index + 1) % self.memory_size
 
 # Instantiate a memory as experience replay
-memory = ReplayMemory(memory_size=200_000, num_envs=env.num_envs, device=device)
-
+memory = ReplayMemory(
+    memory_size=200_000,
+    num_envs=env.num_envs,
+    device=device,
+    replacement=True  # Set to False if you want to prevent overwriting when full
+)
 # instantiate the agent's models (function approximators).
 # DDPG requires 4 models, visit its documentation for more details
 # https://skrl.readthedocs.io/en/latest/api/agents/ddpg.html#models
