@@ -1,10 +1,12 @@
 import torch
 import torch.nn as nn
+from typing import Tuple, List, Union
+
 
 # Import the skrl components to build the RL system
 from skrl.models.torch import Model, DeterministicMixin
 from skrl.resources.noises.torch import OrnsteinUhlenbeckNoise
-from skrl.memories.torch import RandomMemory
+from skrl.memories.torch import Memory
 from skrl.resources.schedulers.torch import KLAdaptiveRL
 from skrl.resources.preprocessors.torch import RunningStandardScaler
 from skrl.utils.omniverse_isaacgym_utils import get_env_instance
@@ -99,8 +101,111 @@ env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="tor
 env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
+class FIFOMemory(Memory):
+    def __init__(self, *args, replacement: bool = False, **kwargs):
+        self.replacement = replacement
+        # Remove it from kwargs if accidentally passed as a kwarg
+        kwargs.pop("replacement", None)
+        super().__init__(*args, **kwargs)
+
+    def sample(
+        self, names: Tuple[str], batch_size: int, mini_batches: int = 1, sequence_length: int = 1
+    ) -> List[List[torch.Tensor]]:
+        """Sample a batch from FIFO memory randomly (without replacement by default)
+
+        :param names: Tensors names from which to obtain the samples
+        :type names: tuple or list of strings
+        :param batch_size: Number of element to sample
+        :type batch_size: int
+        :param mini_batches: Number of mini-batches to sample (default: ``1``)
+        :type mini_batches: int, optional
+        :param sequence_length: Length of each sequence (default: ``1``)
+        :type sequence_length: int, optional
+
+        :return: Sampled data from tensors sorted according to their position in the list of names.
+                The sampled tensors will have the shape: (batch_size, data_size)
+        :rtype: list of torch.Tensor list
+        """
+        size = len(self)
+
+        if sequence_length > 1:
+            sequence_indexes = torch.arange(0, self.num_envs * sequence_length, self.num_envs)
+            size -= sequence_indexes[-1].item()
+
+        if self.replacement:
+            indexes = torch.randint(0, size, (batch_size,))
+        else:
+            indexes = torch.randperm(size, dtype=torch.long)[:batch_size]
+
+        if sequence_length > 1:
+            indexes = (sequence_indexes.repeat(indexes.shape[0], 1) + indexes.view(-1, 1)).view(-1)
+
+        self.sampling_indexes = indexes
+        return self.sample_by_index(names=names, indexes=indexes, mini_batches=mini_batches)
+
+    def add_samples(self, **tensors: torch.Tensor) -> None:
+        if not tensors:
+            raise ValueError("No samples to be recorded")
+
+        tmp = tensors.get("states", tensors[next(iter(tensors))])
+        dim, shape = tmp.ndim, tmp.shape
+
+        if dim > 1 and shape[0] == self.num_envs:
+            for name, tensor in tensors.items():
+                if name in self.tensors:
+                    self.tensors[name][self.memory_index].copy_(tensor)
+            self.memory_index = (self.memory_index + 1) % self.memory_size
+            if self.memory_index == 0:
+                self.filled = True
+
+        elif dim > 1 and shape[0] < self.num_envs:
+            batch_size = shape[0]
+            for name, tensor in tensors.items():
+                if name in self.tensors:
+                    self.tensors[name][self.memory_index, self.env_index:self.env_index + batch_size].copy_(tensor)
+            self.env_index += batch_size
+
+            if self.env_index >= self.num_envs:
+                self.env_index = 0
+                self.memory_index = (self.memory_index + 1) % self.memory_size
+                if self.memory_index == 0:
+                    self.filled = True
+
+        elif dim > 1 and self.num_envs == 1:
+            num_samples = shape[0]
+            for name, tensor in tensors.items():
+                if name in self.tensors:
+                    insert_pos = self.memory_index
+                    overflow = max(0, insert_pos + num_samples - self.memory_size)
+                    if overflow == 0:
+                        self.tensors[name][insert_pos:insert_pos + num_samples].copy_(tensor.unsqueeze(1))
+                        self.memory_index += num_samples
+                    else:
+                        split = num_samples - overflow
+                        self.tensors[name][insert_pos:insert_pos + split].copy_(tensor[:split].unsqueeze(1))
+                        self.tensors[name][:overflow].copy_(tensor[split:].unsqueeze(1))
+                        self.memory_index = overflow
+                        self.filled = True
+                    self.memory_index %= self.memory_size
+
+        elif dim == 1:
+            for name, tensor in tensors.items():
+                if name in self.tensors:
+                    self.tensors[name][self.memory_index, self.env_index].copy_(tensor)
+            self.env_index += 1
+
+            if self.env_index >= self.num_envs:
+                self.env_index = 0
+                self.memory_index = (self.memory_index + 1) % self.memory_size
+                if self.memory_index == 0:
+                    self.filled = True
+
+        else:
+            raise ValueError(f"Unexpected tensor shape: {shape}")
+            # if not allow_overwrite and full → drop sample silently
+
 # Instantiate a memory as experience replay
-memory = RandomMemory(memory_size=1_000_000, num_envs=env.num_envs, device=device, replacement=False)
+memory = FIFOMemory(memory_size=20, num_envs=env.num_envs, device=device, replacement=False)   # FIFO behaviour
 
 # instantiate the agent's models (function approximators).
 # DDPG requires 4 models, visit its documentation for more details
