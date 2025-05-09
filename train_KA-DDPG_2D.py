@@ -104,6 +104,7 @@ class ReplayMemory(RandomMemory):
         super().__init__(memory_size=memory_size, num_envs=num_envs, device=device, replacement=replacement)
         self._write_index = 0
         self._replacement = replacement
+        self._size = 0
 
     def add_samples(self, **tensors: torch.Tensor) -> None:
         # Determine the number of environments from the shape of the tensors
