@@ -287,7 +287,7 @@ agent = DDPG(models=models,
              action_space=env.action_space,
              device=device)
 
-
+self.memory = memory
 
 # Configure and instantiate the RL trainer.
 cfg_trainer = {"timesteps": 700000, "headless": True}
