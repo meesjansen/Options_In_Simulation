@@ -100,43 +100,39 @@ env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
 class ReplayMemory(RandomMemory):
-    """First‑in, first‑out memory with identical API to RandomMemory."""
-    def __init__(self, memory_size: int = 100000,
-                 batch_size: int = 64,
+    """Drop‑in FIFO version of RandomMemory."""
+    def __init__(self,
+                 memory_size: int = 1000000,
                  num_envs: int = 1,
                  device: str = "cuda:0",
-                 replacement: bool = True):
+                 replacement: bool = True,
+                 export_format: str | None = None):
+        # pass ONLY what the base class accepts
         super().__init__(memory_size=memory_size,
-                         batch_size=batch_size,
                          num_envs=num_envs,
                          device=device,
-                         replacement=replacement)
-        self._write_index = 0           # pointer to the oldest slot
+                         replacement=replacement,
+                         export_format=export_format)
 
-    # ------------------------------------------------------------------
-    # The ONLY thing different from RandomMemory is the body below
-    # ------------------------------------------------------------------
+        self._write_index = 0    # pointer to the oldest slot
+
+    # ——— FIFO add_samples ———
     def add_samples(self, **tensors: torch.Tensor) -> None:
-        # ------------------------------------------------------------------
-        # 1) one‑time lazy init (exactly what RandomMemory would have done)
-        # ------------------------------------------------------------------
+        # lazy internal init (RandomMemory normally does this,
+        # but we overrode the method, so reproduce it)
         if not hasattr(self, "_storage"):
-            # create a list for every tensor name we ever see
             self._storage = {name: [] for name in tensors}
-            self._size = 0              # valid‑sample counter
+            self._size = 0
 
-        num_envs = next(iter(tensors.values())).shape[0]
+        n_envs = next(iter(tensors.values())).shape[0]
 
-        # ------------------------------------------------------------------
-        # 2) FIFO write policy
-        # ------------------------------------------------------------------
-        for env_idx in range(num_envs):
-            if self._size < self.memory_size:                     # buffer not full yet
+        for env_idx in range(n_envs):
+            if self._size < self.memory_size:              # still filling
                 for k, v in tensors.items():
                     self._storage[k].append(
                         v[env_idx].detach().clone().to(self.device))
                 self._size += 1
-            else:                                                 # overwrite oldest
+            elif replacement:                              # FIFO overwrite
                 for k, v in tensors.items():
                     self._storage[k][self._write_index] = (
                         v[env_idx].detach().clone().to(self.device))
