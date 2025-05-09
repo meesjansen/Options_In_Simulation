@@ -100,26 +100,46 @@ env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
 class ReplayMemory(RandomMemory):
-    def __init__(self, memory_size: int, num_envs: int = 1, device: str = "cuda:0", replacement: bool = True):
-        super().__init__(memory_size=memory_size, num_envs=num_envs, device=device, replacement=replacement)
-        self._write_index = 0
-        self._replacement = replacement
-        self._size = 0
+    """First‑in, first‑out memory with identical API to RandomMemory."""
+    def __init__(self, memory_size: int = 100000,
+                 batch_size: int = 64,
+                 num_envs: int = 1,
+                 device: str = "cuda:0",
+                 replacement: bool = True):
+        super().__init__(memory_size=memory_size,
+                         batch_size=batch_size,
+                         num_envs=num_envs,
+                         device=device,
+                         replacement=replacement)
+        self._write_index = 0           # pointer to the oldest slot
 
+    # ------------------------------------------------------------------
+    # The ONLY thing different from RandomMemory is the body below
+    # ------------------------------------------------------------------
     def add_samples(self, **tensors: torch.Tensor) -> None:
-        # Determine the number of environments from the shape of the tensors
+        # ------------------------------------------------------------------
+        # 1) one‑time lazy init (exactly what RandomMemory would have done)
+        # ------------------------------------------------------------------
+        if not hasattr(self, "_storage"):
+            # create a list for every tensor name we ever see
+            self._storage = {name: [] for name in tensors}
+            self._size = 0              # valid‑sample counter
+
         num_envs = next(iter(tensors.values())).shape[0]
 
-        for i in range(num_envs):
-            if self._size < self.memory_size:
-                # Append new transition to each buffer field
-                for key, value in tensors.items():
-                    self._storage[key].append(value[i].detach().clone().to(self.device))
+        # ------------------------------------------------------------------
+        # 2) FIFO write policy
+        # ------------------------------------------------------------------
+        for env_idx in range(num_envs):
+            if self._size < self.memory_size:                     # buffer not full yet
+                for k, v in tensors.items():
+                    self._storage[k].append(
+                        v[env_idx].detach().clone().to(self.device))
                 self._size += 1
-            elif self._replacement:
-                # FIFO overwrite at current pointer
-                for key, value in tensors.items():
-                    self._storage[key][self._write_index] = value[i].detach().clone().to(self.device)
+            else:                                                 # overwrite oldest
+                for k, v in tensors.items():
+                    self._storage[k][self._write_index] = (
+                        v[env_idx].detach().clone().to(self.device))
                 self._write_index = (self._write_index + 1) % self.memory_size
 
 # Instantiate a memory as experience replay
