@@ -100,15 +100,34 @@ env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
 class ReplayMemory(RandomMemory):
-    """FIFO overwrite; everything else identical to RandomMemory."""
+    """
+    First‑in/first‑out overwrite version of SKRL's RandomMemory.
+
+    Parameters
+    ----------
+    memory_size : int
+        Maximum number of transitions to store.
+    num_envs : int, default 1
+        Parallel environments feeding the memory.
+    device : str, default "cuda:0"
+        Torch device where tensors will be moved.
+    export : bool, default False
+        Same as RandomMemory (ignored if you don’t call .export()).
+    export_format : str, default "pt"
+        Same as RandomMemory.
+    export_directory : str, default "export"
+        Same as RandomMemory.
+    allow_overwrite : bool, keyword‑only, default True
+        If False the buffer stops accepting new samples once full.
+    """
     def __init__(self,
-                 memory_size: int = 1_000_000,
+                 memory_size: int,
                  num_envs: int = 1,
                  device: str = "cuda:0",
-                 export: bool = False,            # keep default
+                 export: bool = False,
                  export_format: str = "pt",
                  export_directory: str = "export",
-                 *,                               # everything after this is ours
+                 *,
                  allow_overwrite: bool = True):
         super().__init__(memory_size=memory_size,
                          num_envs=num_envs,
@@ -117,29 +136,40 @@ class ReplayMemory(RandomMemory):
                          export_format=export_format,
                          export_directory=export_directory)
 
-        self._write_index   = 0          # oldest slot
-        self._size          = 0          # number of stored samples
-        self._allow_overwrite = allow_overwrite
+        self._write_index       = 0           # points to the oldest slot
+        self._allow_overwrite   = allow_overwrite
+        # _storage and _size are created lazily in add_samples (mirrors base)
 
-    # FIFO storing ----------------------------------------------------------
+    # ------------------------------------------------------------------ #
+    #   FIFO add_samples                                                 #
+    # ------------------------------------------------------------------ #
     def add_samples(self, **tensors: torch.Tensor) -> None:
-        if not hasattr(self, "_storage"):                 # 1‑time lazy init
-            self._storage = {nm: [] for nm in tensors}
+        # one‑time lazy initialisation (same pattern as RandomMemory)
+        if not hasattr(self, "_storage"):
+            self._storage = {}
+            self._size    = 0
 
         n_envs = next(iter(tensors.values())).shape[0]
 
         for env in range(n_envs):
-            if self._size < self.memory_size:             # buffer not full
+
+            # Ensure every key has a list even if it appears late
+            for key in tensors:
+                if key not in self._storage:
+                    self._storage[key] = []
+
+            if self._size < self.memory_size:                     # still filling
                 for k, v in tensors.items():
                     self._storage[k].append(
                         v[env].detach().clone().to(self.device))
                 self._size += 1
-            elif self._allow_overwrite:                   # FIFO overwrite
+
+            elif self._allow_overwrite:                            # FIFO
                 for k, v in tensors.items():
                     self._storage[k][self._write_index] = (
                         v[env].detach().clone().to(self.device))
                 self._write_index = (self._write_index + 1) % self.memory_size
-            # else: drop sample (no overwrite)
+            # if not allow_overwrite and full → drop sample silently
 
 # Instantiate a memory as experience replay
 memory = ReplayMemory(memory_size=200_000,
