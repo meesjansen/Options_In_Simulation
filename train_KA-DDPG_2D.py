@@ -100,9 +100,14 @@ env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
 class ReplayMemory(RandomMemory):
-    def __init__(self, memory_size, batch_size=64, num_envs=1, device="cuda:0"):
-        super().__init__(memory_size=memory_size, batch_size=batch_size, num_envs=num_envs, device=device)
-        self._write_index = 0  # FIFO index pointer
+    def __init__(self, memory_size, cfg=None):
+        if cfg is None:
+            cfg = {}
+        cfg["memory_size"] = memory_size
+        super().__init__(cfg)
+
+        self._write_index = 0
+        self._replacement = cfg.get("replacement", True)
 
     def add_samples(self, samples):
         for i in range(self.num_envs):
