@@ -100,51 +100,53 @@ env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
 class ReplayMemory(RandomMemory):
-    """Drop‑in FIFO version of RandomMemory."""
+    """FIFO overwrite; everything else identical to RandomMemory."""
     def __init__(self,
-                 memory_size: int = 1000000,
+                 memory_size: int = 1_000_000,
                  num_envs: int = 1,
                  device: str = "cuda:0",
-                 replacement: bool = True,
-                 export_format: str | None = None):
-        # pass ONLY what the base class accepts
+                 export: bool = False,            # keep default
+                 export_format: str = "pt",
+                 export_directory: str = "export",
+                 *,                               # everything after this is ours
+                 allow_overwrite: bool = True):
         super().__init__(memory_size=memory_size,
                          num_envs=num_envs,
                          device=device,
-                         replacement=replacement,
-                         export_format=export_format)
+                         export=export,
+                         export_format=export_format,
+                         export_directory=export_directory)
 
-        self._write_index = 0    # pointer to the oldest slot
+        self._write_index   = 0          # oldest slot
+        self._size          = 0          # number of stored samples
+        self._allow_overwrite = allow_overwrite
 
-    # ——— FIFO add_samples ———
+    # FIFO storing ----------------------------------------------------------
     def add_samples(self, **tensors: torch.Tensor) -> None:
-        # lazy internal init (RandomMemory normally does this,
-        # but we overrode the method, so reproduce it)
-        if not hasattr(self, "_storage"):
-            self._storage = {name: [] for name in tensors}
-            self._size = 0
+        if not hasattr(self, "_storage"):                 # 1‑time lazy init
+            self._storage = {nm: [] for nm in tensors}
 
         n_envs = next(iter(tensors.values())).shape[0]
 
-        for env_idx in range(n_envs):
-            if self._size < self.memory_size:              # still filling
+        for env in range(n_envs):
+            if self._size < self.memory_size:             # buffer not full
                 for k, v in tensors.items():
                     self._storage[k].append(
-                        v[env_idx].detach().clone().to(self.device))
+                        v[env].detach().clone().to(self.device))
                 self._size += 1
-            elif replacement:                              # FIFO overwrite
+            elif self._allow_overwrite:                   # FIFO overwrite
                 for k, v in tensors.items():
                     self._storage[k][self._write_index] = (
-                        v[env_idx].detach().clone().to(self.device))
+                        v[env].detach().clone().to(self.device))
                 self._write_index = (self._write_index + 1) % self.memory_size
+            # else: drop sample (no overwrite)
 
 # Instantiate a memory as experience replay
-memory = ReplayMemory(
-    memory_size=200_000,
-    num_envs=env.num_envs,
-    device=device,
-    replacement=True  # Set to False if you want to prevent overwriting when full
-)
+memory = ReplayMemory(memory_size=200_000,
+                      num_envs=env.num_envs,
+                      device=device,
+                      allow_overwrite=True)   # FIFO behaviour
+
 # instantiate the agent's models (function approximators).
 # DDPG requires 4 models, visit its documentation for more details
 # https://skrl.readthedocs.io/en/latest/api/agents/ddpg.html#models
