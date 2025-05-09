@@ -100,6 +100,47 @@ env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
 class FIFOMemory(Memory):
+    def __init__(self, *args, replacement: bool = False, **kwargs):
+        self.replacement = replacement
+        # Remove it from kwargs if accidentally passed as a kwarg
+        kwargs.pop("replacement", None)
+        super().__init__(*args, **kwargs)
+
+    def sample(
+        self, names: Tuple[str], batch_size: int, mini_batches: int = 1, sequence_length: int = 1
+    ) -> List[List[torch.Tensor]]:
+        """Sample a batch from FIFO memory randomly (without replacement by default)
+
+        :param names: Tensors names from which to obtain the samples
+        :type names: tuple or list of strings
+        :param batch_size: Number of element to sample
+        :type batch_size: int
+        :param mini_batches: Number of mini-batches to sample (default: ``1``)
+        :type mini_batches: int, optional
+        :param sequence_length: Length of each sequence (default: ``1``)
+        :type sequence_length: int, optional
+
+        :return: Sampled data from tensors sorted according to their position in the list of names.
+                The sampled tensors will have the shape: (batch_size, data_size)
+        :rtype: list of torch.Tensor list
+        """
+        size = len(self)
+
+        if sequence_length > 1:
+            sequence_indexes = torch.arange(0, self.num_envs * sequence_length, self.num_envs)
+            size -= sequence_indexes[-1].item()
+
+        if self.replacement:
+            indexes = torch.randint(0, size, (batch_size,))
+        else:
+            indexes = torch.randperm(size, dtype=torch.long)[:batch_size]
+
+        if sequence_length > 1:
+            indexes = (sequence_indexes.repeat(indexes.shape[0], 1) + indexes.view(-1, 1)).view(-1)
+
+        self.sampling_indexes = indexes
+        return self.sample_by_index(names=names, indexes=indexes, mini_batches=mini_batches)
+
     def add_samples(self, **tensors: torch.Tensor) -> None:
         if not tensors:
             raise ValueError("No samples to be recorded")
