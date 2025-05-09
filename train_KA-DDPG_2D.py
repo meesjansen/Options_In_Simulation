@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from typing import Tuple, List, Union
 
 # Import the skrl components to build the RL system
 from skrl.models.torch import Model, DeterministicMixin
