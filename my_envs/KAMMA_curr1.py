@@ -706,6 +706,10 @@ class TorqueDistributionTask(RLTask):
 
                 SimulationContext.step(self.world, render=False)
 
+        # Compute guiding reward: negative Euclidean distance between agent and criteria actions
+        self.guiding_reward = -torch.norm(self.wheel_torqs - criteria_action, dim=1).to(self.device)
+
+
         # print("pre_physics; applied efforts: ", self._robots.get_applied_joint_efforts(clone=False))
         # print("pre_physics; dof vel: ", self._robots.get_joint_velocities(clone=False))
 
