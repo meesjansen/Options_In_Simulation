@@ -145,15 +145,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KAMMA",
-        "experiment_name": "KAMMA",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KAMMA_short",
+        "experiment_name": "KAMMA_short",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "KAMMA",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KAMMA",
+                         "name": "KAMMA_short",
                          "tags": ["DDPG", "KAMMA", "r18", "o6", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
@@ -183,6 +183,7 @@ agent = DDPG(models=models,
              action_space=env.action_space,
              device=device)
 
+task.memory = memory
 
 
 # Configure and instantiate the RL trainer.

@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 400.0
-        self.max_sim_steps = 400000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
+        self.max_global_episodes = 100.0
+        self.max_sim_steps = 100000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -635,7 +635,7 @@ class TorqueDistributionTask(RLTask):
         # Compute execution action: seperate agent action and criteria action
         gamma = self.gamma_assist1.view(-1, 1).to(self.device)
         rand_vals = torch.rand(self.num_envs, 1, device=self.device)
-        mask = (rand_vals > gamma).float()
+        mask = (rand_vals < gamma).float()
         execution_action = mask * criteria_action + (1 - mask) * (self.actions * self.action_scale)
         self.torques = execution_action
 

@@ -635,7 +635,7 @@ class TorqueDistributionTask(RLTask):
         # Compute execution action: seperate agent action and criteria action
         gamma = self.gamma_assist1.view(-1, 1).to(self.device)
         rand_vals = torch.rand(self.num_envs, 1, device=self.device)
-        mask = (rand_vals > gamma).float()
+        mask = (rand_vals < gamma).float()
         execution_action = mask * criteria_action + (1 - mask) * (self.actions * self.action_scale)
         self.torques = execution_action
 
@@ -655,6 +655,19 @@ class TorqueDistributionTask(RLTask):
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
                 SimulationContext.step(self.world, render=False)
+
+        # if hasattr(self, "memory") and len(self.memory) > 0:
+        #     print(f"[FIFO DEBUG] Memory length: {len(self.memory)}")
+        #     try:
+        #         # Print first few 'states' to verify overwrite
+        #         states = self.memory.get_tensor_by_name("states", keepdim=False)
+        #         print(f"[FIFO DEBUG] Oldest state: {states[0].cpu().numpy()}")
+        #         print(f"[FIFO DEBUG] Newest state: {states[len(self.memory) - 1].cpu().numpy()}")
+        #     except Exception as e:
+        #         print(f"[FIFO DEBUG] Error accessing memory tensor: {e}")
+
+        # print(f"[FIFO DEBUG] memory_index = {self.memory.memory_index}, filled = {self.memory.filled}")
+
 
         # print("pre_physics; applied efforts: ", self._robots.get_applied_joint_efforts(clone=False))
         # print("pre_physics; dof vel: ", self._robots.get_joint_velocities(clone=False))
