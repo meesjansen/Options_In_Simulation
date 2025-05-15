@@ -627,10 +627,6 @@ class TorqueDistributionTask(RLTask):
         self.gamma_assist1 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
         self.gamma_assist2 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
 
-        # Compute guiding reward: negative Euclidean distance between agent and criteria actions
-        self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device)
-        self.guiding_reward = self.guiding_reward
-
 
         # Compute execution action: seperate agent action and criteria action
         gamma = self.gamma_assist1.view(-1, 1).to(self.device)
@@ -655,6 +651,10 @@ class TorqueDistributionTask(RLTask):
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
                 SimulationContext.step(self.world, render=False)
+
+        # Compute guiding reward: negative Euclidean distance between agent and criteria actions
+        self.guiding_reward = -torch.norm(self.wheel_torqs - criteria_action, dim=1).to(self.device)
+
 
         # print("pre_physics; applied efforts: ", self._robots.get_applied_joint_efforts(clone=False))
         # print("pre_physics; dof vel: ", self._robots.get_joint_velocities(clone=False))

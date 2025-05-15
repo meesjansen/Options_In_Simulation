@@ -175,8 +175,8 @@ class TorqueDistributionTask(RLTask):
         self.vehicle_inertia = 1.05    # [kg·m^2]
         # Initialize a max global episode counter for gamma scheduling
         # or a fixed number of episodes needed for the curriculum levels
-        self.max_global_episodes = 100.0
-        self.max_sim_steps = 100000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
+        self.max_global_episodes = 400.0
+        self.max_sim_steps = 400000.0 # 250 episodes of 10s at 100Hz sim and 10Hz control/policy step
         # ---------------------------------------------------------------------------
         
 
@@ -624,8 +624,13 @@ class TorqueDistributionTask(RLTask):
         criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
 
         # Compute gamma_assist (decaying assistance) based on global_episode
-        # self.gamma_assist1 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
-        # self.gamma_assist2 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
+        self.gamma_assist1 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
+        self.gamma_assist2 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
+
+        # Compute guiding reward: negative Euclidean distance between agent and criteria actions
+        self.guiding_reward = -torch.norm(self.actions * self.action_scale - criteria_action, dim=1).to(self.device)
+        self.guiding_reward = self.guiding_reward
+
 
         # Compute execution action: seperate agent action and criteria action
         gamma = self.gamma_assist1.view(-1, 1).to(self.device)
@@ -651,20 +656,16 @@ class TorqueDistributionTask(RLTask):
 
                 SimulationContext.step(self.world, render=False)
 
-        # Compute guiding reward: negative Euclidean distance between agent and criteria actions
-        self.guiding_reward = -torch.norm(self.wheel_torqs - criteria_action, dim=1).to(self.device)
-
-
         # print("pre_physics; applied efforts: ", self._robots.get_applied_joint_efforts(clone=False))
         # print("pre_physics; dof vel: ", self._robots.get_joint_velocities(clone=False))
 
-        # print("pre_physics; actions, still x100 for self.action_scale: ", self.actions[0])
+        # print("pre_physics; actions, still x 3.0 for self.action_scale: ", self.actions[0])
         # print("pre_physics; desired_v: ", self.desired_v[0])
         # print("pre_physics; current_v: ", self.current_v[0])
         # print("pre_physics; desired_omega: ", self.desired_omega[0])
         # print("pre_physics; current_omega: ", self.current_omega[0])
         # print("pre_physics; expert torques left: ", self.ac_left[0])
-        # print("pre_physics; expert torques right: ", self.ac_right[0])
+        # # print("pre_physics; expert torques right: ", self.ac_right[0])
         # print("pre_physics; executed torques pre clip: ", self.torques[0])
         # print("pre_physics; executed torques post clip: ", self.wheel_torqs[0])
         # print("base velocitites in z: ", self.base_velocities[0, 2])
@@ -862,7 +863,7 @@ class TorqueDistributionTask(RLTask):
                     "env0_perc_dense": 100.0 * (1 - self.gamma_assist2[0].item()) * self.rdense[0].item()/self.rew_buf[0].item(),
                     "env0_perc_sparse": 100.0 * (1 - self.gamma_assist2[0].item()) * self.rsparse[0].item()/self.rew_buf[0].item(),
                     "env0_perc_observed": 100.0 * (1 - self.gamma_assist2[0].item()) * self.robs[0].item()/self.rew_buf[0].item(),
-                    "env0_perc_guiding": 100.0 * self.gamma_assist2[0].item() * self.rguide[0].item()/self.rew_buf[0].item(),         
+                    "env0_perc_guiding": 100.0 * self.gamma_assist2[0].item() * self.rguide[0].item()/self.rew_buf[0].item(),       
                 }
                           
         return {self._robots.name: {"obs_buf": self.obs_buf}}
