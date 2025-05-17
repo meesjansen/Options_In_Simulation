@@ -137,7 +137,7 @@ DDPG_DEFAULT_CONFIG = {
         "noise": OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device),              # exploration noise
         "initial_scale": 1.0,       # initial scale for the noise
         "final_scale": 1e-4,        # final scale for the noise
-        "timesteps": 700000.0,          # timesteps for the noise decay
+        "timesteps": 500000.0,          # timesteps for the noise decay
     },
 
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
@@ -173,7 +173,7 @@ cfg["state_preprocessor"] = RunningStandardScaler
 cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
 # logging to TensorBoard and write checkpoints (in timesteps)
 cfg["experiment"]["write_interval"] = 800
-cfg["experiment"]["checkpoint_interval"] = 700000
+cfg["experiment"]["checkpoint_interval"] = 500000
 
 
 agent = DDPG(models=models,
