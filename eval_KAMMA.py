@@ -135,10 +135,6 @@ DDPG_DEFAULT_CONFIG = {
     "grad_norm_clip": 0,            # clipping coefficient for the norm of the gradients
 
     "exploration": {
-        "noise": OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device),              # exploration noise
-        "initial_scale": 0.0,       # initial scale for the noise
-        "final_scale": 0.0,        # final scale for the noise
-        "timesteps": 0.0,          # timesteps for the noise decay
     },
 
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
