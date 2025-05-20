@@ -138,7 +138,7 @@ DDPG_DEFAULT_CONFIG = {
         "noise": False,              # exploration noise
         "initial_scale": 1.0,       # initial scale for the noise
         "final_scale": 1.0,        # final scale for the noise
-        "timesteps": 0.0,          # timesteps for the noise decay
+        "timesteps": 50000.0,          # timesteps for the noise decay
     },
 
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
