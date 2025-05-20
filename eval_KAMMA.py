@@ -129,7 +129,7 @@ DDPG_DEFAULT_CONFIG = {
     "state_preprocessor": RunningStandardScaler,             # state preprocessor class (see skrl.resources.preprocessors)
     "state_preprocessor_kwargs": {"size": env.observation_space, "device": device},        # state preprocessor's kwargs (e.g. {"size": env.observation_space})
 
-    "random_timesteps": 0,          # random exploration steps
+    "random_timesteps": 10,          # random exploration steps
     "learning_starts": 0,           # learning starts after this many steps
 
     "grad_norm_clip": 0,            # clipping coefficient for the norm of the gradients
