@@ -136,8 +136,8 @@ DDPG_DEFAULT_CONFIG = {
 
     "exploration": {
         "noise": False,              # exploration noise
-        "initial_scale": 0.0,       # initial scale for the noise
-        "final_scale": 0.0,        # final scale for the noise
+        "initial_scale": 1.0,       # initial scale for the noise
+        "final_scale": 1.0,        # final scale for the noise
         "timesteps": 0.0,          # timesteps for the noise decay
     },
 
