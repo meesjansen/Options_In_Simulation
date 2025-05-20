@@ -202,6 +202,7 @@ class TorqueDistributionTask(RLTask):
         self.v_upward_projected = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
 
         self.action = torch.zeros(self.num_envs, 4, dtype=torch.float, device=self.device, requires_grad=False)
+        self.old_torques = torch.zeros(self.num_envs, 4, dtype=torch.float, device=self.device, requires_grad=False)
 
         torch_zeros = lambda: torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
         self.episode_sums = {
@@ -220,6 +221,7 @@ class TorqueDistributionTask(RLTask):
             "Sparse reward/Final reward": torch_zeros(),
             "Guiding reward/Final reward": torch_zeros(),
             "Observed reward/Final reward": torch_zeros(),
+            "Smoothness": torch_zeros(),
               }
         
         self.terrain_levels = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
@@ -672,6 +674,11 @@ class TorqueDistributionTask(RLTask):
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
                 SimulationContext.step(self.world, render=False)
+
+        diff = self.old_torques - self.wheel_torqs
+        self.episode_sums["Smoothness"] = torch.sum(diff ** 2, dim=1)
+
+        self.old_torques = self.wheel_torqs.clone()
 
         # if hasattr(self, "memory") and len(self.memory) > 0:
         #     print(f"[FIFO DEBUG] Memory length: {len(self.memory)}")
