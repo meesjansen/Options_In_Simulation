@@ -222,6 +222,7 @@ class TorqueDistributionTask(RLTask):
             "Guiding reward/Final reward": torch_zeros(),
             "Observed reward/Final reward": torch_zeros(),
             "Smoothness": torch_zeros(),
+            "Tracking error": torch_zeros(),
               }
         
         self.terrain_levels = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
@@ -676,7 +677,7 @@ class TorqueDistributionTask(RLTask):
                 SimulationContext.step(self.world, render=False)
 
         diff = self.old_torques - self.wheel_torqs
-        self.episode_sums["Smoothness"] = torch.sum(diff ** 2, dim=1)
+        self.episode_sums["Smoothness"] += torch.sum(diff ** 2, dim=1)
 
         self.old_torques = self.wheel_torqs.clone()
 
@@ -844,6 +845,7 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Guiding reward"] += self.guiding_reward
         self.episode_sums["Observed reward"] += observed_reward
         self.episode_sums["Final reward"] += self.rew_buf
+        self.episode_sums["Tracking error"] += self.v_delta
 
         self.comp_1 = w1 * r1
         self.comp_2 = w2 * r2
