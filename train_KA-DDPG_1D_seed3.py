@@ -17,7 +17,7 @@ from my_agents.ddpg import DDPG
 from my_trainers.sequential_KA import SequentialTrainer
 
 # set the seed for reproducibility
-seed = set_seed(42)
+seed = set_seed(89)
 
 # Define the models (stochastic and deterministic) for the agent using helper mixin.
 # - Policy: takes as input the environment's observation/state and returns action
@@ -61,7 +61,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.KA_DDPG_2D import TorqueDistributionTask, TASK_CFG
+from my_envs.KA_DDPG_1D import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
@@ -249,22 +249,22 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_2D_seed1",
-        "experiment_name": "KA-DDPG_2D_seed1",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_1D_seed3",
+        "experiment_name": "KA-DDPG_1D_seed3",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "KA-DDPG Dimension Study",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_2D_seed1",
+                         "name": "KA-DDPG_1D_seed3",
                          "tags": ["DDPG", "KA", "o4", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
 }
 
 cfg = DDPG_DEFAULT_CONFIG.copy()
-cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.3, device=device)
+cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device)
 cfg["gradient_steps"] = 1
 cfg["batch_size"] = 512
 cfg["discount_factor"] = 0.999
