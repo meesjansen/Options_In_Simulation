@@ -249,15 +249,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_1D",
-        "experiment_name": "KA-DDPG_1D",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA-DDPG_1D_seed1",
+        "experiment_name": "KA-DDPG_1D_seed1",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "KA-DDPG Dimension Study",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA-DDPG_1D",
+                         "name": "KA-DDPG_1D_seed1",
                          "tags": ["DDPG", "KA", "o4", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
