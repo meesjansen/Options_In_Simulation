@@ -848,7 +848,7 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Guiding reward"] += self.guiding_reward
         self.episode_sums["Observed reward"] += observed_reward
         self.episode_sums["Final reward"] += self.rew_buf
-        self.episode_sums["Tracking error"] += self.v_delta
+        self.episode_sums["Tracking error"] += self.v_delta /10.0
 
         self.comp_1 = w1 * r1
         self.comp_2 = w2 * r2
