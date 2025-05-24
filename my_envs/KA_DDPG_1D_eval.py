@@ -493,8 +493,8 @@ class TorqueDistributionTask(RLTask):
             self.episode_sums[key][env_ids] = 0.0
         self.extras["episode"]["gamma assist"] = torch.mean(self.gamma_assist.float())
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
-        print(self.extras["episode"]["rew_Smoothness"])
-        print(self.extras["episode"]["rew_Tracking error"])
+        print("episode average smoothness: ", self.extras["episode"]["rew_Smoothness"])
+        print("episode average tracking error: ", self.extras["episode"]["rew_Tracking error"])
 
         if not self.curriculum:
             for i in env_ids:
@@ -681,9 +681,9 @@ class TorqueDistributionTask(RLTask):
                 SimulationContext.step(self.world, render=False)
 
         diff = self.old_torques - self.wheel_torqs
-        print(diff)
+        print("4D torque difference: ", diff)
         self.episode_sums["Smoothness"] += torch.sum(diff ** 2, dim=1) / 10.0
-        print(torch.sum(diff ** 2, dim=1))
+        print("1D smoothness: ", torch.sum(diff ** 2, dim=1))
 
         self.old_torques = self.wheel_torqs.clone()
 
