@@ -467,6 +467,7 @@ class TorqueDistributionTask(RLTask):
         )  # set small commands to zero
 
         self.episode_buf[env_ids] = 0 
+        self.old_torques = torch.zeros(self.num_envs, 4, dtype=torch.float, device=self.device, requires_grad=False)
         self.episode_count[env_ids] += 1
 
         one = torch.tensor(1.0, device=self.device)
@@ -677,7 +678,9 @@ class TorqueDistributionTask(RLTask):
                 SimulationContext.step(self.world, render=False)
 
         diff = self.old_torques - self.wheel_torqs
-        self.episode_sums["Smoothness"] += torch.sum(diff ** 2, dim=1)
+        print(diff)
+        self.episode_sums["Smoothness"] += torch.sum(diff ** 2, dim=1) / 10.0
+        print(torch.sum(diff ** 2, dim=1))
 
         self.old_torques = self.wheel_torqs.clone()
 
