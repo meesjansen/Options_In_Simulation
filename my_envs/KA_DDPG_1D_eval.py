@@ -489,11 +489,12 @@ class TorqueDistributionTask(RLTask):
             self.extras["episode"]["rew_" + key] = (
                 torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
             )
-            print(self.extras["episode"]["rew_Smoothness"])
-            print(self.extras["episode"]["rew_Tracking error"])
+            
             self.episode_sums[key][env_ids] = 0.0
         self.extras["episode"]["gamma assist"] = torch.mean(self.gamma_assist.float())
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
+        print(self.extras["episode"]["rew_Smoothness"])
+        print(self.extras["episode"]["rew_Tracking error"])
 
         if not self.curriculum:
             for i in env_ids:
