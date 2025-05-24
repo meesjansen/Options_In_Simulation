@@ -223,6 +223,7 @@ class TorqueDistributionTask(RLTask):
             "Observed reward/Final reward": torch_zeros(),
             "Smoothness": torch_zeros(),
             "Tracking error": torch_zeros(),
+            "Desired velocity": torch_zeros(),
               }
         
         self.terrain_levels = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
@@ -627,6 +628,7 @@ class TorqueDistributionTask(RLTask):
         self.v_delta = self.desired_v - self.current_v
         self.omega_delta = self.desired_omega - self.current_omega
 
+        print("pre_physics; desired_v: ", self.desired_v)
 
         self.Kp_omega = 0.665
         # Compute criteria actions for each wheel:
@@ -684,6 +686,7 @@ class TorqueDistributionTask(RLTask):
         print("4D torque difference: ", diff)
         self.episode_sums["Smoothness"] += torch.sum(diff ** 2, dim=1) / 10.0
         print("1D smoothness: ", torch.sum(diff ** 2, dim=1))
+        self.episode_sums["Desired velocity"] += self.desired_v / 10.0
 
         self.old_torques = self.wheel_torqs.clone()
 
