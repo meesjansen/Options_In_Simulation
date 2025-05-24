@@ -489,6 +489,8 @@ class TorqueDistributionTask(RLTask):
             self.extras["episode"]["rew_" + key] = (
                 torch.mean(self.episode_sums[key][env_ids]) / self.max_episode_length_s
             )
+            print(self.extras["episode"]["rew_Smoothness"])
+            print(self.extras["episode"]["rew_Tracking error"])
             self.episode_sums[key][env_ids] = 0.0
         self.extras["episode"]["gamma assist"] = torch.mean(self.gamma_assist.float())
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
@@ -848,7 +850,7 @@ class TorqueDistributionTask(RLTask):
         self.episode_sums["Guiding reward"] += self.guiding_reward
         self.episode_sums["Observed reward"] += observed_reward
         self.episode_sums["Final reward"] += self.rew_buf
-        self.episode_sums["Tracking error"] += self.v_delta /10.0
+        self.episode_sums["Tracking error"] += torch.abs(self.v_delta) / 10.0
 
         self.comp_1 = w1 * r1
         self.comp_2 = w2 * r2
