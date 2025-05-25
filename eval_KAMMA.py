@@ -152,7 +152,7 @@ DDPG_DEFAULT_CONFIG = {
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "KA-DDPG Dimension Study",
+        "wandb_kwargs": {"project": "KAMMA",
                          "entity": "meesjansen-Delft Technical University",
                          "name": "KAMMA_eval",
                          "tags": ["DDPG", "KAMMA", "r18", "o6", "torq"],
