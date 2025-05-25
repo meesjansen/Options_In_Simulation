@@ -16,7 +16,7 @@ from my_agents.ddpg import DDPG
 from my_trainers.sequential import SequentialTrainer
 
 # set the seed for reproducibility
-seed = set_seed(22)
+seed = set_seed(102)
 
 # Define the models (stochastic and deterministic) for the agent using helper mixin.
 # - Policy: takes as input the environment's observation/state and returns action
