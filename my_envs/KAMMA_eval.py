@@ -190,8 +190,8 @@ class TorqueDistributionTask(RLTask):
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
         self.episode_count = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
-        self.gamma_assist1 = torch.ones(self.num_envs, dtype=torch.float)
-        self.gamma_assist2 = torch.ones(self.num_envs, dtype=torch.float)
+        self.gamma_assist1 = torch.zeros(self.num_envs, dtype=torch.float)
+        self.gamma_assist2 = torch.zeros(self.num_envs, dtype=torch.float)
 
         self.linear_acc = torch.zeros((self.num_envs, 1), device=self.device)
         self.angular_acc = torch.zeros((self.num_envs, 1), device=self.device)
@@ -643,8 +643,8 @@ class TorqueDistributionTask(RLTask):
         criteria_action = torch.stack([self.ac_left, self.ac_left, self.ac_right, self.ac_right], dim=1).to(self.device)
 
         # Compute gamma_assist (decaying assistance) based on global_episode
-        self.gamma_assist1 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
-        self.gamma_assist2 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
+        # self.gamma_assist1 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
+        # self.gamma_assist2 = torch.clamp(1.0 - (self.sim_steps.float() / self.max_sim_steps), min=0.0).to(self.device)
 
 
         # Compute execution action: seperate agent action and criteria action
