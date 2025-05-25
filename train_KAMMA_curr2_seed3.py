@@ -16,8 +16,7 @@ from my_agents.ddpg import DDPG
 from my_trainers.sequential import SequentialTrainer
 
 # set the seed for reproducibility
-seed = set_seed(42)
-
+seed = set_seed(48)
 
 # Define the models (stochastic and deterministic) for the agent using helper mixin.
 # - Policy: takes as input the environment's observation/state and returns action
@@ -61,7 +60,7 @@ headless = True  # set headless to False for rendering
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
 from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.KAMMA_eval import TorqueDistributionTask, TASK_CFG
+from my_envs.KAMMA_curr2 import TorqueDistributionTask, TASK_CFG
 from argparse import ArgumentParser 
 
 arg_parser = ArgumentParser()
@@ -129,16 +128,16 @@ DDPG_DEFAULT_CONFIG = {
     "state_preprocessor": RunningStandardScaler,             # state preprocessor class (see skrl.resources.preprocessors)
     "state_preprocessor_kwargs": {"size": env.observation_space, "device": device},        # state preprocessor's kwargs (e.g. {"size": env.observation_space})
 
-    "random_timesteps": 10,          # random exploration steps
+    "random_timesteps": 0,          # random exploration steps
     "learning_starts": 0,           # learning starts after this many steps
 
     "grad_norm_clip": 0,            # clipping coefficient for the norm of the gradients
 
     "exploration": {
-        "noise": False,              # exploration noise
+        "noise": OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.5, device=device),              # exploration noise
         "initial_scale": 1.0,       # initial scale for the noise
-        "final_scale": 1.0,        # final scale for the noise
-        "timesteps": 50000.0,          # timesteps for the noise decay
+        "final_scale": 1e-4,        # final scale for the noise
+        "timesteps": 500000.0,          # timesteps for the noise decay
     },
 
     "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
@@ -146,34 +145,34 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KAMMA_BD_eval",
-        "experiment_name": "KAMMA_BD_eval",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KAMMA_curr2_seed3",
+        "experiment_name": "KAMMA_curr2_seed3",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "KA-DDPG Dimension Study",
+        "wandb_kwargs": {"project": "KAMMA",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KAMMA_BD_eval",
+                         "name": "KAMMA_curr2_seed3",
                          "tags": ["DDPG", "KAMMA", "r18", "o6", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
 }
 
 cfg = DDPG_DEFAULT_CONFIG.copy()
-cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.00, device=device)
+cfg["exploration"]["noise"] = OrnsteinUhlenbeckNoise(theta=0.15, sigma=0.1, base_scale=0.1, device=device)
 cfg["gradient_steps"] = 1
 cfg["batch_size"] = 512
 cfg["discount_factor"] = 0.999
 cfg["polyak"] = 0.005
 cfg["actor_learning_rate"] = 3e-4
 cfg["critic_learning_rate"] = 1e-3
-cfg["random_timesteps"] = 0
-cfg["learning_starts"] = 0
+cfg["random_timesteps"] = 80
+cfg["learning_starts"] = 80
 cfg["state_preprocessor"] = RunningStandardScaler
 cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
 # logging to TensorBoard and write checkpoints (in timesteps)
-cfg["experiment"]["write_interval"] = 10
+cfg["experiment"]["write_interval"] = 800
 cfg["experiment"]["checkpoint_interval"] = 500000
 
 
@@ -185,12 +184,9 @@ agent = DDPG(models=models,
              device=device)
 
 
-# agent.load("./my_runs/PPOc_rooms_r15_vel/PPOc_rooms_r15_vel/checkpoints/agent_100000.pt")
-agent.load("./my_runs/KAMMA_curr2/KAMMA_curr2/checkpoints/agent_500000.pt")
 
-# Configure and instantiate the RL trainer
-cfg_trainer = {"timesteps": 50_000, "headless": True}
+# Configure and instantiate the RL trainer.
+cfg_trainer = {"timesteps": 500000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
-# start training
-trainer.eval()
+trainer.train()
