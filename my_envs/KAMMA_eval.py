@@ -495,6 +495,10 @@ class TorqueDistributionTask(RLTask):
         self.extras["episode"]["gamma_2 reward assist"] = torch.mean(self.gamma_assist2.float())
         self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
 
+        print("episode average smoothness: ", self.extras["episode"]["rew_Smoothness"])
+        print("episode average tracking error: ", self.extras["episode"]["rew_Tracking error"])
+
+
         if not self.curriculum:
             for i in env_ids:
                 cmds = self.sample_velocity_command(i)
@@ -671,6 +675,8 @@ class TorqueDistributionTask(RLTask):
         self.guiding_reward = -torch.norm(self.wheel_torqs - criteria_action, dim=1).to(self.device)
 
         diff = self.old_torques - self.wheel_torqs
+        print("4D old torques: ", self.old_torques)
+        print("4D torques: ", self.wheel_torqs)
         print("4D torque difference: ", diff)
         self.episode_sums["Smoothness"] += torch.sum(diff ** 2, dim=1) / 10.0
         print("1D smoothness: ", torch.sum(diff ** 2, dim=1))
