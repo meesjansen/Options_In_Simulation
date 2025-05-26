@@ -16,7 +16,7 @@ from my_agents.ddpg import DDPG
 from my_trainers.sequential import SequentialTrainer
 
 # set the seed for reproducibility
-seed = set_seed(42)
+seed = set_seed(102)
 
 # Define the models (stochastic and deterministic) for the agent using helper mixin.
 # - Policy: takes as input the environment's observation/state and returns action
@@ -145,15 +145,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KAMMA_curr1_seed1",
-        "experiment_name": "KAMMA_curr1_seed1",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KAMMA_curr1_seed5",
+        "experiment_name": "KAMMA_curr1_seed5",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "KAMMA",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KAMMA_curr1_seed1",
+                         "name": "KAMMA_curr1_seed5",
                          "tags": ["DDPG", "KAMMA", "r18", "o6", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
