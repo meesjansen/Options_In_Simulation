@@ -7,8 +7,8 @@
 #SBATCH --cpus-per-task=2   # Request number of CPUs (threads) per task. Default is 1 (note: CPUs are always allocated to jobs per 2).
 #SBATCH --mem=16GB
 #SBATCH --mail-type=END     # Set mail type to 'END' to receive a mail when the job finishes. 
-#SBATCH --output=KAMMA_FIFO_curr1_seed1_output_%j.log
-#SBATCH --error=KAMMA_FIFO_curr1_seed1_error_%j.log # Set name of error log. %j is the Slurm jobId
+#SBATCH --output=KAMMA_FIFO_curr1_seed2_output_%j.log
+#SBATCH --error=KAMMA_FIFO_curr1_seed2_error_%j.log # Set name of error log. %j is the Slurm jobId
 
 #SBATCH --gres=gpu:a40:1 # Request 1 GPU
 
@@ -52,7 +52,7 @@ srun apptainer exec --nv \
     -B "$data/logs:$HOME/.nvidia-omniverse/logs" \
     -B "$data/data:$HOME/.local/share/ov/data" \
     -B "$data/documents:$HOME/Documents" \
-    $APPTAINER_ROOT/$APPTAINER_NAME /isaac-sim/python.sh /workspace/Options_In_Simulation/train_KAMMA_FIFO_curr1.py
+    $APPTAINER_ROOT/$APPTAINER_NAME /isaac-sim/python.sh /workspace/Options_In_Simulation/train_KAMMA_FIFO_curr1_seed2.py
 
 
 
