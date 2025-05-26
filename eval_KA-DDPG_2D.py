@@ -146,15 +146,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA_DDPG_2D_eval_seed3",
-        "experiment_name": "KA_DDPG_2D_eval_seed3",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KA_DDPG_2D_eval_seed4",
+        "experiment_name": "KA_DDPG_2D_eval_seed4",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "KA-DDPG Dimension Study",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA_DDPG_2D_eval_seed3",
+                         "name": "KA_DDPG_2D_eval_seed4",
                          "tags": ["DDPG", "KAMMA", "r18", "o6", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
@@ -186,7 +186,7 @@ agent = DDPG(models=models,
 
 
 # agent.load("./my_runs/PPOc_rooms_r15_vel/PPOc_rooms_r15_vel/checkpoints/agent_100000.pt")
-agent.load("./my_runs/KA-DDPG_2D_seed3/KA-DDPG_2D_seed3/checkpoints/agent_700000.pt")
+agent.load("./my_runs/KA-DDPG_2D_seed4/KA-DDPG_2D_seed4/checkpoints/agent_700000.pt")
 
 # Configure and instantiate the RL trainer
 cfg_trainer = {"timesteps": 50_000, "headless": True}
