@@ -146,15 +146,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KAMMA_eval",
-        "experiment_name": "KAMMA_eval",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KAMMA_IL_eval",
+        "experiment_name": "KAMMA_IL_eval",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "KAMMA",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KAMMA_eval",
+                         "name": "KAMMA_IL_eval",
                          "tags": ["DDPG", "KAMMA", "r18", "o6", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
