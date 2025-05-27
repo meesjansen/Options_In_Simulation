@@ -190,7 +190,7 @@ class TorqueDistributionTask(RLTask):
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
         self.episode_count = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
-        self.gamma_assist = torch.zeros(self.num_envs, dtype=torch.float)
+        self.gamma_assist = torch.ones(self.num_envs, dtype=torch.float)
 
         self.linear_acc = torch.zeros((self.num_envs, 1), device=self.device)
         self.angular_acc = torch.zeros((self.num_envs, 1), device=self.device)

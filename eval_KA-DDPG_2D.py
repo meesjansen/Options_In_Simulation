@@ -146,15 +146,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA_DDPG_2D_eval_seed5",
-        "experiment_name": "KA_DDPG_2D_eval_seed5",
+        "directory": "/workspace/Options_In_Simulation/my_runs/controller_eval",
+        "experiment_name": "controller_eval",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "KA-DDPG Dimension Study",
+        "wandb_kwargs": {"project": "KAMMA",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KA_DDPG_2D_eval_seed5",
+                         "name": "controller_eval",
                          "tags": ["DDPG", "KAMMA", "r18", "o6", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
