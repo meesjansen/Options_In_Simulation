@@ -146,15 +146,15 @@ DDPG_DEFAULT_CONFIG = {
     "mixed_precision": False,       # enable automatic mixed precision for higher performance
 
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KAMMA_BD_eval_seed2",
-        "experiment_name": "KAMMA_BD_eval_seed2",
+        "directory": "/workspace/Options_In_Simulation/my_runs/KAMMA_FIFO_GV_eval",
+        "experiment_name": "KAMMA_FIFO_GV_eval",
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
         "wandb_kwargs": {"project": "KAMMA",
                          "entity": "meesjansen-Delft Technical University",
-                         "name": "KAMMA_BD_eval_seed2",
+                         "name": "KAMMA_FIFO_GV_eval",
                          "tags": ["DDPG", "KAMMA", "r18", "o6", "torq"],
                          "dir": "/workspace/Options_In_Simulation/my_runs"}    
                     }
@@ -186,7 +186,7 @@ agent = DDPG(models=models,
 
 
 # agent.load("./my_runs/PPOc_rooms_r15_vel/PPOc_rooms_r15_vel/checkpoints/agent_100000.pt")
-agent.load("./my_runs/KAMMA_curr2_seed1/KAMMA_curr2_seed1/checkpoints/agent_500000.pt")
+agent.load("./my_runs/KAMMA_FIFO_curr1/KAMMA_FIFO_curr1/checkpoints/agent_500000.pt")
 
 # Configure and instantiate the RL trainer
 cfg_trainer = {"timesteps": 50_000, "headless": True}
