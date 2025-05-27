@@ -190,7 +190,7 @@ class TorqueDistributionTask(RLTask):
         self.sim_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.episode_buf = torch.zeros(self.num_envs, dtype=torch.long)
         self.episode_count = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
-        self.gamma_assist1 = torch.ones(self.num_envs, dtype=torch.float)
+        self.gamma_assist1 = torch.zeros(self.num_envs, dtype=torch.float)
         self.gamma_assist2 = torch.zeros(self.num_envs, dtype=torch.float)
 
         self.linear_acc = torch.zeros((self.num_envs, 1), device=self.device)
@@ -665,7 +665,7 @@ class TorqueDistributionTask(RLTask):
         for _ in range(self.decimation):
             if self.world.is_playing():
                 
-                self.wheel_torqs = torch.clip(self.torques, 0.0, 4.0)
+                self.wheel_torqs = torch.clip(self.torques, -4.0, 4.0)
 
                 self._robots.set_joint_efforts(self.wheel_torqs)
 
