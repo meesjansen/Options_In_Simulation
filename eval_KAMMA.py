@@ -186,7 +186,7 @@ agent = DDPG(models=models,
 
 
 # agent.load("./my_runs/PPOc_rooms_r15_vel/PPOc_rooms_r15_vel/checkpoints/agent_100000.pt")
-agent.load("./my_runs/KAMMA_curr2_seed2/KAMMA_curr2_seed2/checkpoints/agent_500000.pt")
+agent.load("./my_runs/KAMMA_curr2_seed1/KAMMA_curr2_seed1/checkpoints/agent_500000.pt")
 
 # Configure and instantiate the RL trainer
 cfg_trainer = {"timesteps": 50_000, "headless": True}
