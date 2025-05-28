@@ -189,7 +189,7 @@ agent = DDPG(models=models,
 agent.load("./my_runs/KAMMA_FIFO_curr2/KAMMA_FIFO_curr2/checkpoints/agent_500000.pt")
 
 # Configure and instantiate the RL trainer
-cfg_trainer = {"timesteps": 50_000, "headless": True}
+cfg_trainer = {"timesteps": 40_000, "headless": True}
 trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
 
 # start training
