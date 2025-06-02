@@ -835,8 +835,11 @@ class TorqueDistributionTask(RLTask):
         # print("self.linear_acc[0]", self.linear_acc[0])
         # print("self.angular_acc[0]", self.angular_acc[0])
 
-        print("self.rew_buf[0].item()", self.rew_buf[0].item())
-
+        # print("self.rew_buf[0].item()", self.rew_buf[0].item())
+        denom = self.rew_buf[0].item()
+        if abs(denom) < 1e-12:
+            self.rew_buf[0] = 1e-12
+        
         # Update when logging other components to wandb
         self.observed_components = {
                     "env0_desired_v": self.desired_v[0].item(),
