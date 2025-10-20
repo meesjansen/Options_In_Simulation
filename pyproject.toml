@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "options-sim"
+version = "0.1.0"
+requires-python = ">=3.10,<3.13"   
+dependencies = ["numpy>=1.23", "pyyaml>=6.0"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true  # if you have non-py files inside packages
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = [
+  "my_agents*",
+  "my_envs*",
+  "my_models*",
+  "my_robots*",
+  "my_utils*",
+  "my_trainers*",
+  "options_sim*"
+]
+
+[project.scripts]
+options-sim-train = "options_sim.cli.train:main"
