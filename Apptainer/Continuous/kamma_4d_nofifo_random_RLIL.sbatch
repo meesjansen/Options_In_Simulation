@@ -12,7 +12,7 @@
 
 #SBATCH --gres=gpu:a40:1 # Request 1 GPU
 
-export WANDB_API_KEY="***REDACTED***"
+: "${WANDB_API_KEY:?Set WANDB_API_KEY before sbatch}"
 
 /usr/bin/scontrol show job -d "$SLURM_JOB_ID"  # check sbatch directives are working
 
