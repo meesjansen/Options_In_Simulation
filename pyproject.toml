@@ -26,3 +26,5 @@ include = [
 
 [project.scripts]
 options-sim-train = "options_sim.cli.train:main"
+options-sim-eval  = "options_sim.cli.eval:main"
+
