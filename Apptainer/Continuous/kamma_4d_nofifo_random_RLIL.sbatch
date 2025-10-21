@@ -7,12 +7,10 @@
 #SBATCH --cpus-per-task=2   # Request number of CPUs (threads) per task. Default is 1 (note: CPUs are always allocated to jobs per 2).
 #SBATCH --mem=16GB
 #SBATCH --mail-type=END     # Set mail type to 'END' to receive a mail when the job finishes. 
-#SBATCH --output=KAMMA_medium_seed1_output_%j.log
-#SBATCH --error=KAMMA_medium_seed1_error_%j.log # Set name of error log. %j is the Slurm jobId
+#SBATCH --output=kamma_4d_nofifo_random_RLIL_%j.log
+#SBATCH --error=kamma_4d_nofifo_random_RLIL_%j.log # Set name of error log. %j is the Slurm jobId
 
 #SBATCH --gres=gpu:a40:1 # Request 1 GPU
-
-: "${WANDB_API_KEY:?Set WANDB_API_KEY before sbatch}"
 
 /usr/bin/scontrol show job -d "$SLURM_JOB_ID"  # check sbatch directives are working
 
@@ -25,6 +23,9 @@ previous=$(/usr/bin/nvidia-smi --query-accounted-apps='gpu_utilization,mem_utili
 
 # Load necessary modules
 module use /opt/insy/modulefiles # Use DAIC INSY software collection
+
+export WANDB_MODE=offline
+export WANDB_SILENT=true
 
 export APPTAINER_ROOT="/winhome/meesjansen"
 export APPTAINER_NAME="isaac-sim-custom.sif"
@@ -42,7 +43,8 @@ srun apptainer exec --nv \
     -C \
     --env "ACCEPT_EULA=Y" \
     --env "PRIVACY_CONSENT=Y" \
-    --env WANDB_API_KEY=$WANDB_API_KEY \
+    --env "WANDB_MODE=offline" \
+    --env "WANDB_SILENT=true" \
     -B "/home/nfs/meesjansen/Options_In_Simulation:/workspace/Options_In_Simulation" \
     -B "$data/cache/kit:/isaac-sim/kit/cache" \
     -B "$data/cache/ov:$HOME/.cache/ov" \
