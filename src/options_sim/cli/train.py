@@ -101,10 +101,10 @@ def _score_file(path: Path, tokens: List[str]) -> float:
     for t in tokens:
         if t in name:
             score += 1.0
-    if name.startswith("train_"):
-        score += 0.5
     if score == float(len(tokens)):
         score += 1.0  # perfect-match bonus
+    if name.startswith("train_"):
+        score += 0.5
     return score
 
 def _load_override_map(map_path: Path) -> dict:
