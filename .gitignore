@@ -1,1 +1,11 @@
- replacements.txt
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Optional: pytest, mypy, build caches
+.pytest_cache/
+.mypy_cache/
+build/
+dist/
+*.egg-info/
