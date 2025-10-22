@@ -21,8 +21,13 @@ include = [
   "my_robots*",
   "my_utils*",
   "my_trainers*",
-  "options_sim*"
+  "options_sim*",
+  "my_assets"
 ]
+
+# Include all non-Python files inside the my_assets package
+[tool.setuptools.package-data]
+"my_assets" = ["**/*"]
 
 [project.scripts]
 options-sim-train = "options_sim.cli.train:main"

@@ -54,8 +54,12 @@ srun apptainer exec --nv \
     -B "$data/logs:$HOME/.nvidia-omniverse/logs" \
     -B "$data/data:$HOME/.local/share/ov/data" \
     -B "$data/documents:$HOME/Documents" \
-    $APPTAINER_ROOT/$APPTAINER_NAME /isaac-sim/python.sh /workspace/Options_In_Simulation/train/train_kamma_4d_nofifo_random_RLIL.py --seed 1
-
+    $APPTAINER_ROOT/$APPTAINER_NAME \
+    bash -c "
+    cd /workspace/Options_In_Simulation && \
+    export PYTHONPATH=\"\$PWD:\$PWD/src:\$PYTHONPATH\" && \
+    /isaac-sim/python.sh /workspace/Options_In_Simulation/train/train_kamma_4d_nofifo_random_RLIL.py --seed 1
+    "
 
 
 # Measure GPU usage of your job (result)
