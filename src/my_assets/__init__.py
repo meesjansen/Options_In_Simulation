@@ -21,6 +21,13 @@ def usd_path(*rel: Union[str, Path]) -> Iterator[Path]:
 
 # Convenience for your specific file
 @contextmanager
+def origin_v18_usd() -> Iterator[Path]:
+    # v18 uses the "origin_sym" USD
+    with usd_path("urdf", "origin_sym", "origin_sym.usd") as p:
+        yield p
+
+
+@contextmanager
 def origin_v19_usd() -> Iterator[Path]:
     with usd_path("urdf", "origin_v19_c", "origin_v19", "origin_v19.usd") as p:
         yield p
