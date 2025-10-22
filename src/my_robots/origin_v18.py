@@ -13,7 +13,8 @@ from omni.isaac.core.utils.types import ArticulationAction
 from omni.isaac.core.prims import GeometryPrim
 from omni.isaac.core.materials.physics_material import PhysicsMaterial
 
-
+import my_assets
+from my_assets import origin_v18_usd
 
 class AvularOrigin_v10(Robot):
     def __init__(
