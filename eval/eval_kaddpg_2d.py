@@ -1,163 +1,172 @@
+import os
+import re
+from pathlib import Path
+
 import torch
 import torch.nn as nn
 
-# Import the skrl components to build the RL system
+# skrl / isaac
 from skrl.models.torch import Model, DeterministicMixin
 from skrl.resources.noises.torch import OrnsteinUhlenbeckNoise
 from skrl.memories.torch import RandomMemory
-from skrl.resources.schedulers.torch import KLAdaptiveRL
 from skrl.resources.preprocessors.torch import RunningStandardScaler
 from skrl.utils.omniverse_isaacgym_utils import get_env_instance
 from skrl.envs.torch import wrap_env
 from skrl.utils import set_seed
 
-from my_models.categorical import CategoricalMixin
+# ==== ADJUST IF NEEDED (agent / task modules) ====
 from my_agents.ddpg import DDPG
 from my_trainers.sequential import SequentialTrainer
+from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
+from my_envs.KA_DDPG_2D_eval import TorqueDistributionTask, TASK_CFG
+# ================================================
 
-# set the seed for reproducibility
-seed = set_seed(42)
+from argparse import ArgumentParser
 
-
-# Define the models (stochastic and deterministic) for the agent using helper mixin.
-# - Policy: takes as input the environment's observation/state and returns action
-# - Value: takes the state as input and provides a state value to guide the policy
+# ----------------------------
+# Models (deterministic actor/critic)
+# ----------------------------
 class DeterministicActor(DeterministicMixin, Model):
     def __init__(self, observation_space, action_space, device, clip_actions=False):
         Model.__init__(self, observation_space, action_space, device)
         DeterministicMixin.__init__(self, clip_actions)
-
-        self.net = nn.Sequential(nn.Linear(self.num_observations, 512),
-                                 nn.ELU(),
-                                 nn.Linear(512, 512),
-                                 nn.ELU(),
-                                 nn.Linear(512, 128),
-                                 nn.ELU(),
-                                 nn.Linear(128, self.num_actions),
-                                 nn.Sigmoid())
+        self.net = nn.Sequential(
+            nn.Linear(self.num_observations, 512), nn.ELU(),
+            nn.Linear(512, 512), nn.ELU(),
+            nn.Linear(512, 128), nn.ELU(),
+            nn.Linear(128, self.num_actions), nn.Sigmoid()
+        )
 
     def compute(self, inputs, role):
         return self.net(inputs["states"]), {}
-    
+
 class Critic(DeterministicMixin, Model):
     def __init__(self, observation_space, action_space, device, clip_actions=False):
         Model.__init__(self, observation_space, action_space, device)
         DeterministicMixin.__init__(self, clip_actions)
-
-        self.net = nn.Sequential(nn.Linear(self.num_observations + self.num_actions, 512),
-                                 nn.ELU(),
-                                 nn.Linear(512, 512),
-                                 nn.ELU(),
-                                 nn.Linear(512, 128),
-                                 nn.ELU(),
-                                 nn.Linear(128, 1))
+        self.net = nn.Sequential(
+            nn.Linear(self.num_observations + self.num_actions, 512), nn.ELU(),
+            nn.Linear(512, 512), nn.ELU(),
+            nn.Linear(512, 128), nn.ELU(),
+            nn.Linear(128, 1)
+        )
 
     def compute(self, inputs, role):
-        return self.net(torch.cat([inputs["states"], inputs["taken_actions"]], dim=1)), {}
+        import torch as _t
+        return self.net(_t.cat([inputs["states"], inputs["taken_actions"]], dim=1)), {}
 
-# Instantiate and configure the task
-headless = True  # set headless to False for rendering
-
+# ----------------------------
+# Env / Task
+# ----------------------------
+headless = True
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
 
-from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.KA_DDPG_2D_eval import TorqueDistributionTask, TASK_CFG
-from argparse import ArgumentParser 
+# ----------------------------
+# Args (+ env fallbacks)
+# ----------------------------
+arg_parser = ArgumentParser(description="Evaluate KA-DDPG 2D agent")
 
-arg_parser = ArgumentParser()
+# physics / control
 arg_parser.add_argument("--stiffness", type=float, default=0.035)
 arg_parser.add_argument("--damping", type=float, default=0.005)
 arg_parser.add_argument("--static_friction", type=float, default=0.85)
 arg_parser.add_argument("--dynamic_friction", type=float, default=0.85)
 arg_parser.add_argument("--yaw_constant", type=float, default=0.5)
-arg_parser.add_argument("--linear_x", type=float, default=[1., 2.0])
+arg_parser.add_argument("--linear_x", type=float, nargs=2, default=[1.0, 2.0])
 
-parsed_config = arg_parser.parse_args().__dict__
+# eval control
+arg_parser.add_argument("--seed", type=int, default=None)
+arg_parser.add_argument("--checkpoint", type=str, default=None)
+arg_parser.add_argument("--experiment-name", type=str, default=None)
+
+# optional train-reconstruction
+arg_parser.add_argument("--train-seed", type=int, default=None)
+arg_parser.add_argument("--fifo", choices=["fifo", "nofifo"], default=None)
+arg_parser.add_argument("--curriculum", type=str, default=None)
+arg_parser.add_argument("--strategy", type=str, default=None)
+arg_parser.add_argument("--checkpoint-step", type=int, default=None)
+arg_parser.add_argument("--root", type=str, default="/workspace/Options_In_Simulation")
+
+parsed = vars(arg_parser.parse_args())
+
+# env fallbacks
+if parsed["seed"] is None and os.getenv("EVAL_SEED"):
+    parsed["seed"] = int(os.getenv("EVAL_SEED"))
+if parsed["checkpoint"] is None and os.getenv("EVAL_CHECKPOINT"):
+    parsed["checkpoint"] = os.getenv("EVAL_CHECKPOINT")
+if parsed["experiment_name"] is None and os.getenv("EVAL_EXPERIMENT_NAME"):
+    parsed["experiment_name"] = os.getenv("EVAL_EXPERIMENT_NAME")
+
+# ----------------------------
+# Seed & TASK config
+# ----------------------------
+seed = set_seed(parsed["seed"] if parsed["seed"] is not None else 42)
 
 TASK_CFG["seed"] = seed
 TASK_CFG["headless"] = headless
 TASK_CFG["task"]["env"]["numEnvs"] = 1
 
-# control
-TASK_CFG["task"]["env"]["control"]["stiffness"] = parsed_config["stiffness"]
-TASK_CFG["task"]["env"]["control"]["damping"] = parsed_config["damping"]
+# control/friction/commands
+TASK_CFG["task"]["env"]["control"]["stiffness"] = parsed["stiffness"]
+TASK_CFG["task"]["env"]["control"]["damping"] = parsed["damping"]
+TASK_CFG["task"]["sim"]["default_physics_material"]["static_friction"] = parsed["static_friction"]
+TASK_CFG["task"]["sim"]["default_physics_material"]["dynamic_friction"] = parsed["dynamic_friction"]
+TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["yaw_constant"] = parsed["yaw_constant"]
+TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["linear_x"] = parsed["linear_x"]
 
-# friction
-TASK_CFG["task"]["sim"]["default_physics_material"]["static_friction"] = parsed_config["static_friction"]
-TASK_CFG["task"]["sim"]["default_physics_material"]["dynamic_friction"] = parsed_config["dynamic_friction"]
+sim_cfg = SimConfig(TASK_CFG)
+task = TorqueDistributionTask(name="TorqueDistribution", sim_config=sim_cfg, env=env)
+env.set_task(task=task, sim_params=sim_cfg.get_physics_params(), backend="torch", init_sim=True)
 
-# commands
-TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["yaw_constant"] = parsed_config["yaw_constant"]
-TASK_CFG["task"]["env"]["randomCommandVelocityRanges"]["linear_x"] = parsed_config["linear_x"]
-
-
-sim_config = SimConfig(TASK_CFG)
-task = TorqueDistributionTask(name="TorqueDistribution", sim_config=sim_config, env=env)
-
-env.set_task(task=task, sim_params=sim_config.get_physics_params(), backend="torch", init_sim=True)
-
-# Wrap the environment
 env = wrap_env(env, "omniverse-isaacgym")
 device = env.device
 
-# Instantiate a memory as experience replay
+# ----------------------------
+# Memory & Models
+# ----------------------------
 memory = RandomMemory(memory_size=1_000_000, num_envs=env.num_envs, device=device, replacement=False)
+models = {
+    "policy": DeterministicActor(env.observation_space, env.action_space, device),
+    "target_policy": DeterministicActor(env.observation_space, env.action_space, device),
+    "critic": Critic(env.observation_space, env.action_space, device),
+    "target_critic": Critic(env.observation_space, env.action_space, device),
+}
 
-# instantiate the agent's models (function approximators).
-# DDPG requires 4 models, visit its documentation for more details
-# https://skrl.readthedocs.io/en/latest/api/agents/ddpg.html#models
-models = {}
-models["policy"] = DeterministicActor(env.observation_space, env.action_space, device)
-models["target_policy"] = DeterministicActor(env.observation_space, env.action_space, device)
-models["critic"] = Critic(env.observation_space, env.action_space, device)
-models["target_critic"] = Critic(env.observation_space, env.action_space, device)
-
-
-# Configure PPO agent hyperparameters.
+# ----------------------------
+# DDPG config + logging
+# ----------------------------
 DDPG_DEFAULT_CONFIG = {
-    "gradient_steps": 1,            # gradient steps
-    "batch_size": 4096,               # training batch size
-
-    "discount_factor": 0.99,        # discount factor (gamma)
-    "polyak": 0.01,                # soft update hyperparameter (tau)
-
-    "actor_learning_rate": 3e-4,    # actor learning rate
-    "critic_learning_rate": 1e-3,   # critic learning rate
-    "learning_rate_scheduler": None,        # learning rate scheduler class (see torch.optim.lr_scheduler)
-    "learning_rate_scheduler_kwargs": {},   # learning rate scheduler's kwargs (e.g. {"step_size": 1e-3})
-
-    "state_preprocessor": RunningStandardScaler,             # state preprocessor class (see skrl.resources.preprocessors)
-    "state_preprocessor_kwargs": {"size": env.observation_space, "device": device},        # state preprocessor's kwargs (e.g. {"size": env.observation_space})
-
-    "random_timesteps": 10,          # random exploration steps
-    "learning_starts": 0,           # learning starts after this many steps
-
-    "grad_norm_clip": 0,            # clipping coefficient for the norm of the gradients
-
-    "exploration": {
-        "noise": False,              # exploration noise
-        "initial_scale": 1.0,       # initial scale for the noise
-        "final_scale": 1.0,        # final scale for the noise
-        "timesteps": 50000.0,          # timesteps for the noise decay
-    },
-
-    "rewards_shaper": None,         # rewards shaping function: Callable(reward, timestep, timesteps) -> reward
-
-    "mixed_precision": False,       # enable automatic mixed precision for higher performance
-
+    "gradient_steps": 1,
+    "batch_size": 4096,
+    "discount_factor": 0.99,
+    "polyak": 0.01,
+    "actor_learning_rate": 3e-4,
+    "critic_learning_rate": 1e-3,
+    "learning_rate_scheduler": None,
+    "learning_rate_scheduler_kwargs": {},
+    "state_preprocessor": RunningStandardScaler,
+    "state_preprocessor_kwargs": {"size": env.observation_space, "device": device},
+    "random_timesteps": 10,
+    "learning_starts": 0,
+    "grad_norm_clip": 0,
+    "exploration": {"noise": False, "initial_scale": 1.0, "final_scale": 1.0, "timesteps": 50_000.0},
+    "rewards_shaper": None,
+    "mixed_precision": False,
     "experiment": {
-        "directory": "/workspace/Options_In_Simulation/my_runs/KA_DDPG_2D_eval_seed5",
-        "experiment_name": "KA_DDPG_2D_eval_seed5",
+        "directory": "/workspace/Options_In_Simulation/my_runs/eval_kaddpg_2d",
+        "experiment_name": None,
         "write_interval": "auto",
         "checkpoint_interval": "auto",
         "store_separately": False,
         "wandb": True,
-        "wandb_kwargs": {"project": "KA-DDPG Dimension Study",
-                         "entity": "meesjansen-Delft Technical University",
-                         "name": "KA_DDPG_2D_eval_seed5",
-                         "tags": ["DDPG", "KAMMA", "r18", "o6", "torq"],
-                         "dir": "/workspace/Options_In_Simulation/my_runs"}    
-                    }
+        "wandb_kwargs": {
+            "project": "KA-DDPG Dimension Study",
+            "entity": "meesjansen-Delft Technical University",
+            "name": None,
+            "tags": ["DDPG", "KAMMA", "o6", "torq"],
+            "dir": "/workspace/Options_In_Simulation/my_runs",
+        },
+    },
 }
 
 cfg = DDPG_DEFAULT_CONFIG.copy()
@@ -172,25 +181,52 @@ cfg["random_timesteps"] = 0
 cfg["learning_starts"] = 0
 cfg["state_preprocessor"] = RunningStandardScaler
 cfg["state_preprocessor_kwargs"] = {"size": env.observation_space, "device": device}
-# logging to TensorBoard and write checkpoints (in timesteps)
 cfg["experiment"]["write_interval"] = 10
-cfg["experiment"]["checkpoint_interval"] = 500000
+cfg["experiment"]["checkpoint_interval"] = 500_000
 
+# ----------------------------
+# Checkpoint & experiment-name
+# ----------------------------
+algo, action_dim = "kaddpg", "2d"
+fifo, curriculum, strategy = parsed.get("fifo"), parsed.get("curriculum"), parsed.get("strategy")
+train_seed, step = parsed.get("train_seed"), parsed.get("checkpoint_step")
+root = Path(parsed.get("root") or "/workspace/Options_In_Simulation")
+ckpt = parsed.get("checkpoint")
 
-agent = DDPG(models=models,
-             memory=memory,
-             cfg=cfg,
-             observation_space=env.observation_space,
-             action_space=env.action_space,
-             device=device)
+if ckpt is None and all(v is not None for v in (fifo, curriculum, strategy, train_seed, step)):
+    run = f"{algo}_{action_dim}_{fifo}_{curriculum}_{strategy}"
+    leaf = f"{run}_s{train_seed}"
+    ckpt = str((root / "my_runs" / run / leaf / "checkpoints" / f"agent_{step}.pt").resolve())
 
+if step is None and ckpt is not None:
+    m = re.search(r"agent_(\d+)\.pt$", ckpt)
+    if m: step = int(m.group(1))
 
-# agent.load("./my_runs/PPOc_rooms_r15_vel/PPOc_rooms_r15_vel/checkpoints/agent_100000.pt")
-agent.load("./my_runs/KA-DDPG_2D_seed5/KA-DDPG_2D_seed5/checkpoints/agent_700000.pt")
+if parsed.get("experiment_name"):
+    exp_name = parsed["experiment_name"]
+else:
+    exp_name = f"eval_{algo}_{action_dim}_{fifo or 'unknown'}_{curriculum or 'unknown'}_{strategy or 'unknown'}_s{train_seed if train_seed is not None else 'unknown'}_a{step if step is not None else 'unknown'}_s{seed}"
 
-# Configure and instantiate the RL trainer
-cfg_trainer = {"timesteps": 50_000, "headless": True}
-trainer = SequentialTrainer(cfg=cfg_trainer, env=env, agents=agent)
+cfg["experiment"]["experiment_name"] = exp_name
+cfg["experiment"]["wandb_kwargs"]["name"] = exp_name
 
-# start training
+# ----------------------------
+# Agent + load
+# ----------------------------
+agent = DDPG(models=models, memory=memory, cfg=cfg,
+             observation_space=env.observation_space, action_space=env.action_space, device=device)
+
+if ckpt:
+    if not Path(ckpt).exists():
+        raise FileNotFoundError(f"Checkpoint not found: {ckpt}")
+    print(f"[INFO] Loading checkpoint: {ckpt}")
+    agent.load(ckpt)
+else:
+    print("[WARN] No checkpoint provided/reconstructed; evaluating uninitialized weights.")
+
+# ----------------------------
+# Trainer
+# ----------------------------
+cfg_tr = {"timesteps": 50_000, "headless": True}
+trainer = SequentialTrainer(cfg=cfg_tr, env=env, agents=agent)
 trainer.eval()
