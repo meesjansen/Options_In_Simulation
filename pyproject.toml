@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "options-sim"
 version = "0.1.0"
 requires-python = ">=3.10,<3.13"   
-dependencies = ["numpy>=1.23", "pyyaml>=6.0"]
+dependencies = []
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -32,7 +32,10 @@ include = [
 [project.scripts]
 options-sim-train = "options_sim.cli.train:main"
 options-sim-eval  = "options_sim.cli.eval:main"
-options-sim.artifacts = "options_sim.cli.artifacts:main"
-options-sim.eval-artifacts = "options_sim.cli.eval_artifacts:main"
+options-sim-artifacts = "options_sim.cli.artifacts:main"
+options-sim-eval-artifacts = "options_sim.cli.eval_artifacts:main"
 
-
+[project.optional-dependencies]
+artifacts = ["tensorboard>=2.14", "matplotlib>=3.8"]
+sim = ["omniisaacgymenvs", "skrl"]
+dev = ["pytest"]

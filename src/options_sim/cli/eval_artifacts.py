@@ -156,7 +156,7 @@ def main(argv=None) -> None:
     csv_path = run_dir / "tracking_error_vs_speed.csv"
     with csv_path.open("w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["speed_m_s", "tracking_error_m"])  # y is distance error; change to _m_s if you truly log a rate
+        w.writerow(["speed_m_s", "tracking_error_m_s"])  # y is distance error; change to _m_s if you truly log a rate
         for x, y in zip(xs, ys):
             w.writerow([x, y])
 
@@ -166,8 +166,9 @@ def main(argv=None) -> None:
     plt.plot(xs, ys)
     plt.title("Tracking error vs commanded speed")
     plt.xlabel(x_label)
-    plt.ylabel("tracking error (m)")
+    plt.ylabel("tracking error (m/s)")
     plt.grid(True, alpha=0.3)
+    plt.xlim(args.vmin, args.vmax)
     plt.tight_layout()
     plt.savefig(png_path, dpi=150)
     plt.close()

@@ -16,10 +16,8 @@ from skrl.utils import set_seed
 
 # ==== ADJUST IF NEEDED (agent / task modules) ====
 # If your KAMMA agent/module path differs, change here:
-from my_agents.kamma import KAMMA  # <— adjust if your repo uses a different path/name
+from my_agents.ddpg import DDPG
 from my_trainers.sequential import SequentialTrainer
-from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.KAMMA_4D_eval import TorqueDistributionTask, TASK_CFG  # <— adjust module name if different
 # ================================================
 
 from argparse import ArgumentParser
@@ -61,6 +59,9 @@ class Critic(DeterministicMixin, Model):
 # ----------------------------
 headless = True
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
+
+from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
+from my_envs.KAMMA_eval import TorqueDistributionTask, TASK_CFG  # <— adjust module name if different
 
 # ----------------------------
 # Args (+ env fallbacks)
@@ -214,7 +215,7 @@ cfg["experiment"]["wandb_kwargs"]["name"] = exp_name
 # ----------------------------
 # Agent + load
 # ----------------------------
-agent = KAMMA(models=models, memory=memory, cfg=cfg,
+agent = DDPG(models=models, memory=memory, cfg=cfg,
               observation_space=env.observation_space, action_space=env.action_space, device=device)
 
 if ckpt:

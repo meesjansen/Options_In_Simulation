@@ -17,11 +17,7 @@ from skrl.utils import set_seed
 # ==== ADJUST IF NEEDED (agent / task modules) ====
 from my_agents.ddpg import DDPG
 from my_trainers.sequential import SequentialTrainer
-from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
-from my_envs.KA_DDPG_2D_eval import TorqueDistributionTask, TASK_CFG
 # ================================================
-
-from argparse import ArgumentParser
 
 # ----------------------------
 # Models (deterministic actor/critic)
@@ -60,6 +56,10 @@ class Critic(DeterministicMixin, Model):
 # ----------------------------
 headless = True
 env = get_env_instance(headless=headless, enable_livestream=False, enable_viewport=False)
+
+from omniisaacgymenvs.utils.config_utils.sim_config import SimConfig
+from my_envs.KA_DDPG_2D_eval import TorqueDistributionTask, TASK_CFG
+from argparse import ArgumentParser
 
 # ----------------------------
 # Args (+ env fallbacks)
