@@ -82,12 +82,12 @@ def _align_by_step(a: List[Tuple[int, float]], b: List[Tuple[int, float]]) -> Tu
     xs, ys = [], []
     for s, va in a:
         if s in map_b:
-            xs.append(map_b[s])  # e.g., desired velocity
-            ys.append(va)        # e.g., tracking error
+            xs.append(va)  # e.g., desired velocity
+            ys.append(map_b[s])  # e.g., tracking error
     return xs, ys
 
 
-def _moving_avg(vals: List[float], k: int) -> List[float]:
+def _moving_average(vals: List[float], k: int) -> List[float]:
     if k <= 1 or not vals:
         return vals
     out = []
@@ -138,7 +138,7 @@ def main(argv=None) -> None:
 
     # build x (speed) and y (tracking error)
     if dv_series:
-        xs, ys = _align_by_step(te_series, dv_series)
+        xs, ys = _align_by_step(dv_series, te_series)
         x_label = "desired velocity (m/s)"
         x_note = f"(tag: {dv_tag})"
     else:
@@ -150,7 +150,7 @@ def main(argv=None) -> None:
         x_note = f"(synthetic ramp {args.vmin}→{args.vmax})"
 
     if args.smooth and args.smooth > 1:
-        ys = _moving_avg(ys, args.smooth)
+        ys = _moving_average(ys, args.smooth)
 
     # write CSV
     csv_path = run_dir / "tracking_error_vs_speed.csv"

@@ -1,2 +1,0 @@
-[console_scripts]
-options-sim-train = options_sim.cli.train:main
