@@ -1,83 +1,101 @@
-# Options In Simulation
+# 🧠 Options In Simulation
+**Learning-Driven Torque Control for Skid-Steer Robots**
 
-Welcome to **Options In Simulation** – a research and experimentation platform built on top of NVIDIA’s Omniverse simulation ecosystem. This project leverages the [omniisaacgymenvs](https://github.com/NVIDIA-Omniverse/omniisaacgymenvs) framework for creating robust, high-fidelity simulation environments and integrates the [skrl framework](https://github.com/ToniRV/skrl) to implement and compare state-of-the-art reinforcement learning algorithms. The aim is to provide a modular and extensible platform where researchers and students can introduce, test, and compare different simulation options and learning strategies.
+A reinforcement learning framework for **learning torque-level control** of skid-steer robots in simulation, designed with **reproducibility**, **scalability**, and **deployment awareness** in mind.  
+Built on **NVIDIA Isaac Sim**, **OmniIsaacGymEnvs**, and **skrl**, it demonstrates a full ML engineering workflow — from training and evaluation to containerized execution on HPC and cloud systems.
 
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Project Structure](#project-structure)
-- [Running Experiments](#running-experiments)
-
-
+📘 Full thesis: [TU Delft Repository](https://repository.tudelft.nl/record/uuid:0bcc777f-cf1c-49fe-8dbf-c18237864841)
 
 ---
 
-## Overview
+## 🚀 Highlights
 
-**Options In Simulation** is designed as an experimental framework for:
-
-- **Developing and testing new simulation scenarios:** Built on omniisaacgymenvs, the platform offers an adaptable simulation backbone for robotics and physics-based experiments.
-- **Evaluating reinforcement learning algorithms:** By integrating the skrl framework, the project allows for systematic testing of various RL strategies within a high-fidelity simulated environment.
-- **Collaborative development and research:** With a clear, modular structure, the project is intended for easy collaboration, making it straightforward for new contributors to introduce their own experiments and simulation “options.”
-
-This repository is ideal for students and researchers looking to explore simulation-based learning and robotics control strategies in a controlled and extensible environment.
-
----
-
-## Features
-
-- **Modular Environment Design:** Extend or modify base environments from omniisaacgymenvs.
-- **Advanced RL Integration:** Utilize the skrl framework to implement, train, and compare diverse reinforcement learning algorithms.
-- **Extensible Codebase:** Designed to be easily adapted for additional simulation scenarios and learning methods.
-- **Detailed Documentation:** This README and accompanying docs provide a comprehensive guide to the project’s structure and usage.
+- **Algorithms:** Knowledge-Assisted DDPG (KA-DDPG) and KAMMA with curriculum learning  
+- **Environment:** NVIDIA Isaac Sim 2022.2.1 + OmniIsaacGymEnvs + skrl  
+- **Evaluation Metric:** **Tracking Error (TE)** — deviation between commanded and actual velocity  
+- **Infrastructure:**  
+  - ✅ **Apptainer (HPC)** – fully reproducible Isaac Sim container  
+  - ☁️ **AWS EC2** – Docker setup for visual simulation and monitoring  
+  - ⚙️ **SLURM scripts** – batch execution of large-scale experiments  
+- **CI:** Automated CLI testing for reproducibility
 
 ---
 
-## Prerequisites
+## 🧩 Command-Line Interface
 
-Before getting started, ensure that you have the following installed:
-
-- **Python 3.8+:** Will come with and thus depend on your IsaacSim Installation
-- **NVIDIA Omniverse IsaacSim:** Check compatibility with the version required by omniisaacgymenvs.
-- **omniisaacgymenvs:** Base simulation environment. Refer to the [official repository](https://github.com/NVIDIA-Omniverse/omniisaacgymenvs) for setup instructions.
-- **skrl Framework:** For reinforcement learning implementations. See the [skrl GitHub page](https://github.com/ToniRV/skrl) for details.
+| Command | Purpose | Example |
+|----------|----------|---------|
+| **`options-sim-train`** | Launch training for a given configuration. Auto-resolves the correct legacy script based on the chosen parameters. | ```/isaac-sim/python.sh -m options_sim.cli.train   --algorithm kaddpg --action-dim 1d   --fifo nofifo --curriculum random   --learning-strategy rlil --root . -- --seed 80``` *All experiments are deterministic for a given seed (set internally in the legacy script). Use consistent seeds to reproduce results across runs.* |
+| **`options-sim-eval`** | Evaluate a trained model checkpoint using specific training and evaluation seeds. Seeds are crucial for reproducibility and naming (`_s{seed}` in folder structure). | ```/isaac-sim/python.sh -m options_sim.cli.eval   --algorithm kamma --action-dim 4d   --fifo nofifo --curriculum random   --strategy RLIL --train-seed 1 --seed 777   --checkpoint-step 500000 --root /workspace/Options_In_Simulation``` *The `--train-seed` identifies the correct trained model directory, while `--seed` controls randomness during evaluation (e.g., initial state sampling). Each combination creates a uniquely named folder under `my_runs/` for traceability.* |
+| **`options-sim-artifacts`** | Aggregate and visualize training rewards from TensorBoard logs, producing a CSV and PNG of six key reward components for diagnostics. | ```/isaac-sim/python.sh -m options_sim.cli.artifacts   --run kamma_4d_nofifo_random_RLIL_s1 --mirror-to-artifacts``` *Generates time-series CSV and plot files (`reward_components_env0_timeseries.csv`, `reward_components_env0.png`) in the run directory and mirrors them under `artifacts/`.* |
+| **`options-sim-eval-artifacts`** | Generate plots of **Tracking Error vs Speed** from evaluation runs. Uses TensorBoard logs or synthetic speed ramps when desired velocity isn’t logged. | ```/isaac-sim/python.sh -m options_sim.cli.eval_artifacts   --run eval_kaddpg_1d_fifo_random_RLIL_s42_a500000_s42   --smooth 10 --mirror-to-artifacts``` *Produces `tracking_error_vs_speed.csv` and `tracking_error_vs_speed.png` showing mean tracking deviation over commanded speed. `--seed` from evaluation ensures deterministic log naming and matching metrics.* |
 
 ---
 
-## Installation
+## 🧱 Container & HPC Integration
 
-## Docker-based Installation
+### 🔒 Apptainer Environment
 
-For this project, we strongly recommend using Docker to ensure a consistent, reproducible, and isolated environment. Docker simplifies the setup process by bundling all dependencies—including NVIDIA IsaacSim, omniisaacgymenvs, and the skrl framework—into a single container. This guarantees that everyone working on the project has the exact same configuration, which is especially critical when working with GPU-based simulations.
+For interactive environments:
 
-### 1. Host Setup
+`apptainer/isaac-sim-custom.def` builds a GPU-enabled container with:
+- Bootstrap of Isaac Sim 2022.2.1 base image  
+- OmniIsaacGymEnvs & skrl preinstalled  
 
-Make sure you have Docker installed on a system with a compatible GPU. Then, from your local machine, navigate to a working directory and connect to your remote machine (if applicable):
 
 ```bash
-cd ~/Downloads
-
-ssh -i "RLSim1.pem" -vvv ubuntu@ec2-18-159-195-237.eu-central-1.compute.amazonaws.com
+apptainer build isaac-sim-custom.sif isaac-sim-custom.def
+git clone https://github.com/meesjansen/Options_In_Simulation.git 
 ```
 
-### 2. Pull the IsaacSim Docker Image
+Create container and link to created host directories:
 
-Pull the official NVIDIA IsaacSim Docker image (version 4.0.0):
+```bash
+apptainer shell --nv \
+-C \
+--env "ACCEPT_EULA=Y" \
+--env "PRIVACY_CONSENT=Y" \
+-B /path/to/Options_In_Simulation:/workspace/Options_In_Simulation \
+-B /path/to/isaac-sim/cache/kit:/isaac-sim/kit/cache \
+-B /path/to/isaac-sim/cache/ov:/root/.cache/ov \
+-B /path/to/isaac-sim/cache/pip:/root/.cache/pip \
+-B /path/to/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache \
+-B /path/to/isaac-sim/cache/computecache:/root/.nv/ComputeCache \
+-B /path/to/isaac-sim/logs:/root/.nvidia-omniverse/logs \
+-B /path/to/isaac-sim/data:/root/.local/share/ov/data \
+-B /path/to/isaac-sim/documents:/root/Documents \
+/path/to/isaac-sim-custom.sif
 
+cd /workspace/Options_In_Simulation
+```
+
+Inside the container, install dependencies (if not already baked in):
+```bash
+/isaac-sim/python.sh -m pip install --upgrade pip setuptools wheel
+
+/isaac-sim/python.sh -m pip install . --no-build-isolation --no-cache-dir --use-feature=in-tree-build
+```
+
+Alternatively, you can simply extend the Python path instead of installing:
+```bash
+export PYTHONPATH="$PWD/src:$PYTHONPATH"
+```
+
+Finally start a Workflow with:
+```bash
+/isaac-sim/python.sh -m options_sim.cli.train \
+  --algorithm kaddpg --action-dim 1d --fifo nofifo --curriculum random --learning-strategy rlil \
+  --root /workspace/Options_In_Simulation -- \
+  --seed 1
+```
+
+> 🧩 **Tip:**  
+> For cloud or on-premise clusters without Apptainer, the same workflow can be executed using the "Running Isaac Sim Container" section from 
+> [Isaac Sim AWS Docker setup](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_advanced_cloud_setup_aws.html).
+> Use the .def file as a blueprint to manually install the right packages and remember to use ```/isaac-sim/python.sh``` to launch python scripts. Both methods yield identical results when the same seeds and configuration are used. Make sure to pull the correct image from below and create the correct cached volume mounts on the host:
 ```bash
 docker pull nvcr.io/nvidia/isaac-sim:4.0.0
-```
 
-### 3. Run the Docker Container
-
-Start the container with GPU support and mount the necessary directories. This command sets up the container with proper volume mappings and environment variables required by IsaacSim and our project:
-
-```bash
 docker run --name isaac-sim-oige --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
 -e "PRIVACY_CONSENT=Y" \
 -v ${PWD}:/workspace/omniisaacgymenvs \
@@ -91,88 +109,132 @@ docker run --name isaac-sim-oige --entrypoint bash -it --gpus all -e "ACCEPT_EUL
 -v ~/docker/isaac-sim/documents:/root/Documents:rw \
 nvcr.io/nvidia/isaac-sim:4.0.0
 ```
+---
 
-### 4. Inside the Docker Container
+## ⚙️ HPC & SLURM Integration
 
-After launching the container, run the following commands to set up the necessary prerequisites and install project dependencies:
+The project includes **SLURM batch scripts** under `apptainer/` that automate training and evaluation on HPC clusters.  
+These scripts ensure large-scale, reproducible experiments while managing GPU resources efficiently.
 
-1. **Update Packages and Install Essential Tools**
+### 🎛️ SLURM Scripts Overview
 
-   ```bash
-   apt-get update 
-   apt-get install -y git nano 
-   /isaac-sim/python.sh -m pip install tensorflow
-   ```
+Each script:
+- Requests the appropriate number of **GPU nodes and CPUs**  
+- Loads the **Apptainer** module and activates the Isaac Sim container  
+- Executes the training or evaluation command using the project’s CLI tools  
+- Stores logs, checkpoints, and metrics under `my_runs/`, with results mirrored to `artifacts/` for post-analysis  
 
-2. **Install omniisaacgymenvs**
-
-   Navigate to the omniisaacgymenvs directory and install it in editable mode:
-
-   ```bash
-   cd /workspace/omniisaacgymenvs/OmniIsaacGymEnvs 
-   /isaac-sim/python.sh -m pip install -e .
-   ```
-
-3. **Install the skrl Framework**
-
-   Switch to the skrl directory and install the package with PyTorch support:
-
-   ```bash
-   cd /workspace/omniisaacgymenvs/skrl
-   /isaac-sim/python.sh -m pip install .[torch]
-   ```
-
-4. **Set Up the Options In Simulation Project**
-
-   If you haven't already cloned the repository, you can do so. Otherwise, update the repository and install the project dependencies:
-
-   ```bash
-   # If necessary, clone the repository (uncomment the lines below)
-   # cd /workspace/omniisaacgymenvs/
-   # git clone https://github.com/meesjansen/Options_In_Simulation.git
-
-   cd /workspace/omniisaacgymenvs/Options_In_Simulation
-   git pull
-   /isaac-sim/python.sh -m pip install -e .
-   /isaac-sim/python.sh train.py
-   ```
-
-These steps will install all necessary dependencies and run the training script, ensuring that the environment is correctly set up within the Docker container.
+This design allows running **parallel experiments** (e.g., 10 seeds × 2 algorithms) reproducibly across a compute cluster.
 
 ---
 
-Using Docker in this manner guarantees that the complex dependencies required by NVIDIA IsaacSim and the simulation frameworks are properly managed, reducing setup time and avoiding conflicts across different systems.
+## 🔁 Experiment Workflow & Evaluation
 
-## Project Structure
+The project’s workflow mirrors a **full ML lifecycle**, from training and evaluation to artifact generation and performance tracking.  
+All stages are executed through CLI commands for reproducibility and automation.
 
-Our repository is organized to streamline both simulation-based and real-world experiments, drawing inspiration from the [skrl documentation](https://skrl.readthedocs.io/en/latest/intro/examples.html#real-world-examples). In particular, we recommend reviewing the KUKA LBR iiwa example in the Real World Examples section for practical insights.
+### 🧠 End-to-End Process
 
-The key components of our project include:
+1. **Training**  
+   Run experiments with `options-sim-train`, which automatically selects and executes the correct legacy training script (e.g., `train_kamma_4d_fifo_random_rlil.py`).  
+   Training logs, checkpoints, and TensorBoard data are stored under `my_runs/<run_name>_s<seed>/`.
 
-- **Train Files**: Scripts dedicated to launching training sessions.
-- **Eval File**: A dedicated script for evaluating the performance of trained models.
-- **Environment Files**: Define and configure the simulation environments, integrating with Omniverse Isaac Gym.
-- **Utils**: Utility scripts for creating terrains and other environmental features.
-- **Assets**: Contains URDF files that are imported into IsaacSim to generate USDs.
-- **Robots**: Components that load the USDs into the IsaacSim environment, representing the physical robots.
-- **Agents**: Houses both custom and skrl reinforcement learning algorithms.
-- **Models**: Stores the trained model checkpoints and weights used by the agents.
-- **Trainers**: Implements the update logic that governs how the agents are trained.
+2. **Evaluation**  
+   Use `options-sim-eval` to test trained policies on unseen conditions.  
+   Each evaluation creates a new directory under `my_runs/eval_<run_name>_a<checkpointstep>_s<seed>/` containing metrics such as episode rewards and **Tracking Error** time series.
+
+3. **Artifact Generation**  
+   - `options-sim-artifacts` aggregates and visualizes reward components over training.  
+   - `options-sim-eval-artifacts` generates **Tracking Error vs Speed** plots from evaluation logs, producing `.csv` and `.png` outputs under `artifacts/<run_name>/`.
 
 
-## Running Experiments
+### 📈 Tracking Error (TE) as Core Metric
 
-The process for running experiments is designed to be straightforward, following a workflow similar to the skrl examples. Here’s a brief overview:
+**Tracking Error (TE)** — the deviation between target and actual velocity — is the project’s central measure of control accuracy.  
+TE is computed continuously during evaluation, representing the robot’s ability to follow desired velocity profiles across terrains.
 
-1. **Training**:  
-   Use the train files to start a training session. For example:
-   ```bash
-   python train.py
-   ```
-This command initializes the environment, loads the necessary assets, and begins training the agents using the defined trainers.
+| Metric | Description | Source |
+|---------|-------------|--------|
+| **Tracking Error (TE)** | Average absolute difference between commanded and measured velocity | Computed from TensorBoard logs via `eval_artifacts.py` |
+| **Velocity Correlation** | TE is evaluated along a velocity ramp | Derived from TE and reward logs |
+| **Reward Components** | Six sub-terms contributing to the total reward during training | Extracted via `artifacts.py` |
 
-2. **Evaluation**:
-After training, you can evaluate the performance of your model by running the evaluation file:
-```bash
-python eval.py
+Visualizing these metrics across experiments helps identify:
+- Algorithmic stability across seeds  
+- Policy smoothness and performance under curriculum progression  
+- Generalization to unseen conditions (e.g., new slopes, surface friction)
+
+
+### 🧩 Outputs Created
+
+```text
+my_runs/
+├── kamma_4d_nofifo_random_RLIL_s1/
+│   ├── checkpoints/agent_500000.pt
+│   ├── events.out.tfevents.*  (TensorBoard logs)
+│   ├── reward_components_env0_timeseries.csv
+│   └── reward_components_env0.png
+│   └── ...
+├── eval_kamma_4d_nofifo_random_RLIL_s1_a500000_s777/
+│   ├── metrics_tracking_error.csv
+│   └── eval_summary.json
+artifacts/
+├── kamma_4d_nofifo_random_RLIL_s1/
+│   ├── reward_components_env0.png
+│   └── reward_components_env0_timeseries.csv
+└── eval_kamma_4d_nofifo_random_RLIL_s1_a500000_s777/
+    ├── tracking_error_vs_speed.png
+    └── tracking_error_vs_speed.csv
 ```
+
+Together, these logs and plots capture the full experiment lifecycle, allowing rapid comparison across configurations or algorithmic variants.
+
+> 🧩 **Tip:**  
+> Use consistent seeds (`--train-seed` and `--seed`) across runs to ensure deterministic reproducibility between local, HPC, and AWS environments.  
+> Both training and evaluation pipelines are fully deterministic when executed inside the same Apptainer container image.
+
+---
+
+## 💡 Why It Matters
+
+- **End-to-End ML System Design** — Integrates simulation, training, evaluation, and deployment into a single reproducible workflow.  
+- **Production-Grade Engineering** — Emphasizes modular design, containerization, CLI-driven automation, and CI validation.  
+- **Metric-Driven Insights** — Replaces abstract reward signals with interpretable control metrics (e.g., Tracking Error).  
+- **Scalable Infrastructure** — Supports both cloud (Docker on AWS) and on-prem HPC (Apptainer + SLURM).  
+
+This project demonstrates how research-grade reinforcement learning can be engineered into **production-ready ML systems** — combining algorithmic innovation with scalable, maintainable infrastructure.
+
+---
+
+## 🗂️ Repository Structure
+
+```text
+Options_In_Simulation/
+├── apptainer/              # Container & SLURM definitions
+├── src
+│   ├──/options_sim/        # CLI tools for training, evaluation, and artifacts
+│   └──/packages            # Core modular components: custom agents, assets, utilities, and simulation helpers
+├── train/, eval/           # Legacy simulation scripts
+├── artifacts/, my_runs/    # Generated logs, metrics, and plots
+└── TUD_Report_MJ.pdf       # MSc Thesis reference
+```
+
+---
+
+## 🧩 Technologies
+
+**Python**, **PyTorch**, **NVIDIA Isaac Sim**, **OmniIsaacGymEnvs**, **skrl**,  
+**Apptainer (Singularity)**, **SLURM**, **Docker**, **Continuous Integration (CI/CD)**
+
+---
+
+## 📘 Reference
+
+> **M. Jansen**,  
+> *Learning-Driven Torque Control for Skid-Steer Robots*,  
+> TU Delft, 2024.  
+> [Full Thesis →](https://repository.tudelft.nl/record/uuid:0bcc777f-cf1c-49fe-8dbf-c18237864841)
+
+---
+
+*This repository showcases the complete lifecycle of a reinforcement-learning control system, from simulation and training to evaluation and scalable, reproducible deployment.*

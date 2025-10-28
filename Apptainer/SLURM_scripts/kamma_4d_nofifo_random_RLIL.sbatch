@@ -27,14 +27,14 @@ module use /opt/insy/modulefiles # Use DAIC INSY software collection
 export WANDB_MODE=offline
 export WANDB_SILENT=true
 
-export APPTAINER_ROOT="/winhome/meesjansen"
+export APPTAINER_ROOT="/winhome/meesjansen" # Replace with your APPTAINER root directory
 export APPTAINER_NAME="isaac-sim-custom.sif"
 
 export ISAACSIM_PATH="/isaac-sim"
 export ISAACSIM_PYTHON_EXE="/isaac-sim/python.sh"
 
 # Set environment variables for the container
-export data=/home/nfs/meesjansen/isaac-sim  # Replace with your HOST data directory
+export data=/home/nfs/meesjansen  # Replace with your HOST data directory
 export HOME=/root  # Replace with your CONTAINER home directory path
 
 
@@ -45,15 +45,15 @@ srun apptainer exec --nv \
     --env "PRIVACY_CONSENT=Y" \
     --env "WANDB_MODE=offline" \
     --env "WANDB_SILENT=true" \
-    -B "/home/nfs/meesjansen/Options_In_Simulation:/workspace/Options_In_Simulation" \
-    -B "$data/cache/kit:/isaac-sim/kit/cache" \
-    -B "$data/cache/ov:$HOME/.cache/ov" \
-    -B "$data/cache/pip:$HOME/.cache/pip" \
-    -B "$data/cache/glcache:$HOME/.cache/nvidia/GLCache" \
-    -B "$data/cache/computecache:$HOME/.nv/ComputeCache" \
-    -B "$data/logs:$HOME/.nvidia-omniverse/logs" \
-    -B "$data/data:$HOME/.local/share/ov/data" \
-    -B "$data/documents:$HOME/Documents" \
+    -B "$data/Options_In_Simulation:/workspace/Options_In_Simulation" \
+    -B "$data/isaac-sim/cache/kit:/isaac-sim/kit/cache" \
+    -B "$data/isaac-sim/cache/ov:$HOME/.cache/ov" \
+    -B "$data/isaac-sim/cache/pip:$HOME/.cache/pip" \
+    -B "$data/isaac-sim/cache/glcache:$HOME/.cache/nvidia/GLCache" \
+    -B "$data/isaac-sim/cache/computecache:$HOME/.nv/ComputeCache" \
+    -B "$data/isaac-sim/logs:$HOME/.nvidia-omniverse/logs" \
+    -B "$data/isaac-sim/data:$HOME/.local/share/ov/data" \
+    -B "$data/isaac-sim/documents:$HOME/Documents" \
     $APPTAINER_ROOT/$APPTAINER_NAME \
     bash -c "
     cd /workspace/Options_In_Simulation && \
