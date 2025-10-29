@@ -1,8 +1,7 @@
 # 🧠 Options In Simulation
 **Learning-Driven Torque Control for Skid-Steer Robots**
 
-A reinforcement learning framework for **learning torque-level control** of skid-steer robots in simulation, designed with **reproducibility**, **scalability**, and **deployment awareness** in mind.  
-Built on **NVIDIA Isaac Sim**, **OmniIsaacGymEnvs**, and **skrl**, it demonstrates a full ML engineering workflow — from training and evaluation to containerized execution on HPC and cloud systems.
+A reinforcement learning framework for **learning torque-level control** of skid-steer robots in simulation, designed with **reproducibility**, **scalability**, and **deployment awareness** in mind. Built on **NVIDIA Isaac Sim**, **OmniIsaacGymEnvs**, and **skrl**, it demonstrates a full ML engineering workflow, from training and evaluation to containerized execution on HPC and cloud systems.
 
 📘 Full thesis: [TU Delft Repository](https://repository.tudelft.nl/record/uuid:0bcc777f-cf1c-49fe-8dbf-c18237864841)
 
@@ -12,7 +11,7 @@ Built on **NVIDIA Isaac Sim**, **OmniIsaacGymEnvs**, and **skrl**, it demonstrat
 
 - **Algorithms:** Knowledge-Assisted DDPG (KA-DDPG) and KAMMA with curriculum learning  
 - **Environment:** NVIDIA Isaac Sim 2022.2.1 + OmniIsaacGymEnvs + skrl  
-- **Evaluation Metric:** **Tracking Error (TE)** — deviation between commanded and actual velocity  
+- **Evaluation Metric:** **Tracking Error (TE)** – deviation between commanded and actual velocity  
 - **Infrastructure:**  
   - ✅ **Apptainer (HPC)** – fully reproducible Isaac Sim container  
   - ☁️ **AWS EC2** – Docker setup for visual simulation and monitoring  
@@ -25,10 +24,10 @@ Built on **NVIDIA Isaac Sim**, **OmniIsaacGymEnvs**, and **skrl**, it demonstrat
 
 | Command | Purpose | Example |
 |----------|----------|---------|
-| **`options-sim-train`** | Launch training for a given configuration. Auto-resolves the correct legacy script based on the chosen parameters. | ```/isaac-sim/python.sh -m options_sim.cli.train   --algorithm kaddpg --action-dim 1d   --fifo nofifo --curriculum random   --learning-strategy rlil --root . -- --seed 80``` *All experiments are deterministic for a given seed (set internally in the legacy script). Use consistent seeds to reproduce results across runs.* |
+| **`options-sim-train`** | Launch training for a given configuration. Auto-resolves the correct legacy script based on the chosen parameters. | ```/isaac-sim/python.sh -m options_sim.cli.train   --algorithm kaddpg --action-dim 1d   --fifo nofifo --curriculum random   --learning-strategy rlil --root . -- --seed 80``` *All experiments are deterministic for a given seed (set in the legacy script). Use consistent seeds to reproduce results across runs.* |
 | **`options-sim-eval`** | Evaluate a trained model checkpoint using specific training and evaluation seeds. Seeds are crucial for reproducibility and naming (`_s{seed}` in folder structure). | ```/isaac-sim/python.sh -m options_sim.cli.eval   --algorithm kamma --action-dim 4d   --fifo nofifo --curriculum random   --strategy RLIL --train-seed 1 --seed 777   --checkpoint-step 500000 --root /workspace/Options_In_Simulation``` *The `--train-seed` identifies the correct trained model directory, while `--seed` controls randomness during evaluation (e.g., initial state sampling). Each combination creates a uniquely named folder under `my_runs/` for traceability.* |
 | **`options-sim-artifacts`** | Aggregate and visualize training rewards from TensorBoard logs, producing a CSV and PNG of six key reward components for diagnostics. | ```/isaac-sim/python.sh -m options_sim.cli.artifacts   --run kamma_4d_nofifo_random_RLIL_s1 --mirror-to-artifacts``` *Generates time-series CSV and plot files (`reward_components_env0_timeseries.csv`, `reward_components_env0.png`) in the run directory and mirrors them under `artifacts/`.* |
-| **`options-sim-eval-artifacts`** | Generate plots of **Tracking Error vs Speed** from evaluation runs. Uses TensorBoard logs or synthetic speed ramps when desired velocity isn’t logged. | ```/isaac-sim/python.sh -m options_sim.cli.eval_artifacts   --run eval_kaddpg_1d_fifo_random_RLIL_s42_a500000_s42   --smooth 10 --mirror-to-artifacts``` *Produces `tracking_error_vs_speed.csv` and `tracking_error_vs_speed.png` showing mean tracking deviation over commanded speed. `--seed` from evaluation ensures deterministic log naming and matching metrics.* |
+| **`options-sim-eval-artifacts`** | Generate plots of **Tracking Error vs Speed** from evaluation runs. Uses TensorBoard logs or synthetic speed ramps when desired velocity isn’t logged. | ```/isaac-sim/python.sh -m options_sim.cli.eval_artifacts   --run eval_kaddpg_1d_fifo_random_RLIL_s1_a500000_s777   --smooth 10 --mirror-to-artifacts``` *Produces `tracking_error_vs_speed.csv` and `tracking_error_vs_speed.png` showing mean tracking deviation over commanded speed. `--seed` from evaluation ensures deterministic log naming and matching metrics.* |
 
 ---
 
@@ -75,13 +74,12 @@ Inside the container, install dependencies (if not already baked in):
 
 /isaac-sim/python.sh -m pip install . --no-build-isolation --no-cache-dir --use-feature=in-tree-build
 ```
-
-Alternatively, you can simply extend the Python path instead of installing:
+On HPC systems with limited `/tmp` space or restricted user permissions, the `--no-cache-dir`, `--no-build-isolation`, and `--use-feature=in-tree-build` ensure installation happens entirely within the working directory, avoiding temporary build folders and reducing memory overhead. Alternatively, you can simply extend the Python path instead of installing:
 ```bash
 export PYTHONPATH="$PWD/src:$PYTHONPATH"
 ```
 
-Finally start a Workflow with:
+Finally start the Workflow with:
 ```bash
 /isaac-sim/python.sh -m options_sim.cli.train \
   --algorithm kaddpg --action-dim 1d --fifo nofifo --curriculum random --learning-strategy rlil \
@@ -92,7 +90,7 @@ Finally start a Workflow with:
 > 🧩 **Tip:**  
 > For cloud or on-premise clusters without Apptainer, the same workflow can be executed using the "Running Isaac Sim Container" section from 
 > [Isaac Sim AWS Docker setup](https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_advanced_cloud_setup_aws.html).
-> Use the .def file as a blueprint to manually install the right packages and remember to use ```/isaac-sim/python.sh``` to launch python scripts. Both methods yield identical results when the same seeds and configuration are used. Make sure to pull the correct image from below and create the correct cached volume mounts on the host:
+> Use the .def file as a blueprint to manually install the right packages and remember to use ```/isaac-sim/python.sh``` to launch python scripts. Make sure to pull the correct image from below and create the correct cached volume mounts on the host. Both methods yield identical results when the same seeds and configuration are used.
 ```bash
 docker pull nvcr.io/nvidia/isaac-sim:4.0.0
 
@@ -124,7 +122,7 @@ Each script:
 - Executes the training or evaluation command using the project’s CLI tools  
 - Stores logs, checkpoints, and metrics under `my_runs/`, with results mirrored to `artifacts/` for post-analysis  
 
-This design allows running **parallel experiments** (e.g., 10 seeds × 2 algorithms) reproducibly across a compute cluster.
+This design allows running **parallel experiments** (e.g., 10 seeds × 2 algorithms) reproducibly across a compute cluster. Experiments can optionally log metrics to **Weights & Biases (W&B)** for centralized tracking of SLURM job progress and artifacts. On HPC systems, W&B is currently run in offline mode (`WANDB_MODE=offline`) and results are synchronized after training.
 
 ---
 
@@ -150,7 +148,7 @@ All stages are executed through CLI commands for reproducibility and automation.
 
 ### 📈 Tracking Error (TE) as Core Metric
 
-**Tracking Error (TE)** — the deviation between target and actual velocity — is the project’s central measure of control accuracy.  
+**Tracking Error (TE)**, the deviation between target and actual velocity, is the project’s central measure of control accuracy.  
 TE is computed continuously during evaluation, representing the robot’s ability to follow desired velocity profiles across terrains.
 
 | Metric | Description | Source |
@@ -159,10 +157,6 @@ TE is computed continuously during evaluation, representing the robot’s abilit
 | **Velocity Correlation** | TE is evaluated along a velocity ramp | Derived from TE and reward logs |
 | **Reward Components** | Six sub-terms contributing to the total reward during training | Extracted via `artifacts.py` |
 
-Visualizing these metrics across experiments helps identify:
-- Algorithmic stability across seeds  
-- Policy smoothness and performance under curriculum progression  
-- Generalization to unseen conditions (e.g., new slopes, surface friction)
 
 
 ### 🧩 Outputs Created
@@ -193,16 +187,30 @@ Together, these logs and plots capture the full experiment lifecycle, allowing r
 > Use consistent seeds (`--train-seed` and `--seed`) across runs to ensure deterministic reproducibility between local, HPC, and AWS environments.  
 > Both training and evaluation pipelines are fully deterministic when executed inside the same Apptainer container image.
 
+### 📊 Results – Tracking Error vs Velocity (multi-seed)
+
+This figure is generated from the evaluation logs using `options-sim-eval` across multiple seeds and post-processed with `options-sim-eval-artifacts` (mean ± variability), making TE the primary, reproducible metric for policy comparison.
+
+
+<p align="center">
+  <img src="docs/img/TE_KAMMA.png" alt="Tracking Error vs Velocity – IL (blue), KAMMA (orange), Controller (red)" width="500">
+</p>
+
+*Multi-seed mean ± shaded variability (per-velocity). IL and KAMMA are learned policies; the red line is the classical controller baseline.*
+
 ---
+
 
 ## 💡 Why It Matters
 
-- **End-to-End ML System Design** — Integrates simulation, training, evaluation, and deployment into a single reproducible workflow.  
-- **Production-Grade Engineering** — Emphasizes modular design, containerization, CLI-driven automation, and CI validation.  
-- **Metric-Driven Insights** — Replaces abstract reward signals with interpretable control metrics (e.g., Tracking Error).  
-- **Scalable Infrastructure** — Supports both cloud (Docker on AWS) and on-prem HPC (Apptainer + SLURM).  
+- **End-to-End ML System Design** – Integrates simulation, training, evaluation, and deployment into a single reproducible workflow.  
+- **Production-Grade Engineering** – Emphasizes modular design, containerization, CLI-driven automation, and CI validation.  
+- **Metric-Driven Insights** – Replaces abstract reward signals with interpretable control metrics (e.g., Tracking Error).  
+- **Scalable Infrastructure** – Supports both cloud (Docker on AWS) and on-prem HPC (Apptainer + SLURM).  
 
-This project demonstrates how research-grade reinforcement learning can be engineered into **production-ready ML systems** — combining algorithmic innovation with scalable, maintainable infrastructure.
+This project demonstrates how research-grade reinforcement learning can be engineered into **production-ready ML systems**, combining algorithmic innovation with scalable, maintainable infrastructure.
+
+
 
 ---
 
@@ -224,7 +232,8 @@ Options_In_Simulation/
 ## 🧩 Technologies
 
 **Python**, **PyTorch**, **NVIDIA Isaac Sim**, **OmniIsaacGymEnvs**, **skrl**,  
-**Apptainer (Singularity)**, **SLURM**, **Docker**, **Continuous Integration (CI/CD)**
+**Apptainer (Singularity)**, **SLURM**, **Docker**, **Continuous Integration (CI/CD)**,
+**Weights & Biases (W&B)**, **Tensorboard**
 
 ---
 
